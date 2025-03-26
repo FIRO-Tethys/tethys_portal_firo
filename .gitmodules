@@ -4,7 +4,7 @@
 	branch = master
 [submodule "tethysdash"]
 	path = tethysdash
-	url = https://git.aquaveo.com/tethys/firo/tethysdash.git
+	url = https://github.com/tethysplatform/tethysapp-tethys_dash
 [submodule "tethysdash_plugin_cnrfc"]
 	path = tethysdash_plugin_cnrfc
 	url = https://github.com/FIRO-Tethys/tethysdash_plugin_cnrfc.git
