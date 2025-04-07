@@ -2,9 +2,6 @@
 	path = tethysapp-tethys_app_store
 	url = https://github.com/Aquaveo/tethysapp-tethys_app_store
 	branch = master
-[submodule "tethysdash"]
-	path = tethysdash
-	url = https://github.com/tethysplatform/tethysapp-tethys_dash
 [submodule "tethysdash_plugin_cnrfc"]
 	path = tethysdash_plugin_cnrfc
 	url = https://github.com/FIRO-Tethys/tethysdash_plugin_cnrfc.git
@@ -14,3 +11,6 @@
 [submodule "tethysdash_plugin_cw3e"]
 	path = tethysdash_plugin_cw3e
 	url = https://github.com/FIRO-Tethys/tethysdash_plugin_cw3e.git
+[submodule "tethysdash"]
+	path = tethysdash
+	url = https://github.com/tethysplatform/tethysapp-tethys_dash.git

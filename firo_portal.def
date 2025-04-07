@@ -1,0 +1,171 @@
+Bootstrap: docker
+From: tethysplatform/tethys-core:dev-py3.12-dj5.0
+
+%labels
+    Author "aquaveollc"
+    Version "1.1"
+
+%environment
+    export SHELL="/bin/bash"
+    export TETHYS_HOME="/usr/lib/tethys"
+    export PATH="/opt/conda/envs/tethys/bin:$PATH"
+    export APP_INSTALLER_USER_EMAIL="you@email.com"
+    export APP_INSTALLER_USER_NAME="App Installer"
+    export NGINX_PORT=8080
+    export TETHYS_PORT=8000
+    export CLIENT_MAX_BODY_SIZE='1G'
+    export DATA_UPLOAD_MAX_MEMORY_SIZE=1073741824
+    export FILE_UPLOAD_MAX_MEMORY_SIZE=1073741824
+    export COPYRIGHT='Copyright © 2024 Aquaveo, LLC'
+    export APP_INSTALLER_USER_EMAIL='fake@gmail.com'
+    export APP_INSTALLER_USER_NAME='fakeuser'
+    export CHANNEL_LAYERS_CONFIG="\"{'hosts':[{'host': '127.0.0.1', 'port': 6379}]}\""
+    export TETHYS_DB_PORT=5437
+    export TETHYS_DB_HOST=localhost
+    export ALLOWED_HOSTS="\"[localhost, 127.0.0.1]\""
+    export CSRF_TRUSTED_ORIGINS="\"[http://localhost:8080, http://127.0.0.1:8080]\""
+    export MULTIPLE_APP_MODE=true
+    export STANDALONE_APP=tethysdash
+    export TETHYSDASH_DB_NAME=tethysdash_primary_db
+    export POSTGRES_PASSWORD=pass
+
+%files
+    tethysdash                              /usr/lib/tethys/apps/tethysdash
+    tethysdash_plugin_cnrfc                 /usr/lib/tethys/apps/tethysdash_plugin_cnrfc
+    tethysdash_plugin_cw3e                  /usr/lib/tethys/apps/tethysdash_plugin_cw3e
+    tethysdash_plugin_usace                 /usr/lib/tethys/apps/tethysdash_plugin_usace
+
+    # Custom theme files
+    images/                                 /usr/lib/tethys/custom_theme/images
+    templates/                              /usr/lib/tethys/custom_theme/templates
+
+    # Requirements
+    requirements.txt                        /usr/lib/tethys/requirements.txt
+
+    # Singularity Salt files
+    singularity/salt/tethys_services.sls    /srv/salt/tethys_services.sls
+    singularity/salt/portal_theme.sls       /srv/salt/portal_theme.sls
+    singularity/salt/tethyscore.sls         /srv/salt/tethyscore.sls
+    singularity/salt/post_app.sls           /srv/salt/post_app.sls
+
+    # Docker Salt files
+    docker/salt/init_apps.sls               /srv/salt/init_apps.sls
+    docker/salt/top.sls                     /srv/salt/top.sls
+
+
+%post
+    export PATH="/opt/conda/envs/tethys/bin:$PATH"
+    export NGINX_USER=www
+    export NODE_VERSION="20.12.2"
+    export NVM_DIR=/usr/local/nvm
+    export NODE_VERSION_DIR="$NVM_DIR/versions/node/v${NODE_VERSION}"
+    export PATH=${NODE_VERSION_DIR}/bin:$PATH
+    export NPM="$NODE_VERSION_DIR/bin/npm"
+    export TETHYS_PORTAL_HOST=""
+    export TETHYS_APP_ROOT_URL="/apps/tethysdash/"
+    export TETHYS_LOADER_DELAY="500"
+    export TETHYS_DEBUG_MODE="false"
+    export TETHYSDASH_SRC_ROOT=${TETHYS_HOME}/apps/tethysdash
+    export TETHYSDASH_DEV_REACT_CONFIG="$TETHYSDASH_SRC_ROOT/reactapp/config/development.env"
+    export TETHYSDASH_PROD_REACT_CONFIG="$TETHYSDASH_SRC_ROOT/reactapp/config/production.env"
+    export TETHYS_PERSIST="/var/lib/tethys_persist"
+
+    # (1) Update apt-get and install additional system packages
+    apt-get update && apt-get install -y \
+        dos2unix \
+    && rm -rf /var/lib/apt/lists/*
+
+    #Install nvm
+    echo "Installing Node.js..."
+    mkdir -p $NVM_DIR
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | /bin/bash
+    . $NVM_DIR/nvm.sh 2>&1
+    nvm install $NODE_VERSION 2>&1
+    nvm alias default $NODE_VERSION 2>&1
+    nvm use default 2>&1
+    echo "Finished installing Node.js..."
+    
+    mv ${TETHYSDASH_DEV_REACT_CONFIG} ${TETHYSDASH_PROD_REACT_CONFIG} \
+    && sed -i "s#TETHYS_DEBUG_MODE.*#TETHYS_DEBUG_MODE = ${TETHYS_DEBUG_MODE}#g" ${TETHYSDASH_PROD_REACT_CONFIG} \
+    && sed -i "s#TETHYS_LOADER_DELAY.*#TETHYS_LOADER_DELAY = ${TETHYS_LOADER_DELAY}#g" ${TETHYSDASH_PROD_REACT_CONFIG} \
+    && sed -i "s#TETHYS_PORTAL_HOST.*#TETHYS_PORTAL_HOST = ${TETHYS_PORTAL_HOST}#g" ${TETHYSDASH_PROD_REACT_CONFIG} \
+    && sed -i "s#TETHYS_APP_ROOT_URL.*#TETHYS_APP_ROOT_URL = ${TETHYS_APP_ROOT_URL}#g" ${TETHYSDASH_PROD_REACT_CONFIG}
+
+
+    cd $TETHYSDASH_SRC_ROOT
+    $NPM install
+    $NPM run build
+    rm -rf node_modules
+
+
+    # Install Python requirements
+    echo "Installing Python packages from requirements.txt..."
+    pip install --user --no-cache-dir --quiet -r ${TETHYS_HOME}/requirements.txt
+
+    # Install TethysDash & its plugins
+    echo "Installing TethysDash..."
+    cd "${TETHYSDASH_SRC_ROOT}" && \
+        tethys install -N
+
+    echo "Installing TethysDash plugins..."
+    cd "${TETHYS_HOME}/apps/tethysdash_plugin_cnrfc" && \
+        python setup.py install
+    cd "${TETHYS_HOME}/apps/tethysdash_plugin_cw3e" && \
+        python setup.py install
+    cd "${TETHYS_HOME}/apps/tethysdash_plugin_usace" && \
+        python setup.py install
+    
+    #Create dir for tethysdash setting
+    mkdir -p $TETHYS_PERSIST/data/tethysdash
+
+    # Set permissions for the Salt directories
+    #https://docs.saltproject.io/en/latest/ref/configuration/nonroot.html
+    chmod -R 777 /etc/salt /var/cache/salt /var/log/salt /var/run/salt
+
+    # Set permissions for the Tethys directories, this is done on the Tethys_Persist_Permissions salt job at post_app.sls
+    chown -R $NGINX_USER: $TETHYS_PERSIST $TETHYS_HOME && chmod -R 777 $TETHYS_HOME $TETHYS_PERSIST
+    
+    # Set permissions for the ASGI and Nginx directories
+    # The directory creation of /run/asgi and the change of permissions cover the tethyscore.sls job /run/asgi
+    mkdir -p /run/asgi
+    mkdir -p /var/lib/nginx/body
+    chmod -R 777 /run /var/lib/nginx
+
+    # Remove the user=www line from the Supervisor config, no needed since is not the user that runs the process
+    sed -i '/^\s*user\s*=\s*www\s*$/d' /etc/supervisor/supervisord.conf
+
+    ## nginx and supervisor permission
+    chmod -R 777 /etc/nginx /etc/supervisor
+
+    ## supervisor logs
+    ## /var/log needs to have write permissions or supervisor will not be able to write the logs, and it will fail to start the nginx and asgi process
+    touch /var/log/supervisor/supervisord.log
+    chmod -R 777 /var/log/supervisor
+
+    ## nginx logs
+    chmod -R 777 /var/log/nginx/
+
+    # tethys logs
+    touch /var/log/tethys/tethys.log
+    # This is a salt stack job to create an change permissions at /var/log/tethys/tethys.log on tethyscore.sls
+    chown -R $NGINX_USER:$NGINX_USER /var/log/tethys/tethys.log
+    chmod 777 /var/log/tethys/tethys.log
+    
+    touch /var/log/tethys/salt.log
+    chmod 777 /var/log/tethys/salt.log
+    
+    # The following lines have been commented out since are 777, an are not required to be own by the nginx user by the salt jobs
+    # chown -R $NGINX_USER:$NGINX_USER /var/log/tethys/salt.log
+    # chown -R $NGINX_USER:$NGINX_USER /var/log/nginx
+    # chown -R $NGINX_USER:$NGINX_USER /var/log/supervisor
+    # chown -R $NGINX_USER:$NGINX_USER /etc/nginx /etc/supervisor
+    # chown -R $NGINX_USER:$NGINX_USER /run /var/lib/nginx
+
+%startscript
+    echo "Starting container... running run.sh"
+    exec /usr/lib/tethys/run.sh --skip-perm 2>&1 | tee /var/log/tethys/salt.log
+    # permissions have been taken care by the post script. As a result, we use --skip-perm
+    # Set permissions for the Tethys directories (this is part of the run.sh, but it cannot be done due to permission)
+    # the following is what the run.sh does, but it cannot be done due to permission
+    # export NGINX_USER=$(grep 'user .*;' /etc/nginx/nginx.conf | awk '{print $2}' | awk -F';' '{print $1}') ; find $TETHYS_PERSIST/workspaces ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {} ; find $TETHYS_PERSIST/media ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {} ; find $TETHYS_PERSIST/static ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {}
+
