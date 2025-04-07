@@ -108,7 +108,7 @@ jobs:
         if: ${{ env.keepgoing == 'true' }}
         run: |         
           echo "${{ secrets.GITHUB_TOKEN }}" | singularity registry login -u "${{ secrets.GHCR_USERNAME }}" --password-stdin oras://ghcr.io
-          singularity push singularity-firo-tethys-portal.sif \
+          singularity push container.sif \
           "oras://ghcr.io/$(echo "${GITHUB_REPOSITORY}" \
           | tr '[:upper:]' '[:lower:]' \
           | sed 's/_/-/g'):${{ env.tag }}-x86"
