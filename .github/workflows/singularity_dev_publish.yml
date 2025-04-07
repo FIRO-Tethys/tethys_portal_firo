@@ -1,25 +1,52 @@
-name: Build and Push Singularity Prod
-
-on:
+name: Singularity Build (native)
+on: 
   push:
-    tags:
-      - '*'  # Trigger this Action on any tag push
-
+    branches:
+      - singularity
+      
 jobs:
-  build:
+  changes:
+    name: "Changed Singularity Recipes"
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash
+    outputs:
+      changed_file: ${{ steps.files.outputs.added_modified }}
     steps:
+      - id: files
+        uses: jitterbit/get-changed-files@b17fbb00bdc0c0f63fcf166580804b4d2cdc2a42
+        with:
+          format: 'json'
+
+  build-test-containers:
+    needs: changes
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        changed_file: ${{ fromJson(needs.changes.outputs.changed_file) }}
+
+    name: Check ${{ matrix.changed_file }}
+    steps:
+      - name: Continue if Singularity Recipe
+        run: |
+          if [[ "${{ matrix.changed_file }}" = *.def ]]; then
+            echo "keepgoing=true" >> $GITHUB_ENV
+          fi
 
       - name: Checkout repository
+        if: ${{ env.keepgoing == 'true' }}
         uses: actions/checkout@v4
-
+    
       - name: Update submodules recursively
         run: |
           git submodule sync --recursive
           git submodule update --init --recursive
+
+      - name: Set Container Tag
+        if: ${{ env.keepgoing == 'true' }}
+        run: |
+          TAG="${GITHUB_SHA::7}-x86"
+          echo "Container Tag: $TAG"
+          echo "tag=$TAG" >> $GITHUB_ENV
 
       - name: Set up Go
         if: ${{ env.keepgoing == 'true' }}
@@ -29,6 +56,7 @@ jobs:
         id: go
 
       - name: Install Dependencies
+        if: ${{ env.keepgoing == 'true' }}
         run: |
           sudo apt-get update && sudo apt-get install -y \
             build-essential \
@@ -54,6 +82,7 @@ jobs:
             libsubid-dev
 
       - name: Install Singularity
+        if: ${{ env.keepgoing == 'true' }}
         env:
           SINGULARITY_VERSION: 4.3.0
           GOPATH: /tmp/go
@@ -68,21 +97,22 @@ jobs:
           make -C builddir
           sudo make -C builddir install
 
-
-      - name: Build Singularity Image
+      - name: Build Container
+        if: ${{ env.keepgoing == 'true' }}
+        env:
+          recipe: ${{ matrix.changed_file }}
         run: |
-          sudo -E singularity build singularity-firo-tethys-portal.sif firo_portal.def
+          sudo -E singularity build container.sif "${{ matrix.changed_file }}"
+
 
       - name: Login and Deploy Container to Github Regsitry
+        if: ${{ env.keepgoing == 'true' }}
         run: |         
           echo "${{ secrets.GITHUB_TOKEN }}" | singularity registry login -u "${{ secrets.GHCR_USERNAME }}" --password-stdin oras://ghcr.io
-          singularity push singularity-firo-tethys-portal.sif oras://ghcr.io/${GITHUB_REPOSITORY}:${{ github.ref_name }}-x86
+          singularity push container.sif oras://ghcr.io/${GITHUB_REPOSITORY}:${{ env.tag }}
 
-      - name: Logout from Github Container Registry
-        run: |
-           singularity remote logout
-
-      - name: Import and Verify Singularity key
+      - name: Import and Verify SYLABS cloud Signing Key
+        if: ${{ env.keepgoing == 'true' }}
         env:
           KEY_B64: ${{ secrets.SIGNING_KEY }}
           KEY_PASS: ${{ secrets.KEY_PASSPHRASE }}
@@ -99,39 +129,14 @@ jobs:
           # Verify successful import
           echo "=== Imported Keys ==="
           singularity key list
-          
 
-      - name: Sign the image
+
+      - name: Sign the image with SYLABS Cloud Key
+        if: ${{ env.keepgoing == 'true' }}
         run: |
-          echo "${{ secrets.KEY_PASSPHRASE }}" | singularity sign --keyidx 0 singularity-firo-tethys-portal.sif
-
-      - name: Login and Push Singularity Image
-        env:
-          SYLABS_AUTH_TOKEN: ${{ secrets.SYLABS_AUTH_TOKEN }}
-          SYLABS_REPO: ${{ secrets.SYLABS_REPO }}
+           echo "${{ secrets.KEY_PASSPHRASE }}" | singularity sign --keyidx 0 container.sif
+ 
+      - name: Logout from SYLABS Cloud
+        if: ${{ env.keepgoing == 'true' }}      
         run: |
-           TOKEN_FILE=$(mktemp)
-           echo "$SYLABS_AUTH_TOKEN" > "$TOKEN_FILE"
-           
-           REPO_NAME=$(basename "$GITHUB_REPOSITORY")
-          
-            # Attempt to login
-            if singularity remote login --tokenfile "$TOKEN_FILE"; then
-              echo "Login successful"
-                echo "Searching for existing image: library://$SYLABS_REPO/${REPO_NAME}:${{ github.ref_name }}-x86"
-                if singularity search ${REPO_NAME} | grep -q '${{ github.ref_name }}-x86'; then
-                  echo "Image found in library, deleting it first..."
-                  singularity delete --force library://$SYLABS_REPO/${REPO_NAME}:${{ github.ref_name }}-x86
-                else
-                  echo "Image does not exist, skipping delete step."
-                fi
-
-              singularity push container.sif library://$SYLABS_REPO/${REPO_NAME}:${{ github.ref_name }}-x86    
-            else
-              echo "Login failed"
-              exit 1
-            fi
-
-            # Clean up
-            rm "$TOKEN_FILE"
-
+           singularity remote logout
