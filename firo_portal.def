@@ -52,6 +52,7 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     docker/salt/init_apps.sls               /srv/salt/init_apps.sls
     docker/salt/top.sls                     /srv/salt/top.sls
 
+
 %post
     export PATH="/opt/conda/envs/tethys/bin:$PATH"
     export NGINX_USER=www

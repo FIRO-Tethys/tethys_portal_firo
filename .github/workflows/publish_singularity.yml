@@ -21,6 +21,14 @@ jobs:
           git submodule sync --recursive
           git submodule update --init --recursive
 
+      - name: Prepare lowercase image name
+        run: |
+          # Example original image name: "Tethys_Portal_FIRO"
+          # Convert to lowercase and replace underscores with dashes
+          IMAGE_NAME=$(echo "Tethys_Portal_FIRO" | tr '[:upper:]' '[:lower:]' | sed 's/_/-/g')
+          
+          echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
+
       - name: Set up Go
         if: ${{ env.keepgoing == 'true' }}
         uses: actions/setup-go@v5
@@ -76,7 +84,7 @@ jobs:
       - name: Login and Deploy Container to Github Regsitry
         run: |         
           echo "${{ secrets.GITHUB_TOKEN }}" | singularity registry login -u "${{ secrets.GHCR_USERNAME }}" --password-stdin oras://ghcr.io
-          singularity push singularity-firo-tethys-portal.sif oras://ghcr.io/${GITHUB_REPOSITORY}:${{ github.ref_name }}-x86
+          singularity push singularity-firo-tethys-portal.sif "oras://ghcr.io/$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]'):${GITHUB_SHA:0:7}-x86"          
 
       - name: Logout from Github Container Registry
         run: |
