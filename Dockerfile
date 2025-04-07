@@ -4,7 +4,7 @@ FROM tethysplatform/tethys-core:dev-py3.12-dj5.0
 # ADD FILES #
 #############
 COPY tethysapp-tethys_app_store ${TETHYS_HOME}/apps/tethysapp-tethys_app_store
-COPY tethysapp-tethys_dash ${TETHYS_HOME}/apps/tethysapp-tethys_dash
+COPY tethysdash ${TETHYS_HOME}/apps/tethysdash
 COPY tethysdash_plugin_cnrfc ${TETHYS_HOME}/apps/tethysdash_plugin_cnrfc
 COPY tethysdash_plugin_cw3e ${TETHYS_HOME}/apps/tethysdash_plugin_cw3e
 COPY tethysdash_plugin_usace ${TETHYS_HOME}/apps/tethysdash_plugin_usace

@@ -11,6 +11,6 @@
 [submodule "tethysdash_plugin_cw3e"]
 	path = tethysdash_plugin_cw3e
 	url = https://github.com/FIRO-Tethys/tethysdash_plugin_cw3e.git
-[submodule "tethysapp-tethys_dash"]
-	path = tethysapp-tethys_dash
+[submodule "tethysdash"]
+	path = tethysdash
 	url = https://github.com/tethysplatform/tethysapp-tethys_dash.git

@@ -30,7 +30,7 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     export POSTGRES_PASSWORD=pass
 
 %files
-    tethysapp-tethys_dash                   /usr/lib/tethys/apps/tethysapp-tethys_dash
+    tethysdash                              /usr/lib/tethys/apps/tethysdash
     tethysdash_plugin_cnrfc                 /usr/lib/tethys/apps/tethysdash_plugin_cnrfc
     tethysdash_plugin_cw3e                  /usr/lib/tethys/apps/tethysdash_plugin_cw3e
     tethysdash_plugin_usace                 /usr/lib/tethys/apps/tethysdash_plugin_usace
@@ -65,7 +65,7 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     export TETHYS_APP_ROOT_URL="/apps/tethysdash/"
     export TETHYS_LOADER_DELAY="500"
     export TETHYS_DEBUG_MODE="false"
-    export TETHYSDASH_SRC_ROOT=${TETHYS_HOME}/apps/tethysapp-tethys_dash
+    export TETHYSDASH_SRC_ROOT=${TETHYS_HOME}/apps/tethysdash
     export TETHYSDASH_DEV_REACT_CONFIG="$TETHYSDASH_SRC_ROOT/reactapp/config/development.env"
     export TETHYSDASH_PROD_REACT_CONFIG="$TETHYSDASH_SRC_ROOT/reactapp/config/production.env"
     export TETHYS_PERSIST="/var/lib/tethys_persist"
