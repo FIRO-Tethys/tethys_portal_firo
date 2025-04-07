@@ -104,39 +104,11 @@ jobs:
         run: |
           sudo -E singularity build container.sif "${{ matrix.changed_file }}"
 
-
       - name: Login and Deploy Container to Github Regsitry
         if: ${{ env.keepgoing == 'true' }}
         run: |         
           echo "${{ secrets.GITHUB_TOKEN }}" | singularity registry login -u "${{ secrets.GHCR_USERNAME }}" --password-stdin oras://ghcr.io
-          singularity push container.sif oras://ghcr.io/${GITHUB_REPOSITORY}:${{ env.tag }}
-
-      - name: Import and Verify SYLABS cloud Signing Key
-        if: ${{ env.keepgoing == 'true' }}
-        env:
-          KEY_B64: ${{ secrets.SIGNING_KEY }}
-          KEY_PASS: ${{ secrets.KEY_PASSPHRASE }}
-        run: |
-          # Decode key and verify format
-          echo "$KEY_B64" | base64 -d > private.asc
-          echo "=== Key File Header ==="
-          head -n 1 private.asc  # Should show "-----BEGIN PGP PRIVATE KEY BLOCK-----"
-          
-          # Import key with passphrase validation
-          echo "=== Key Import ==="
-          echo "$KEY_PASS" | singularity key import private.asc 2>&1 | tee import.log
-          
-          # Verify successful import
-          echo "=== Imported Keys ==="
-          singularity key list
-
-
-      - name: Sign the image with SYLABS Cloud Key
-        if: ${{ env.keepgoing == 'true' }}
-        run: |
-           echo "${{ secrets.KEY_PASSPHRASE }}" | singularity sign --keyidx 0 container.sif
- 
-      - name: Logout from SYLABS Cloud
-        if: ${{ env.keepgoing == 'true' }}      
-        run: |
-           singularity remote logout
+          singularity push singularity-firo-tethys-portal.sif \
+          "oras://ghcr.io/$(echo "${GITHUB_REPOSITORY}" \
+          | tr '[:upper:]' '[:lower:]' \
+          | sed 's/_/-/g'):${{ env.tag }}-x86"

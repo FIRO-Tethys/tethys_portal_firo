@@ -142,6 +142,7 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     touch /var/log/supervisor/supervisord.log
     chmod -R 777 /var/log/supervisor
 
+
     ## nginx logs
     chmod -R 777 /var/log/nginx/
 
