@@ -168,3 +168,4 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     # Set permissions for the Tethys directories (this is part of the run.sh, but it cannot be done due to permission)
     # the following is what the run.sh does, but it cannot be done due to permission
     # export NGINX_USER=$(grep 'user .*;' /etc/nginx/nginx.conf | awk '{print $2}' | awk -F';' '{print $1}') ; find $TETHYS_PERSIST/workspaces ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {} ; find $TETHYS_PERSIST/media ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {} ; find $TETHYS_PERSIST/static ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {}
+

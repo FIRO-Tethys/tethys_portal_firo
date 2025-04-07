@@ -84,7 +84,10 @@ jobs:
       - name: Login and Deploy Container to Github Regsitry
         run: |         
           echo "${{ secrets.GITHUB_TOKEN }}" | singularity registry login -u "${{ secrets.GHCR_USERNAME }}" --password-stdin oras://ghcr.io
-          singularity push singularity-firo-tethys-portal.sif oras://ghcr.io/$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]'):${{ github.ref_name }}-x86
+          singularity push singularity-firo-tethys-portal.sif \
+          "oras://ghcr.io/$(echo "${GITHUB_REPOSITORY}" \
+          | tr '[:upper:]' '[:lower:]' \
+          | sed 's/_/-/g')-singularity:${{ github.ref_name }}-x86"
 
       - name: Logout from Github Container Registry
         run: |
@@ -134,7 +137,7 @@ jobs:
                   echo "Image does not exist, skipping delete step."
                 fi
 
-              singularity push container.sif library://$SYLABS_REPO/${REPO_NAME}:${{ github.ref_name }}-x86    
+              singularity push container.sif library://$SYLABS_REPO/${REPO_NAME}:${{ github.ref_name }}-x86
             else
               echo "Login failed"
               exit 1
