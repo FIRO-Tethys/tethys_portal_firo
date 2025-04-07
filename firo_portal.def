@@ -3,7 +3,7 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
 
 %labels
     Author "aquaveollc"
-    Version "1.0"
+    Version "1.1"
 
 %environment
     export SHELL="/bin/bash"
@@ -28,6 +28,7 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     export STANDALONE_APP=tethysdash
     export TETHYSDASH_DB_NAME=tethysdash_primary_db
     export POSTGRES_PASSWORD=pass
+
 %files
     tethysapp-tethys_dash                   /usr/lib/tethys/apps/tethysapp-tethys_dash
     tethysdash_plugin_cnrfc                 /usr/lib/tethys/apps/tethysdash_plugin_cnrfc
