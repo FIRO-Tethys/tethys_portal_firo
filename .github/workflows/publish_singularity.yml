@@ -3,7 +3,7 @@ name: Build and Push Singularity Prod
 on:
   push:
     tags:
-      - '*'  # Trigger this Action on any tag push
+      - '*'
 
 jobs:
   build:

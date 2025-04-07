@@ -1,4 +1,4 @@
-name: Singularity Build (native)
+name: Singularity Build and Publish Dev
 on: 
   push:
     branches:
