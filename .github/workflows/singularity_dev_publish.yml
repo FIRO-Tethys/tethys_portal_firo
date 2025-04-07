@@ -37,6 +37,7 @@ jobs:
         uses: actions/checkout@v4
     
       - name: Update submodules recursively
+        if: ${{ env.keepgoing == 'true' }}
         run: |
           git submodule sync --recursive
           git submodule update --init --recursive
