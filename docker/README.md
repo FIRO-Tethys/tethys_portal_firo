@@ -4,6 +4,7 @@
 
 ```
 docker build -t tethys-portal-docker-firo .
+gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://us-central1-docker.pkg.dev
 docker tag tethys-portal-docker-firo ghcr.io/firo-tethys/tethys_portal_firo:main
 docker push ghcr.io/firo-tethys/tethys_portal_firo:main
 ```

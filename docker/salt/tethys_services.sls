@@ -18,12 +18,6 @@ Create_PostGIS_Database_Service:
     - shell: /bin/bash
     - unless: /bin/bash -c "[ -f "{{ TETHYS_PERSIST }}/tethys_services_complete" ];"
 
-TethysDash_Data_Folder_Setting:
-  cmd.run:
-    - name: "tethys app_settings set tethysdash data_folder {{ TETHYS_PERSIST }}/data/tethysdash"
-    - shell: /bin/bash
-    - unless: /bin/bash -c "[ -f "{{ TETHYS_PERSIST }}/tethys_services_complete" ];"
-
 Link_PostGIS_To_Dashboard_App:
   cmd.run:
     - name: "tethys link persistent:{{ POSTGIS_SERVICE_NAME }} tethysdash:ps_database:primary_db"
