@@ -35,9 +35,9 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     tethysdash_plugin_cw3e                  /usr/lib/tethys/apps/tethysdash_plugin_cw3e
     tethysdash_plugin_usace                 /usr/lib/tethys/apps/tethysdash_plugin_usace
 
-    # Custom theme files
-    images/                                 /usr/lib/tethys/custom_theme/images
-    templates/                              /usr/lib/tethys/custom_theme/templates
+    # # Custom theme files
+    # images/                                 /usr/lib/tethys/custom_theme/images
+    # templates/                              /usr/lib/tethys/custom_theme/templates
 
     # Requirements
     requirements.txt                        /usr/lib/tethys/requirements.txt
@@ -69,7 +69,7 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     export TETHYSDASH_DEV_REACT_CONFIG="$TETHYSDASH_SRC_ROOT/reactapp/config/development.env"
     export TETHYSDASH_PROD_REACT_CONFIG="$TETHYSDASH_SRC_ROOT/reactapp/config/production.env"
     export TETHYS_PERSIST="/var/lib/tethys_persist"
-
+    export THEME_NAME="firo_theme"
     # (1) Update apt-get and install additional system packages
     apt-get update && apt-get install -y \
         dos2unix \

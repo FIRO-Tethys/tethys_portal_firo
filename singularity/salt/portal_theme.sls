@@ -1,32 +1,61 @@
 {% set TETHYS_PERSIST = salt['environ.get']('TETHYS_PERSIST') %}
 {% set STATIC_ROOT = salt['environ.get']('STATIC_ROOT') %}
 {% set TETHYS_HOME = salt['environ.get']('TETHYS_HOME') %}
+{% set THEME_NAME = salt['environ.get']('THEME_NAME') %}
+
+
+
+{% set TETHYS_SITE_VAR_LIST = ['SITE_TITLE', 'FAVICON', 'BRAND_TEXT', 'BRAND_IMAGE', 'BRAND_IMAGE_HEIGHT',
+                               'BRAND_IMAGE_WIDTH', 'BRAND_IMAGE_PADDING', 'APPS_LIBRARY_TITLE', 'PRIMARY_COLOR',
+                               'SECONDARY_COLOR', 'PRIMARY_TEXT_COLOR', 'PRIMARY_TEXT_HOVER_COLOR',
+                               'SECONDARY_TEXT_COLOR', 'SECONDARY_TEXT_HOVER_COLOR', 'BACKGROUND_COLOR',
+                               'COPYRIGHT', 'HERO_TEXT', 'BLURB_TEXT', 'FEATURE_1_HEADING', 'FEATURE_1_BODY',
+                               'FEATURE_1_IMAGE', 'FEATURE_2_HEADING', 'FEATURE_2_BODY', 'FEATURE_2_IMAGE',
+                               'FEATURE_3_HEADING', 'FEATURE_3_BODY', 'FEATURE_3_IMAGE', 'CALL_TO_ACTION',
+                               'CALL_TO_ACTION_BUTTON', 'PORTAL_BASE_CSS', 'HOME_PAGE_CSS', 'APPS_LIBRARY_CSS',
+                               'ACCOUNTS_BASE_CSS', 'LOGIN_CSS', 'REGISTER_CSS', 'USER_BASE_CSS', 'HOME_PAGE_TEMPLATE',
+                               'APPS_LIBRARY_TEMPLATE', 'LOGIN_PAGE_TEMPLATE', 'REGISTER_PAGE_TEMPLATE',
+                               'USER_PAGE_TEMPLATE', 'USER_SETTINGS_PAGE_TEMPLATE'] %}
+
+{% set TETHYS_SITE_CONTENT_LIST = [] %}
+
+{% for ARG in TETHYS_SITE_VAR_LIST %}
+  {% if salt['environ.get'](ARG) %}
+    {% set ARG_KEY = ['--', ARG.replace('_', '-')|lower]|join %}
+    {% set CONTENT = [ARG_KEY, salt['environ.get'](ARG)|quote]|join(' ') %}
+    {% do TETHYS_SITE_CONTENT_LIST.append(CONTENT) %}
+  {% endif %}
+{% endfor %}
+
+{% set TETHYS_SITE_CONTENT = TETHYS_SITE_CONTENT_LIST|join(' ') %}
+
 
 Move_Custom_Theme_Files_to_Static_Root:
   cmd.run:
-    - name: mv {{ TETHYS_HOME }}/custom_theme {{ STATIC_ROOT }}
-    - shell: /bin/bash
-    - unless: /bin/bash -c "[ -f "{{ TETHYS_PERSIST }}/custom_theme_setup_complete" ];"
+    # - name: cp  -r {{ TETHYS_HOME }}/{{ THEME_NAME }} {{ STATIC_ROOT }}
+    - name: ln -s {{ TETHYS_HOME }}/{{ THEME_NAME }} {{ STATIC_ROOT }}
 
-Move_Custom_Home_Page_to_Tethys_Portal:
-  cmd.run:
-    - name: cp {{ STATIC_ROOT }}/custom_theme/templates/home.html {{ TETHYS_HOME }}/tethys/tethys_portal/templates/tethys_portal/
     - shell: /bin/bash
-    - unless: /bin/bash -c "[ -f "{{ TETHYS_PERSIST }}/custom_theme_setup_complete" ];"
 
-Apply_Custom_Theme:
+Move_Custom_Template_Files_to_Tethys_Apps:
   cmd.run:
-    - name: >
-        tethys site
-        --site-title "FIRO Tethys Portal"
-        --brand-text "FIRO Tethys Portal"
-        --apps-library-title "Tools"
-        --primary-color "#1e6b8b"
-        --secondary-color "#fd9a07"
-        --background-color "#ffffff"
-        --copyright "Copyright © 2024 Aquaveo"
+    - name: > 
+        ln -s {{ TETHYS_HOME }}/{{ THEME_NAME }}/templates/ {{ TETHYS_HOME }}/tethys/tethys_apps/templates/tethys_apps
+        # cp  {{ TETHYS_HOME }}/{{ THEME_NAME }}/templates/* {{ TETHYS_HOME }}/tethys/tethys_apps/templates/tethys_apps
+        # cp  -r {{ TETHYS_HOME }}/{{ THEME_NAME }} {{ STATIC_ROOT }}
+        # cp  {{ TETHYS_HOME }}/firo_theme/images/* {{ STATIC_ROOT }}/tethys_portal/images/tethys_portal
+        # cp  {{ TETHYS_HOME }}/firo_theme/images/* {{ STATIC_ROOT }}/tethys/tethys_apps/static/tethys_apps/images
+        # cp  {{ TETHYS_HOME }}/firo_theme/js/* {{ STATIC_ROOT }}/tethys/tethys_apps/static/tethys_apps/js
+        # cp  {{ TETHYS_HOME }}/firo_theme/css/* {{ STATIC_ROOT }}/tethys/tethys_apps/static/tethys_apps/css
+        
     - shell: /bin/bash
-    - unless: /bin/bash -c "[ -f "{{ TETHYS_PERSIST }}/custom_theme_setup_complete" ];"
+    
+{% if TETHYS_SITE_CONTENT %}
+Set_Tethys_Site_Settings:
+  cmd.run:
+    - name: tethys site {{ TETHYS_SITE_CONTENT }}
+    - shell: /bin/bash
+{% endif %}
 
 Set_Open_Portal:
   cmd.run:
