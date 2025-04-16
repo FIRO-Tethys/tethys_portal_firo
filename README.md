@@ -79,6 +79,31 @@ e.g
 singularity instance start =--writable-tmpfs ../firo-portal-singularity_latest.sif firo_portal
 ```
 
+### Customization
+
+if configuration realted to env variables need to be passed you can use the `--env-file` flag. This repo comes with a `dev.env` example to customize.
+
+```bash
+singularity instance start --env-file dev.env --writable-tmpfs ../firo-portal-singularity_latest.sif firo_portal
+```
+
+**Note** *the variable `SKIP_DB_SETUP` allows the user to skip the db setup. If you have already run the container, and your databse has been configured, please set `SKIP_DB_SETUP` to true, so the scripts to configure the db can be skipped.*
+
+Similarly, if the theme needs to be changed at run time, you can do it by mounting a directory containing the theme.
+
+```bash
+singularity instance start --env-file dev.env -B <local_path_to_theme_directory>:/usr/lib/tethys/<name_of_theme_directory> --writable-tmpfs ../firo-portal-singularity_latest.sif firo_portal
+ 
+```
+
+This repository comes with an example on the folder `custom_themes/firo_theme`, and **Note** *the variable `THEME_NAME`, this variable needs to be the name of the theme directory*
+
+```bash
+singularity instance start --env-file dev.env -B custom_themes/firo_theme:/usr/lib/tethys/firo_theme --writable-tmpfs ../firo-portal-singularity_latest.sif firo_portal
+ 
+```
+
+
 ### TroubleShooting
 
 If logs related to Tethys need to be seen or persisted. The `salt.log` file can be binded
