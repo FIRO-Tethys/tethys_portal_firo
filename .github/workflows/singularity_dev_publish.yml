@@ -2,7 +2,7 @@ name: Singularity Build and Publish Dev
 on: 
   push:
     branches:
-      - singularity
+      - main
       
 jobs:
   changes:

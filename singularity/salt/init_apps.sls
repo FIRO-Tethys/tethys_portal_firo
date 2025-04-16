@@ -19,7 +19,11 @@ Sync_App_Persistent_Stores:
     - name: tethys syncstores all
     - shell: /bin/bash
     - unless: /bin/bash -c "[ -f "{{ TETHYS_PERSIST }}/init_apps_setup_complete" ];"
-
+    
+Sync_Tethysdash_Persistent_Stores:
+  cmd.run:
+    - name: tethys syncstores tethysdash
+    - shell: /bin/bash
 
 Flag_Init_Apps_Setup_Complete:
   cmd.run:
