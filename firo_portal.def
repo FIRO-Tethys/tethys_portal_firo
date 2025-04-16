@@ -35,10 +35,6 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     tethysdash_plugin_cw3e                  /usr/lib/tethys/apps/tethysdash_plugin_cw3e
     tethysdash_plugin_usace                 /usr/lib/tethys/apps/tethysdash_plugin_usace
 
-    # # Custom theme files
-    # images/                                 /usr/lib/tethys/custom_theme/images
-    # templates/                              /usr/lib/tethys/custom_theme/templates
-
     # Requirements
     requirements.txt                        /usr/lib/tethys/requirements.txt
 
@@ -46,6 +42,7 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     singularity/salt/tethys_services.sls    /srv/salt/tethys_services.sls
     singularity/salt/portal_theme.sls       /srv/salt/portal_theme.sls
     singularity/salt/tethyscore.sls         /srv/salt/tethyscore.sls
+    singularity/salt/pre_tethys.sls         /srv/salt/pre_tethys.sls
     singularity/salt/post_app.sls           /srv/salt/post_app.sls
 
     # Docker Salt files
