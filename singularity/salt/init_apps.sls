@@ -20,26 +20,6 @@ Sync_App_Persistent_Stores:
     - shell: /bin/bash
     - unless: /bin/bash -c "[ -f "{{ TETHYS_PERSIST }}/init_apps_setup_complete" ];"
 
-Sync_Tethysdash_Persistent_Stores:
-  cmd.run:
-    - name: tethys syncstores tethysdash
-    - shell: /bin/bash
-
-Set_Git_Identity:
-  cmd.run:
-    - name: >
-        git config --global user.email "{{ APP_INSTALLER_USER_EMAIL }}" &&
-        git config --global user.name "{{ APP_INSTALLER_USER_NAME }}"
-    - shell: /bin/bash
-    - unless: /bin/bash -c "[ -f "{{ TETHYS_PERSIST }}/init_apps_setup_complete" ];"
-
-# Added onlyif, so it only runs after the init_apps_setup_complete file exits, so it will not run on the first installation
-TethysDash_Alembic_Migrations:
-  cmd.run:
-    - name: alembic upgrade head
-    - cwd: {{ TETHYS_HOME }}/apps/tethysdash
-    - shell: /bin/bash
-    - onlyif: /bin/bash -c "[ -f '{{ TETHYS_PERSIST }}/init_apps_setup_complete' ]" 
 
 Flag_Init_Apps_Setup_Complete:
   cmd.run:

@@ -28,6 +28,7 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     export STANDALONE_APP=tethysdash
     export TETHYSDASH_DB_NAME=tethysdash_primary_db
     export POSTGRES_PASSWORD=pass
+    export THEME_NAME="firo_theme"
 
 %files
     tethysdash                              /usr/lib/tethys/apps/tethysdash
@@ -44,6 +45,7 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     singularity/salt/tethyscore.sls         /srv/salt/tethyscore.sls
     singularity/salt/pre_tethys.sls         /srv/salt/pre_tethys.sls
     singularity/salt/post_app.sls           /srv/salt/post_app.sls
+    singularity/salt/init_apps.sls          /srv/salt/init_apps.sls
 
     # Docker Salt files
     docker/salt/init_apps.sls               /srv/salt/init_apps.sls

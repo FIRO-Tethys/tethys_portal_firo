@@ -30,26 +30,19 @@
 {% set TETHYS_SITE_CONTENT = TETHYS_SITE_CONTENT_LIST|join(' ') %}
 
 
+
 Move_Custom_Theme_Files_to_Static_Root:
   cmd.run:
-    # - name: cp  -r {{ TETHYS_HOME }}/{{ THEME_NAME }} {{ STATIC_ROOT }}
     - name: ln -s {{ TETHYS_HOME }}/{{ THEME_NAME }} {{ STATIC_ROOT }}
-
     - shell: /bin/bash
+    - unless: test -L {{ STATIC_ROOT }}
 
 Move_Custom_Template_Files_to_Tethys_Apps:
   cmd.run:
-    - name: > 
-        ln -s {{ TETHYS_HOME }}/{{ THEME_NAME }}/templates/ {{ TETHYS_HOME }}/tethys/tethys_apps/templates/tethys_apps
-        # cp  {{ TETHYS_HOME }}/{{ THEME_NAME }}/templates/* {{ TETHYS_HOME }}/tethys/tethys_apps/templates/tethys_apps
-        # cp  -r {{ TETHYS_HOME }}/{{ THEME_NAME }} {{ STATIC_ROOT }}
-        # cp  {{ TETHYS_HOME }}/firo_theme/images/* {{ STATIC_ROOT }}/tethys_portal/images/tethys_portal
-        # cp  {{ TETHYS_HOME }}/firo_theme/images/* {{ STATIC_ROOT }}/tethys/tethys_apps/static/tethys_apps/images
-        # cp  {{ TETHYS_HOME }}/firo_theme/js/* {{ STATIC_ROOT }}/tethys/tethys_apps/static/tethys_apps/js
-        # cp  {{ TETHYS_HOME }}/firo_theme/css/* {{ STATIC_ROOT }}/tethys/tethys_apps/static/tethys_apps/css
-        
+    - name: ln -s {{ TETHYS_HOME }}/{{ THEME_NAME }}/templates/ {{ TETHYS_HOME }}/tethys/tethys_apps/templates/tethys_apps
     - shell: /bin/bash
-    
+    - unless: test -L {{ TETHYS_HOME }}/tethys/tethys_apps/templates/tethys_apps
+
 {% if TETHYS_SITE_CONTENT %}
 Set_Tethys_Site_Settings:
   cmd.run:
