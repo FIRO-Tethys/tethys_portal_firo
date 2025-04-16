@@ -30,6 +30,7 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     export POSTGRES_PASSWORD=pass
     export THEME_NAME="firo_theme"
 
+
 %files
     tethysdash                              /usr/lib/tethys/apps/tethysdash
     tethysdash_plugin_cnrfc                 /usr/lib/tethys/apps/tethysdash_plugin_cnrfc
