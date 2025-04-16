@@ -48,7 +48,6 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     singularity/salt/init_apps.sls          /srv/salt/init_apps.sls
 
     # Docker Salt files
-    docker/salt/init_apps.sls               /srv/salt/init_apps.sls
     docker/salt/top.sls                     /srv/salt/top.sls
 
 

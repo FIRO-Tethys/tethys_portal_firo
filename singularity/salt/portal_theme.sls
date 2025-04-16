@@ -35,13 +35,13 @@ Move_Custom_Theme_Files_to_Static_Root:
   cmd.run:
     - name: ln -s {{ TETHYS_HOME }}/{{ THEME_NAME }} {{ STATIC_ROOT }}
     - shell: /bin/bash
-    - unless: test -L {{ STATIC_ROOT }}
+    - unless: /bin/bash -c "[ -f "{{ STATIC_ROOT }}/{{ THEME_NAME }}" ];"
 
 Move_Custom_Template_Files_to_Tethys_Apps:
   cmd.run:
     - name: ln -s {{ TETHYS_HOME }}/{{ THEME_NAME }}/templates/ {{ TETHYS_HOME }}/tethys/tethys_apps/templates/tethys_apps
     - shell: /bin/bash
-    - unless: test -L {{ TETHYS_HOME }}/tethys/tethys_apps/templates/tethys_apps
+    - unless:  /bin/bash -c "[ -f "{{ TETHYS_HOME }}/tethys/tethys_apps/templates/tethys_apps/templates" ];"
 
 {% if TETHYS_SITE_CONTENT %}
 Set_Tethys_Site_Settings:
