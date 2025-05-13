@@ -44,11 +44,11 @@ RUN pip install --no-cache-dir --quiet -r requirements.txt
 RUN cd ${TETHYS_HOME}/apps/tethysdash && \
     tethys install -N
 RUN cd ${TETHYS_HOME}/apps/tethysdash_plugin_cnrfc && \
-    python setup.py install
+    pip install .
 RUN cd ${TETHYS_HOME}/apps/tethysdash_plugin_cw3e && \
-    python setup.py install
+    pip install .
 RUN cd ${TETHYS_HOME}/apps/tethysdash_plugin_usace && \
-    python setup.py install
+    pip install .
 RUN mkdir -p -m 777 ${TETHYS_PERSIST}/data/tethysdash
 
 ##################

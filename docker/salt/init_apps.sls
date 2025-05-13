@@ -20,11 +20,6 @@ Sync_App_Persistent_Stores:
     - shell: /bin/bash
     - unless: /bin/bash -c "[ -f "{{ TETHYS_PERSIST }}/init_apps_setup_complete" ];"
 
-Sync_Tethysdash_Persistent_Stores:
-  cmd.run:
-    - name: tethys syncstores tethysdash
-    - shell: /bin/bash
-
 Set_Git_Identity:
   cmd.run:
     - name: >
@@ -33,13 +28,14 @@ Set_Git_Identity:
     - shell: /bin/bash
     - unless: /bin/bash -c "[ -f "{{ TETHYS_PERSIST }}/init_apps_setup_complete" ];"
 
-# Added onlyif, so it only runs after the init_apps_setup_complete file exits, so it will not run on the first installation
-TethysDash_Alembic_Migrations:
+Collect_Plugin_Metadata:
   cmd.run:
-    - name: alembic upgrade head
-    - cwd: {{ TETHYS_HOME }}/apps/tethysdash
-    - shell: /bin/bash
-    - onlyif: /bin/bash -c "[ -f '{{ TETHYS_PERSIST }}/init_apps_setup_complete' ]" 
+  - name: |
+      SCRIPT_DIR=$(dirname $(python -c 'import tethysapp.tethysdash as m; print(m.__file__)'))
+      cd $SCRIPT_DIR
+      python collect_plugin_thumbnails.py
+  - shell: /bin/bash
+  - cwd: /
 
 Flag_Init_Apps_Setup_Complete:
   cmd.run:
