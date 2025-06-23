@@ -9,3 +9,5 @@ terraform/envs/prod.tfvars
 *.tfstate*
 .terraform/
 .terraform.lock.hcl
+tethys_persist
+firo_tethys_portal_home

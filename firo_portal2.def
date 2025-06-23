@@ -1,0 +1,144 @@
+Bootstrap: docker
+From: tethysplatform/tethys-core:dev-py3.12-dj5.0
+%labels
+    Author "aquaveollc"
+    Version "1.1"
+
+%environment
+    export CONDA_HOME="/opt/conda"
+    export TETHYS_LOG="/var/log/tethys.log"
+    export TETHYS_HOME="/usr/lib/tethys"
+    export TETHYS_PERSIST="/var/lib/tethys_persist"
+    export SHELL="/bin/bash"
+    export PATH="$CONDA_HOME/envs/tethys/bin:$PATH"
+    export APP_INSTALLER_USER_EMAIL="you@email.com"
+    export APP_INSTALLER_USER_NAME="App Installer"
+    export NGINX_PORT=8080
+    export TETHYS_PORT=8000
+    export CLIENT_MAX_BODY_SIZE='1G'
+    export DATA_UPLOAD_MAX_MEMORY_SIZE=1073741824
+    export FILE_UPLOAD_MAX_MEMORY_SIZE=1073741824
+    export COPYRIGHT='Copyright © 2024 Aquaveo, LLC'
+    export APP_INSTALLER_USER_EMAIL='fake@gmail.com'
+    export APP_INSTALLER_USER_NAME='fakeuser'
+    export CHANNEL_LAYERS_CONFIG="\"{'hosts':[{'host': '127.0.0.1', 'port': 6379}]}\""
+    export TETHYS_DB_PORT=5437
+    export TETHYS_DB_HOST=localhost
+    export ALLOWED_HOSTS="\"[localhost, 127.0.0.1]\""
+    export CSRF_TRUSTED_ORIGINS="\"[http://localhost:8080, http://127.0.0.1:8080]\""
+    export MULTIPLE_APP_MODE=true
+    export STANDALONE_APP=tethysdash
+    export TETHYSDASH_DB_NAME=tethysdash_primary_db
+    export POSTGRES_PASSWORD='pass'
+    export THEME_NAME="firo_theme"
+
+%files
+    tethysdash                              /usr/lib/tethys/apps/tethysdash
+    tethysdash_plugin_cnrfc                 /usr/lib/tethys/apps/tethysdash_plugin_cnrfc
+    tethysdash_plugin_cw3e                  /usr/lib/tethys/apps/tethysdash_plugin_cw3e
+    tethysdash_plugin_usace                 /usr/lib/tethys/apps/tethysdash_plugin_usace
+
+    # Requirements
+    requirements.txt                        /usr/lib/tethys/requirements.txt
+
+    # Singularity Salt files
+    singularity/salt/tethys_services.sls    /srv/salt/tethys_services.sls
+    singularity/salt/portal_theme.sls       /srv/salt/portal_theme.sls
+    singularity/salt/tethyscore.sls         /srv/salt/tethyscore.sls
+    singularity/salt/pre_tethys.sls         /srv/salt/pre_tethys.sls
+    singularity/salt/post_app.sls           /srv/salt/post_app.sls
+    singularity/salt/init_apps.sls          /srv/salt/init_apps.sls
+
+    # Docker Salt files
+    docker/salt/top.sls                     /srv/salt/top.sls
+
+
+%post
+    export CONDA_HOME="/opt/conda"
+    export TETHYS_LOG="/var/log/tethys.log"
+    export TETHYS_HOME="/usr/lib/tethys"
+    export TETHYS_PERSIST="/var/lib/tethys_persist"
+    export PATH="$CONDA_HOME/envs/tethys/bin:$PATH"
+    export NGINX_USER=www
+    export NODE_VERSION="20.12.2"
+    export NVM_DIR=/usr/local/nvm
+    export NODE_VERSION_DIR="$NVM_DIR/versions/node/v${NODE_VERSION}"
+    export PATH=${NODE_VERSION_DIR}/bin:$PATH
+    export NPM="$NODE_VERSION_DIR/bin/npm"
+    export TETHYS_PORTAL_HOST=""
+    export TETHYS_APP_ROOT_URL="/apps/tethysdash/"
+    export TETHYS_LOADER_DELAY="500"
+    export TETHYS_DEBUG_MODE="false"
+    export TETHYSDASH_SRC_ROOT=${TETHYS_HOME}/apps/tethysdash
+    export TETHYSDASH_DEV_REACT_CONFIG="$TETHYSDASH_SRC_ROOT/reactapp/config/development.env"
+    export TETHYSDASH_PROD_REACT_CONFIG="$TETHYSDASH_SRC_ROOT/reactapp/config/production.env"
+    export THEME_NAME="firo_theme"
+    # (1) Update apt-get and install additional system packages
+    apt-get update && apt-get install -y \
+        dos2unix \
+    && rm -rf /var/lib/apt/lists/*
+
+    #Install nvm
+    echo "Installing Node.js..."
+    mkdir -p $NVM_DIR
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | /bin/bash
+    . $NVM_DIR/nvm.sh 2>&1
+    nvm install $NODE_VERSION 2>&1
+    nvm alias default $NODE_VERSION 2>&1
+    nvm use default 2>&1
+    echo "Finished installing Node.js..."
+    
+    mv ${TETHYSDASH_DEV_REACT_CONFIG} ${TETHYSDASH_PROD_REACT_CONFIG} \
+    && sed -i "s#TETHYS_DEBUG_MODE.*#TETHYS_DEBUG_MODE = ${TETHYS_DEBUG_MODE}#g" ${TETHYSDASH_PROD_REACT_CONFIG} \
+    && sed -i "s#TETHYS_LOADER_DELAY.*#TETHYS_LOADER_DELAY = ${TETHYS_LOADER_DELAY}#g" ${TETHYSDASH_PROD_REACT_CONFIG} \
+    && sed -i "s#TETHYS_PORTAL_HOST.*#TETHYS_PORTAL_HOST = ${TETHYS_PORTAL_HOST}#g" ${TETHYSDASH_PROD_REACT_CONFIG} \
+    && sed -i "s#TETHYS_APP_ROOT_URL.*#TETHYS_APP_ROOT_URL = ${TETHYS_APP_ROOT_URL}#g" ${TETHYSDASH_PROD_REACT_CONFIG}
+
+
+    cd $TETHYSDASH_SRC_ROOT
+    $NPM install
+    $NPM run build
+    rm -rf node_modules
+
+
+    # Install Python requirements
+    echo "Installing Python packages from requirements.txt..."
+    pip install --user --no-cache-dir --quiet -r ${TETHYS_HOME}/requirements.txt
+
+    # Install TethysDash & its plugins
+    echo "Installing TethysDash..."
+    cd "${TETHYSDASH_SRC_ROOT}" && \
+        tethys install -N
+
+    echo "Installing TethysDash plugins..."
+    cd "${TETHYS_HOME}/apps/tethysdash_plugin_cnrfc" && \
+        python setup.py install
+    cd "${TETHYS_HOME}/apps/tethysdash_plugin_cw3e" && \
+        python setup.py install
+    cd "${TETHYS_HOME}/apps/tethysdash_plugin_usace" && \
+        python setup.py install
+    
+    #Create dir for tethysdash setting
+    mkdir -p $TETHYS_PERSIST/data/tethysdash
+    touch /var/log/tethys/salt.log /var/log/supervisor/supervisord.log
+
+    # Need to remove the nginx user from the supervisord config file
+    # Error 1
+    sed -i '/^\s*user\s*=\s*www\s*$/d' /etc/supervisor/supervisord.conf
+
+    # we need to make sure that the run.sh script is executable for the user running the rootless container
+    chmod 755 $TETHYS_HOME/run.sh
+
+%startscript
+    echo "Starting container... running run.sh"
+    exec /usr/lib/tethys/run.sh --skip-perm 2>&1 | tee /var/log/tethys/salt.log
+
+
+
+# Errors
+# 1
+# - Starting supervisor
+# /usr/lib/python3/dist-packages/supervisor/options.py:474: UserWarning: Supervisord is running as root and it is searching for its configuration file in default locations (including its current working directory); you probably want to specify a "-c" argument specifying an absolute path to a configuration file for improved security.
+#   self.warnings.warn(
+# Error: Cannot open an HTTP server: socket.error reported errno.EACCES (13)
+# For help, use /usr/bin/supervisord -h
