@@ -52,7 +52,8 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     # Docker Salt files
     docker/salt/top.sls                     /srv/salt/top.sls
 
-
+    #themes
+    custom_themes/tethysext-default_theme   /usr/lib/tethys/ext/tethysext-default_theme
 %post
     export CONDA_HOME="/opt/conda"
     export TETHYS_LOG="/var/log/tethys.log"
