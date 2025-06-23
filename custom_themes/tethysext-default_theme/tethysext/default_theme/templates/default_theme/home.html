@@ -1,12 +1,13 @@
 {% extends "base.html" %}
 
-{% load static site_settings %}
+{% load static tethys %}
 
 {% block title %}{{ block.super }} - Welcome!{% endblock %}
 
 {% block custom_styles %}
   {{ block.super }}
   <link rel="stylesheet" href="{% static 'default_theme/css/main.css' %}">
+  
 {% endblock %}
 
 {% block content %}
@@ -47,7 +48,10 @@
 </section>
 <div id="home-page" style="display: none;"></div>
 {% endblock %}
-
+{% block footer %}
+	{% include "footer.html" %}
+	{% endblock %}
+{% endblock %}
 
 {% block scripts %}
   {{ block.super }}
