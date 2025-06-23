@@ -119,6 +119,10 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     cd "${TETHYS_HOME}/apps/tethysdash_plugin_usace" && \
         python setup.py install
     
+    echo "Installing Themes..."
+    cd "${TETHYS_HOME}/ext/tethysext-default_theme" && \
+        pip install -e .
+
     #Create dir for tethysdash setting
     mkdir -p $TETHYS_PERSIST/data/tethysdash
     touch /var/log/tethys/salt.log /var/log/supervisor/supervisord.log
