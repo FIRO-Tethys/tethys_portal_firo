@@ -144,12 +144,12 @@ Generate_ASGI_Service_TethysCore:
         --overwrite
     - unless: /bin/bash -c "[ -f "{{ TETHYS_PERSIST }}/setup_complete" ];"
 
-# /run/asgi:
-#   file.directory:
-#     - user: {{ NGINX_USER }}
-#     - group: {{ NGINX_USER }}
-#     - mode: 755
-#     - makedirs: True
+/run/asgi:
+  file.directory:
+    - user: {{ NGINX_USER }}
+    - group: {{ NGINX_USER }}
+    - mode: 755
+    - makedirs: True
 
 /var/log/tethys/tethys.log:
   file.managed:

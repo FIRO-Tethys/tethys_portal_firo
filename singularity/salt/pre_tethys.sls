@@ -27,11 +27,11 @@ Create_Media_Root_On_Mounted_Pre_Tethys:
     - shell: /bin/bash
     - unless: /bin/bash -c "[ -d "${MEDIA_ROOT}" ];"
 
-# Chown_Static_Workspaces_On_Mounted_Pre_Tethys:
-#   cmd.run:
-#     - name: >
-#         export NGINX_USER=$(grep 'user .*;' /etc/nginx/nginx.conf | awk '{print $2}' | awk -F';' '{print $1}') ;
-#         find {{ WORKSPACE_ROOT }} ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {} ;
-#         find {{ MEDIA_ROOT }} ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {} ;
-#         find {{ STATIC_ROOT }} ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {}
-#     - shell: /bin/bash
+Chown_Static_Workspaces_On_Mounted_Pre_Tethys:
+  cmd.run:
+    - name: >
+        export NGINX_USER=$(grep 'user .*;' /etc/nginx/nginx.conf | awk '{print $2}' | awk -F';' '{print $1}') ;
+        find {{ WORKSPACE_ROOT }} ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {} ;
+        find {{ MEDIA_ROOT }} ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {} ;
+        find {{ STATIC_ROOT }} ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {}
+    - shell: /bin/bash

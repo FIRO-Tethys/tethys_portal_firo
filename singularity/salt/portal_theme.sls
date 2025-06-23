@@ -32,10 +32,11 @@
 
 
 Move_Custom_Theme_Files_to_Static_Root:
-  cmd.run:
-    - name: ln -s {{ TETHYS_HOME }}/{{ THEME_NAME }} {{ STATIC_ROOT }}
-    - shell: /bin/bash
-    - unless: /bin/bash -c "[ -f "{{ STATIC_ROOT }}/{{ THEME_NAME }}" ];"
+  file.symlink:
+    - name: {{ STATIC_ROOT }}/{{ THEME_NAME }}
+    - target: {{ TETHYS_HOME }}/{{ THEME_NAME }}
+    - force: False
+
 
 Move_Custom_Template_Files_to_Tethys_Apps:
   cmd.run:
@@ -48,6 +49,7 @@ Set_Tethys_Site_Settings:
   cmd.run:
     - name: tethys site {{ TETHYS_SITE_CONTENT }}
     - shell: /bin/bash
+    - unless: /bin/bash -c "[ -f "{{ TETHYS_PERSIST }}/custom_theme_setup_complete" ];"
 {% endif %}
 
 Set_Open_Portal:
