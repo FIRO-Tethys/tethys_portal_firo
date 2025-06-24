@@ -400,7 +400,7 @@
 
 
 {% block content %}
-
+{% url 'app_library' as app_library_url %}
 <div id="content-home" class="site-content">
 	<div class="container-fluid hero-container">
 		<section class="hero clearfix px-5 pb-5 text-center">
@@ -408,18 +408,36 @@
 				<div class="col-md-7 mx-auto">
 					<h1 class="hero-title mb-3">{% if site_globals.hero_text %}{{ site_globals.hero_text }}{% else %}Welcome to Tethys Portal,
 			the hub for your apps.{% endif %}</h2>
+
+
+				<div class="card-body">
+					<img src="/static/default_theme/images/CW3E.png"  class="img-logo">
+					<img src="/static/default_theme/images/USACE.png" class="img-logo">
+					<img src="/static/default_theme/images/Aquaveo.png" class="img-logo">
+				</div>
+
 					<p class="lead mb-4">{% if site_globals.blurb_text %}{{ site_globals.blurb_text }}{% else %}Tethys Portal is designed to be customizable, so that you can host apps for your
 			organization. You can change everything on this page from the Home Page settings.{% endif %}</h3>
-					{% if not user.is_authenticated and ENABLE_OPEN_SIGNUP %}
-						<a href="{% url 'accounts:register' %}" class="btn btn-outline-light btn-sign-up mx-auto mt-5 mb-3">Sign Up</a>
-						<a href="{% url 'accounts:login' %}" class="btn btn-outline-light btn-sign-up mx-auto mt-5 mb-3">Login</a>
-					{% endif %}
 				</div>
-				<div class="card-body">
-				<img src="/static/default_theme/images/CW3E.png"  class="img-logo">
-				<img src="/static/default_theme/images/USACE.png" class="img-logo">
-				<img src="/static/default_theme/images/Aquaveo.png" class="img-logo">
+				<div class="d-flex           /* make it a flex box           */
+							flex-column      /* vertical on extra-small (<576 px) */
+							flex-sm-row      /* horizontal ≥ 576 px              */
+							justify-content-center
+							align-items-center
+							gap-3">          <!-- gap-3 ⇒ nice spacing -->
+
+				{% if not user.is_authenticated and ENABLE_OPEN_SIGNUP %}
+					<a href="{% url 'accounts:register' %}"
+						class="btn btn-outline-primary mx-0 my-2">Sign Up</a>
+
+					<a href="{% url 'accounts:login' %}"
+						class="btn btn-outline-primary mx-0 my-2">Login</a>
+				{% endif %}
+
+				<a href="{{ app_library_url }}"
+					class="btn btn-outline-primary mx-0 my-2">Apps</a>
 				</div>
+
 			</div>
 		</section>
 	</div>
