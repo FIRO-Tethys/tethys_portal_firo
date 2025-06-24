@@ -31,11 +31,11 @@
 
 
 
-# Move_Custom_Theme_Files_to_Static_Root:
-#   file.symlink:
-#     - name: {{ STATIC_ROOT }}/{{ THEME_NAME }}
-#     - target: {{ TETHYS_HOME }}/{{ THEME_NAME }}
-#     - force: False
+Move_Custom_Theme_Files_to_Static_Root:
+  file.symlink:
+    - name: {{ TETHYS_PERSIST }}/tethysext-default_theme
+    - target: {{ TETHYS_HOME }}/ext/tethysext-default_theme
+    - force: False
 
 
 # Move_Custom_Template_Files_to_Tethys_Apps:

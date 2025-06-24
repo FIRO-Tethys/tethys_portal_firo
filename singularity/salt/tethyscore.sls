@@ -39,6 +39,11 @@
 {% set OAUTH_OPTIONS = salt['environ.get']('OAUTH_OPTIONS') %}
 {% set CHANNEL_LAYERS_BACKEND = salt['environ.get']('CHANNEL_LAYERS_BACKEND') %}
 {% set CHANNEL_LAYERS_CONFIG = salt['environ.get']('CHANNEL_LAYERS_CONFIG') %}
+{% set psql = (
+    CONDA_HOME ~ '/envs/' ~ CONDA_ENV_NAME ~ '/bin/psql '
+    ~ '-h ' ~ TETHYS_DB_HOST ~ ' -p ' ~ TETHYS_DB_PORT ~ ' '
+    ~ '-d postgres -U postgres'
+) %}
 {% if salt['environ.get']('RECAPTCHA_PRIVATE_KEY') %}
 {% set RECAPTCHA_PRIVATE_KEY = salt['environ.get']('RECAPTCHA_PRIVATE_KEY') %}
 {% else %}
@@ -167,7 +172,19 @@ Create_Database_User_and_SuperUser_TethysCore:
         -N "{{ TETHYS_DB_SUPERUSER }}"
         -P "{{ TETHYS_DB_SUPERUSER_PASS }}"
     - shell: /bin/bash
-    - unless: /bin/bash -c "[ -f '{{ TETHYS_PERSIST }}/setup_complete' ] || {{ SKIP_DB_SETUP | lower }};"
+    - unless: >
+        PGPASSWORD="{{ POSTGRES_PASSWORD }}" {{ psql }} -tAc
+        "SELECT 1
+           FROM   pg_database
+          WHERE  datname='{{ TETHYS_DB_NAME }}';" | grep -q 1
+        && PGPASSWORD="{{ POSTGRES_PASSWORD }}" {{ psql }} -tAc
+        "SELECT 1
+           FROM   pg_roles
+          WHERE  rolname='{{ TETHYS_DB_USERNAME }}';" | grep -q 1
+        && PGPASSWORD="{{ POSTGRES_PASSWORD }}" {{ psql }} -tAc
+        "SELECT 1
+           FROM   pg_roles
+          WHERE  rolname='{{ TETHYS_DB_SUPERUSER }}';" | grep -q 1
 {% endif %}
 
 Migrate_Database_TethysCore:

@@ -6,7 +6,9 @@ binds="../nginx_logs:/var/log/nginx,\
 ../salt_logs:/var/log/salt,\
 ../tethys_logs:/var/log/tethys,\
 ./tethys_persist:/var/lib/tethys_persist,\
+./custom_themes/tethysext-default_theme:/usr/lib/tethys/ext/tethysext-default_theme,\
 ../supervisor_logs:/var/log/supervisor"
+
 envfile="dev.env"
 sif="../firo-portal-singularity_latest.sif"
 fresh=false
@@ -43,34 +45,43 @@ start_docker() {
   fi
 }
 
-# helper that deletes a host directory contents
+# helper that deletes a host directory’s contents
 wipe_dir() {
-    local target=$1
-    # First try unprivileged
-    rm -rf -- "${target:?}"/{*,.[!.]*} 2>/tmp/rm_err$$ || true
-    if grep -q "Permission denied" /tmp/rm_err$$ ; then
-        echo "  ↳ need sudo for ${target} (permission denied)"
-        sudo rm -rf -- "${target:?}"/{*,.[!.]*}
-    fi
-    rm -f /tmp/rm_err$$
+  local target=$1
+  rm -rf -- "${target:?}"/{*,.[!.]*} 2>/tmp/rm_err$$ || true
+  if grep -q "Permission denied" /tmp/rm_err$$ ; then
+    echo "  ↳ need sudo for ${target} (permission denied)"
+    sudo rm -rf -- "${target:?}"/{*,.[!.]*}
+  fi
+  rm -f /tmp/rm_err$$
 }
 
-# ─────── FRESH cleanup ────────────────────────────────────────────────
+# ───────────── FRESH cleanup ─────────────
 if $fresh; then
   echo "Fresh start requested — removing existing containers and data"
   docker rm -f firo_redis firo_postgis 2>/dev/null || true
 
   if apptainer instance list | grep -q "^firo_portal[[:space:]]"; then
-      echo "Stopping existing Apptainer instance: firo_portal"
-      apptainer instance stop firo_portal
+    echo "Stopping existing Apptainer instance: firo_portal"
+    apptainer instance stop firo_portal
   fi
 
+  # paths that must be preserved
+  readonly keep_paths=("./custom_themes/tethysext-default_theme")
+
   for b in "${bind_arr[@]}"; do
-      host=${b%%:*}           # part before ':'
-      if [[ $host = /* || $host = .* ]]; then
-          echo "  - deleting ${host}/*"
-          wipe_dir "$host"
-      fi
+    host=${b%%:*}           # part before ':'
+    # skip if this host path is in keep_paths
+    if printf '%s\n' "${keep_paths[@]}" | grep -qx "$host"; then
+      echo "  - keeping ${host} (protected)"
+      continue
+    fi
+
+    # delete only absolute or dot-relative paths
+    if [[ $host = /* || $host = .* ]]; then
+      echo "  - deleting ${host}/*"
+      wipe_dir "$host"
+    fi
   done
 fi
 
@@ -81,11 +92,7 @@ start_docker firo_redis redis:7 "-p 6379:6379"
 
 # ───────────── build -B flags for apptainer ─────────────
 bind_flags=()
-for b in "${bind_arr[@]}"; do
-  bind_flags+=(-B "$b")
-done
-
-
+for b in "${bind_arr[@]}"; do bind_flags+=(-B "$b"); done
 
 # ───────────── start Apptainer instance ─────────────
 apptainer instance start \
