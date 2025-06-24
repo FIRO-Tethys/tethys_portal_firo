@@ -31,18 +31,18 @@
 
 
 
-Move_Custom_Theme_Files_to_Static_Root:
-  file.symlink:
-    - name: {{ STATIC_ROOT }}/{{ THEME_NAME }}
-    - target: {{ TETHYS_HOME }}/{{ THEME_NAME }}
-    - force: False
+# Move_Custom_Theme_Files_to_Static_Root:
+#   file.symlink:
+#     - name: {{ STATIC_ROOT }}/{{ THEME_NAME }}
+#     - target: {{ TETHYS_HOME }}/{{ THEME_NAME }}
+#     - force: False
 
 
-Move_Custom_Template_Files_to_Tethys_Apps:
-  cmd.run:
-    - name: ln -s {{ TETHYS_HOME }}/{{ THEME_NAME }}/templates/ {{ TETHYS_HOME }}/tethys/tethys_apps/templates/tethys_apps
-    - shell: /bin/bash
-    - unless:  /bin/bash -c "[ -f "{{ TETHYS_HOME }}/tethys/tethys_apps/templates/tethys_apps/templates" ];"
+# Move_Custom_Template_Files_to_Tethys_Apps:
+#   cmd.run:
+#     - name: ln -s {{ TETHYS_HOME }}/{{ THEME_NAME }}/templates/ {{ TETHYS_HOME }}/tethys/tethys_apps/templates/tethys_apps
+#     - shell: /bin/bash
+#     - unless:  /bin/bash -c "[ -f "{{ TETHYS_HOME }}/tethys/tethys_apps/templates/tethys_apps/templates" ];"
 
 {% if TETHYS_SITE_CONTENT %}
 Set_Tethys_Site_Settings:

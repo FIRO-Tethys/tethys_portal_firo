@@ -4,58 +4,469 @@
 
 {% block title %}{{ block.super }} - Welcome!{% endblock %}
 
+
+{% block styles %}
+	{{ block.super }}
+	{{ tethys.bootstrap.link_tag|safe }}
+	{{ tethys.bootstrap_icons.link_tag|safe }}
+
+ <style id="header-styles">
+		body {
+			background: {{ site_globals.background_color }};
+		}
+
+		.hero-container {
+			margin-top: -206px;
+		}
+
+		.hero-bg {
+			background-color: {{ site_globals.secondary_color }};
+			background-image: linear-gradient(345deg, {{ site_globals.primary_color }} 0%, {{ site_globals.secondary_color }} 100%); 
+		}
+
+		.hero {
+			padding-top: 254px;
+			z-index: 100;
+		}
+
+		.hero .hero-title {
+			color: {{ site_globals.primary_text_color }};
+		}
+
+		.hero .lead {
+			color: {{ site_globals.primary_text_color }};
+		}
+
+		.btn-sign-up {
+			display: block;
+			width: 150px;
+		}
+		
+		.feature-card {
+			background: none;
+			border: none;
+		}
+		
+		.feature-card .card-img-top {
+			max-width: 250px;
+		}
+
+		.feature-card .card-title {
+			color: {{ site_globals.secondary_text_color }};
+		}
+
+		.feature-card .card-text {
+			color: {{ site_globals.secondary_text_color }};
+		}
+  </style>
+{% endblock %}
+	
 {% block custom_styles %}
-  {{ block.super }}
-  <link rel="stylesheet" href="{% static 'default_theme/css/main.css' %}">
-  <link rel="stylesheet" href="{% static 'default_theme/wp-content/themes/twentysixteen/style-65e35e6273e5f8.css' %}">
-  <link rel="stylesheet" href="{% static 'default_theme/wp-content/themes/twentysixteen/style.css' %}">
-  <link rel="stylesheet" href="{% static 'default_theme/wp-content/themes/twentysixteen-child/style-f18355dd3455c8.css' %}">
-  <link rel="stylesheet" href="{% static 'default_theme/wp-content/themes/twentysixteen-child/style.css' %}">
-  
+	<link rel="stylesheet" id="child-style-css" href="https://cw3e.ucsd.edu/wp-content/themes/twentysixteen-child/style.css?ver=1.0.0" media="all">
+	<link rel="stylesheet" id="twentysixteen-fonts-css" href="https://cw3e.ucsd.edu/wp-content/themes/twentysixteen/fonts/merriweather-plus-montserrat-plus-inconsolata.css?ver=20230328" media="all">
+	<link rel="stylesheet" id="genericons-css" href="https://cw3e.ucsd.edu/wp-content/themes/twentysixteen/genericons/genericons.css?ver=20201208" media="all">
+	<link rel="stylesheet" id="twentysixteen-style-css" href="https://cw3e.ucsd.edu/wp-content/themes/twentysixteen-child/style.css?ver=20230328" media="all">
+	<style id="twentysixteen-style-inline-css">
+
+			/* Custom Page Background Color */
+			.site {
+				background-color: #eaeaea;
+			}
+
+			mark,
+			ins,
+			button,
+			button[disabled]:hover,
+			button[disabled]:focus,
+			input[type="button"],
+			input[type="button"][disabled]:hover,
+			input[type="button"][disabled]:focus,
+			input[type="reset"],
+			input[type="reset"][disabled]:hover,
+			input[type="reset"][disabled]:focus,
+			input[type="submit"],
+			input[type="submit"][disabled]:hover,
+			input[type="submit"][disabled]:focus,
+			.menu-toggle.toggled-on,
+			.menu-toggle.toggled-on:hover,
+			.menu-toggle.toggled-on:focus,
+			.pagination .prev,
+			.pagination .next,
+			.pagination .prev:hover,
+			.pagination .prev:focus,
+			.pagination .next:hover,
+			.pagination .next:focus,
+			.pagination .nav-links:before,
+			.pagination .nav-links:after,
+			.widget_calendar tbody a,
+			.widget_calendar tbody a:hover,
+			.widget_calendar tbody a:focus,
+			.page-links a,
+			.page-links a:hover,
+			.page-links a:focus {
+				color: #eaeaea;
+			}
+
+			@media screen and (min-width: 56.875em) {
+				.main-navigation ul ul li {
+					background-color: #eaeaea;
+				}
+
+				.main-navigation ul ul:after {
+					border-top-color: #eaeaea;
+					border-bottom-color: #eaeaea;
+				}
+			}
+		
+
+			/* Custom Link Color */
+			.menu-toggle:hover,
+			.menu-toggle:focus,
+			a,
+			.main-navigation a:hover,
+			.main-navigation a:focus,
+			.dropdown-toggle:hover,
+			.dropdown-toggle:focus,
+			.social-navigation a:hover:before,
+			.social-navigation a:focus:before,
+			.post-navigation a:hover .post-title,
+			.post-navigation a:focus .post-title,
+			.tagcloud a:hover,
+			.tagcloud a:focus,
+			.site-branding .site-title a:hover,
+			.site-branding .site-title a:focus,
+			.entry-title a:hover,
+			.entry-title a:focus,
+			.entry-footer a:hover,
+			.entry-footer a:focus,
+			.comment-metadata a:hover,
+			.comment-metadata a:focus,
+			.pingback .comment-edit-link:hover,
+			.pingback .comment-edit-link:focus,
+			.comment-reply-link,
+			.comment-reply-link:hover,
+			.comment-reply-link:focus,
+			.required,
+			.site-info a:hover,
+			.site-info a:focus {
+				color: #1e6b8b;
+			}
+
+			mark,
+			ins,
+			button:hover,
+			button:focus,
+			input[type="button"]:hover,
+			input[type="button"]:focus,
+			input[type="reset"]:hover,
+			input[type="reset"]:focus,
+			input[type="submit"]:hover,
+			input[type="submit"]:focus,
+			.pagination .prev:hover,
+			.pagination .prev:focus,
+			.pagination .next:hover,
+			.pagination .next:focus,
+			.widget_calendar tbody a,
+			.page-links a:hover,
+			.page-links a:focus {
+				background-color: #1e6b8b;
+			}
+
+			input[type="date"]:focus,
+			input[type="time"]:focus,
+			input[type="datetime-local"]:focus,
+			input[type="week"]:focus,
+			input[type="month"]:focus,
+			input[type="text"]:focus,
+			input[type="email"]:focus,
+			input[type="url"]:focus,
+			input[type="password"]:focus,
+			input[type="search"]:focus,
+			input[type="tel"]:focus,
+			input[type="number"]:focus,
+			textarea:focus,
+			.tagcloud a:hover,
+			.tagcloud a:focus,
+			.menu-toggle:hover,
+			.menu-toggle:focus {
+				border-color: #1e6b8b;
+			}
+
+			@media screen and (min-width: 56.875em) {
+				.main-navigation li:hover > a,
+				.main-navigation li.focus > a {
+					color: #1e6b8b;
+				}
+			}
+		
+
+			/* Custom Main Text Color */
+			body,
+			blockquote cite,
+			blockquote small,
+			.main-navigation a,
+			.menu-toggle,
+			.dropdown-toggle,
+			.social-navigation a,
+			.post-navigation a,
+			.pagination a:hover,
+			.pagination a:focus,
+			.widget-title a,
+			.site-branding .site-title a,
+			.entry-title a,
+			.page-links > .page-links-title,
+			.comment-author,
+			.comment-reply-title small a:hover,
+			.comment-reply-title small a:focus {
+				color: #000000
+			}
+
+			blockquote,
+			.menu-toggle.toggled-on,
+			.menu-toggle.toggled-on:hover,
+			.menu-toggle.toggled-on:focus,
+			.post-navigation,
+			.post-navigation div + div,
+			.pagination,
+			.widget,
+			.page-header,
+			.page-links a,
+			.comments-title,
+			.comment-reply-title {
+				border-color: #000000;
+			}
+
+			button,
+			button[disabled]:hover,
+			button[disabled]:focus,
+			input[type="button"],
+			input[type="button"][disabled]:hover,
+			input[type="button"][disabled]:focus,
+			input[type="reset"],
+			input[type="reset"][disabled]:hover,
+			input[type="reset"][disabled]:focus,
+			input[type="submit"],
+			input[type="submit"][disabled]:hover,
+			input[type="submit"][disabled]:focus,
+			.menu-toggle.toggled-on,
+			.menu-toggle.toggled-on:hover,
+			.menu-toggle.toggled-on:focus,
+			.pagination:before,
+			.pagination:after,
+			.pagination .prev,
+			.pagination .next,
+			.page-links a {
+				background-color: #000000;
+			}
+
+			/* Border Color */
+			fieldset,
+			pre,
+			abbr,
+			acronym,
+			table,
+			th,
+			td,
+			input[type="date"],
+			input[type="time"],
+			input[type="datetime-local"],
+			input[type="week"],
+			input[type="month"],
+			input[type="text"],
+			input[type="email"],
+			input[type="url"],
+			input[type="password"],
+			input[type="search"],
+			input[type="tel"],
+			input[type="number"],
+			textarea,
+			.main-navigation li,
+			.main-navigation .primary-menu,
+			.menu-toggle,
+			.dropdown-toggle:after,
+			.social-navigation a,
+			.image-navigation,
+			.comment-navigation,
+			.tagcloud a,
+			.entry-content,
+			.entry-summary,
+			.page-links a,
+			.page-links > span,
+			.comment-list article,
+			.comment-list .pingback,
+			.comment-list .trackback,
+			.comment-reply-link,
+			.no-comments,
+			.widecolumn .mu_register .mu_alert {
+				border-color: #000000; /* Fallback for IE7 and IE8 */
+				border-color: rgba( 0, 0, 0, 0.2);
+			}
+
+			hr,
+			code {
+				background-color: #000000; /* Fallback for IE7 and IE8 */
+				background-color: rgba( 0, 0, 0, 0.2);
+			}
+
+			@media screen and (min-width: 56.875em) {
+				.main-navigation ul ul,
+				.main-navigation ul ul li {
+					border-color: rgba( 0, 0, 0, 0.2);
+				}
+
+				.main-navigation ul ul:before {
+					border-top-color: rgba( 0, 0, 0, 0.2);
+					border-bottom-color: rgba( 0, 0, 0, 0.2);
+				}
+			}
+		
+
+			/* Custom Secondary Text Color */
+
+			/**
+			* IE8 and earlier will drop any block with CSS3 selectors.
+			* Do not combine these styles with the next block.
+			*/
+			body:not(.search-results) .entry-summary {
+				color: #5e5e5e;
+			}
+
+			blockquote,
+			.post-password-form label,
+			a:hover,
+			a:focus,
+			a:active,
+			.post-navigation .meta-nav,
+			.image-navigation,
+			.comment-navigation,
+			.widget_recent_entries .post-date,
+			.widget_rss .rss-date,
+			.widget_rss cite,
+			.site-description,
+			.author-bio,
+			.entry-footer,
+			.entry-footer a,
+			.sticky-post,
+			.taxonomy-description,
+			.entry-caption,
+			.comment-metadata,
+			.pingback .edit-link,
+			.comment-metadata a,
+			.pingback .comment-edit-link,
+			.comment-form label,
+			.comment-notes,
+			.comment-awaiting-moderation,
+			.logged-in-as,
+			.form-allowed-tags,
+			.site-info,
+			.site-info a,
+			.wp-caption .wp-caption-text,
+			.gallery-caption,
+			.widecolumn label,
+			.widecolumn .mu_register label {
+				color: #5e5e5e;
+			}
+
+			.widget_calendar tbody a:hover,
+			.widget_calendar tbody a:focus {
+				background-color: #5e5e5e;
+			}
+		
+	</style>
+	<link rel="stylesheet" id="twentysixteen-block-style-css" href="https://cw3e.ucsd.edu/wp-content/themes/twentysixteen/css/blocks.css?ver=20230206" media="all">
+	<link rel="stylesheet" id="wp-add-custom-css-css" href="https://cw3e.ucsd.edu?display_custom_css=css&amp;ver=6.8.1" media="all">
+	<!--[if lt IE 10]>
+		<link rel='stylesheet' id='twentysixteen-ie-css' href='https://cw3e.ucsd.edu/wp-content/themes/twentysixteen/css/ie.css?ver=20170530' media='all' />
+	<![endif]-->
+	<!--[if lt IE 9]>
+		<link rel='stylesheet' id='twentysixteen-ie8-css' href='https://cw3e.ucsd.edu/wp-content/themes/twentysixteen/css/ie8.css?ver=20170530' media='all' />
+	<![endif]-->
+	<!--[if lt IE 8]>
+		<link rel='stylesheet' id='twentysixteen-ie7-css' href='https://cw3e.ucsd.edu/wp-content/themes/twentysixteen/css/ie7.css?ver=20170530' media='all' />
+	<![endif]-->
+	<link href="{% static 'default_theme/css/footer-extra.css' %}"  rel="stylesheet" />
+	<link href="{% static 'default_theme/css/home-extra.css' %}"  rel="stylesheet" />
+	<link href="{% static 'default_theme/css/main.css' %}"  rel="stylesheet" />
+	<link href="{% static 'tethys_portal/css/tethys_main.min.css' %}"  rel="stylesheet" />
+	<link href="{% static 'tethys_portal/css/termsandconditions.min.css' %}"  rel="stylesheet" />
+
 {% endblock %}
 
 {% block content %}
-{{ block.super }}
 
-<div class="container-fluid hero-container hero-bg">
-	<section class="hero clearfix px-5 pb-5 text-center text-white">
-		<div class="row align-items-center">
-			<div class="col-md-7 mx-auto">
-				<h1 class="hero-title mb-3">Welcome to FIRO Tethys Portal</h2>
-				{% if not user.is_authenticated and ENABLE_OPEN_SIGNUP %}
-					<a href="{% url 'accounts:register' %}" class="btn btn-outline-light btn-sign-up mx-auto mt-5 mb-3">Sign Up</a>
-				{% endif %}
+<div id="content-home" class="site-content">
+	<div class="container-fluid hero-container hero-bg">
+		<section class="hero clearfix px-5 pb-5 text-center text-white">
+			<div class="row align-items-center">
+				<div class="col-md-7 mx-auto">
+					<h1 class="hero-title mb-3">{% if site_globals.hero_text %}{{ site_globals.hero_text }}{% else %}Welcome to Tethys Portal,
+			the hub for your apps.{% endif %}</h2>
+					<p class="lead mb-4">{% if site_globals.blurb_text %}{{ site_globals.blurb_text }}{% else %}Tethys Portal is designed to be customizable, so that you can host apps for your
+			organization. You can change everything on this page from the Home Page settings.{% endif %}</h3>
+					{% if not user.is_authenticated and ENABLE_OPEN_SIGNUP %}
+						<a href="{% url 'accounts:register' %}" class="btn btn-outline-light btn-sign-up mx-auto mt-5 mb-3">Sign Up</a>
+					{% endif %}
+				</div>
+				<div class="card-body">
+				<img src="/static/default_theme/images/CW3E.png"  class="img-logo">
+				<img src="/static/default_theme/images/USACE.png" class="img-logo">
+				<img src="/static/default_theme/images/Aquaveo.png" class="img-logo">
+				</div>
 			</div>
-		</div>
-	</section>
-</div>
+		</section>
+	</div>
 
-<section class="features clearfix">
-	<div class="container">
-		<div class="row my-5">
-			<div class="col-md">
-				<div class="card feature-card feature-one text-center mb-3 mx-auto">
-					<div class="card-body">
-						<p class="card-text">
-							The FIRO <a href="https://www.tethysplatform.org/">tethys</a> portal provides a library of tools and resources for use in <a href="https://cw3e.ucsd.edu/firo/">Forecast Informed
-							Reservoirs Operations</a>. For more information on developing new applications or adding existing applications to the portal, please 
-							reach out to ckrewson@aquaveo.com 
-						</p>
-						<img src="/static/default_theme/images/CW3E.png" class="img-logo">
-						<img src="/static/default_theme/images/USACE.png" class="img-logo">
-						<img src="/static/default_theme/images/Aquaveo.png" class="img-logo">
+	<section class="features clearfix">
+		<div class="container">
+			<div class="row my-5">
+				<div class="col-md">
+					<div class="card feature-card feature-one text-center mb-3 mx-auto">
+						<img src="{% static site_globals.feature_1_image|default:'tethys_portal/images/placeholder.gif' %}" class="card-img-top mx-auto" alt="">
+						<div class="card-body">
+							<h5 class="card-title">{{ site_globals.feature_1_heading|default:"Feature 1" }}</h5>
+							<p class="card-text">{{ site_globals.feature_1_body|default:"Use these features to brag about all of the things users can do with your instance of Tethys Portal." }}</p>
+						</div>
+					</div>
+				</div>
+				<div class="col-md">
+					<div class="card feature-card feature-two text-center mb-3 mx-auto">
+						<img src="{% static site_globals.feature_2_image|default:'tethys_portal/images/placeholder.gif' %}" class="card-img-top mx-auto" alt="">
+						<div class="card-body">
+							<h5 class="card-title">{{ site_globals.feature_2_heading|default:"Feature 2" }}</h5>
+							<p class="card-text">{{ site_globals.feature_2_body|default:"Describe the apps and tools that your Tethys Portal provides and add custom pictures to each feature as a finishing touch." }}</p>
+						</div>
+					</div>
+				</div>
+				<div class="col-md">
+					<div class="card feature-card feature-three text-center mx-auto">
+						<img src="{% static site_globals.feature_3_image|default:'tethys_portal/images/placeholder.gif' %}" class="card-img-top mx-auto" alt="">
+						<div class="card-body">
+							<h5 class="card-title">{{ site_globals.feature_3_heading|default:"Feature 3" }}</h5>
+							<p class="card-text">{{ site_globals.feature_3_body|default:"You can change the color theme and branding of your Tethys Portal in a jiffy. Visit the Site Admin settings from the user menu and select General Settings." }}</p>
+						</div>
 					</div>
 				</div>
 			</div>
 		</div>
-	</div>
-</section>
-<div id="home-page" style="display: none;"></div>
+	</section>
+
+</div>
+
+
+
+
 {% endblock %}
 {% block footer %}
-	{% include "footer.html" %}
-	{% endblock %}
+	<footer id="site-footer" class="site-footer mt-auto container-fluid">
+
+  {% block footer_content %}
+	{% include "default_theme/footer.html" %}
+
+  {% endblock %}
+	</footer>
 {% endblock %}
+
+
 
 {% block scripts %}
   {{ block.super }}

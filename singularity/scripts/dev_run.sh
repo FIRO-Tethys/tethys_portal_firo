@@ -5,7 +5,7 @@ set -euo pipefail
 binds="../nginx_logs:/var/log/nginx,\
 ../salt_logs:/var/log/salt,\
 ../tethys_logs:/var/log/tethys,\
-tethys_persist:/var/lib/tethys_persist,\
+./tethys_persist:/var/lib/tethys_persist,\
 ../supervisor_logs:/var/log/supervisor"
 envfile="dev.env"
 sif="../firo-portal-singularity_latest.sif"
@@ -43,31 +43,39 @@ start_docker() {
   fi
 }
 
-# ───────────── FRESH cleanup ─────────────
+# helper that deletes a host directory contents
+wipe_dir() {
+    local target=$1
+    # First try unprivileged
+    rm -rf -- "${target:?}"/{*,.[!.]*} 2>/tmp/rm_err$$ || true
+    if grep -q "Permission denied" /tmp/rm_err$$ ; then
+        echo "  ↳ need sudo for ${target} (permission denied)"
+        sudo rm -rf -- "${target:?}"/{*,.[!.]*}
+    fi
+    rm -f /tmp/rm_err$$
+}
+
+# ─────── FRESH cleanup ────────────────────────────────────────────────
 if $fresh; then
   echo "Fresh start requested — removing existing containers and data"
-
-  # stop & remove containers if they are running
   docker rm -f firo_redis firo_postgis 2>/dev/null || true
-  # ─── stop residual instance only if it exists ─────────────────────────
-  if apptainer instance list | grep -q "^firo_portal[[:space:]]"; then   # returns 0 ↔ found :contentReference[oaicite:0]{index=0}
+
+  if apptainer instance list | grep -q "^firo_portal[[:space:]]"; then
       echo "Stopping existing Apptainer instance: firo_portal"
-      apptainer instance stop firo_portal                     # clean shutdown :contentReference[oaicite:1]{index=1}
+      apptainer instance stop firo_portal
   fi
 
-  # wipe host-side bind directories
   for b in "${bind_arr[@]}"; do
-    host=${b%%:*}                # text before first ':' = host path
-    # Resolve relative paths for safety, ignore in-container-only binds
-    if [[ $host = /* || $host = .* ]]; then
-      echo "  - deleting ${host}/*"
-      rm -rf -- "${host:?}"/*    # :? prevents blank variable expansion
-    fi
+      host=${b%%:*}           # part before ':'
+      if [[ $host = /* || $host = .* ]]; then
+          echo "  - deleting ${host}/*"
+          wipe_dir "$host"
+      fi
   done
 fi
 
 # ───────────── ensure redis + postgis ─────────────
-start_docker firo_postgis postgis/postgis:12-2.5 \
+start_docker firo_postgis postgis/postgis:17-3.5 \
   "-e POSTGRES_PASSWORD=pass -p 5437:5432"
 start_docker firo_redis redis:7 "-p 6379:6379"
 

@@ -19,8 +19,6 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     export DATA_UPLOAD_MAX_MEMORY_SIZE=1073741824
     export FILE_UPLOAD_MAX_MEMORY_SIZE=1073741824
     export COPYRIGHT='Copyright © 2024 Aquaveo, LLC'
-    export APP_INSTALLER_USER_EMAIL='fake@gmail.com'
-    export APP_INSTALLER_USER_NAME='fakeuser'
     export CHANNEL_LAYERS_CONFIG="\"{'hosts':[{'host': '127.0.0.1', 'port': 6379}]}\""
     export TETHYS_DB_PORT=5437
     export TETHYS_DB_HOST=localhost
@@ -30,7 +28,7 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     export STANDALONE_APP=tethysdash
     export TETHYSDASH_DB_NAME=tethysdash_primary_db
     export POSTGRES_PASSWORD='pass'
-    export THEME_NAME="firo_theme"
+    export HOME_PAGE_TEMPLATE="/default_theme/templates/default_theme/home.html"
 
 %files
     tethysdash                              /usr/lib/tethys/apps/tethysdash
@@ -50,7 +48,7 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     singularity/salt/init_apps.sls          /srv/salt/init_apps.sls
 
     # Docker Salt files
-    docker/salt/top.sls                     /srv/salt/top.sls
+    singularity/salt/top.sls                /srv/salt/top.sls
 
     #themes
     custom_themes/tethysext-default_theme   /usr/lib/tethys/ext/tethysext-default_theme
@@ -73,7 +71,8 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     export TETHYSDASH_SRC_ROOT=${TETHYS_HOME}/apps/tethysdash
     export TETHYSDASH_DEV_REACT_CONFIG="$TETHYSDASH_SRC_ROOT/reactapp/config/development.env"
     export TETHYSDASH_PROD_REACT_CONFIG="$TETHYSDASH_SRC_ROOT/reactapp/config/production.env"
-    export THEME_NAME="firo_theme"
+    export HOME_PAGE_TEMPLATE="/default_theme/templates/default_theme/home.html"
+
     # (1) Update apt-get and install additional system packages
     apt-get update && apt-get install -y \
         dos2unix \
