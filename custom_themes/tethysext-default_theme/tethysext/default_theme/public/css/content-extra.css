@@ -1,54 +1,68 @@
-    body {
-		background: {{ site_globals.background_color }};
-		background-color: rgb(234, 234, 234)
-    }
+body {
+	background: {{ site_globals.background_color }};
+	background-color: rgb(234, 234, 234)
+}
 
-	.hero-container {
-		margin-top: -206px;
-	}
+.hero-container {
+	margin-top: -206px;
+}
 
-	.hero-bg {
-		background-color: {{ site_globals.secondary_color }};
-		background-image: linear-gradient(345deg, {{ site_globals.primary_color }} 0%, {{ site_globals.secondary_color }} 100%); 
-	}
+.hero-bg {
+	background-color: {{ site_globals.secondary_color }};
+	background-image: linear-gradient(345deg, {{ site_globals.primary_color }} 0%, {{ site_globals.secondary_color }} 100%); 
+}
 
-	.hero {
-		padding-top: 254px;
-		z-index: 100;
-	}
+.hero {
+	padding-top: 254px;
+	z-index: 100;
+}
 
-	.hero .hero-title {
-		color: {{ site_globals.primary_text_color }};
-	}
+.hero .hero-title {
+	color: {{ site_globals.primary_text_color }};
+}
 
-	.hero .lead {
-		color: {{ site_globals.primary_text_color }};
-	}
+.hero .lead {
+	color: {{ site_globals.primary_text_color }};
+}
 
-	.btn-sign-up {
-		display: block;
-		width: 150px;
-	}
-	
-	.feature-card {
-		background: none;
-		border: none;
-	}
-	
-	.feature-card .card-img-top {
-		max-width: 250px;
-	}
+.btn-sign-up {
+	display: block;
+	width: 150px;
+}
 
-	.feature-card .card-title {
-		color: {{ site_globals.secondary_text_color }};
-	}
+.feature-card {
+	background: none;
+	border: none;
+}
 
-	.feature-card .card-text {
-		color: {{ site_globals.secondary_text_color }};
-		font-size: larger;
-	}
+.feature-card .card-img-top {
+	max-width: 250px;
+}
 
-	.img-logo {
-		width: 15%;
-		padding: 1rem
-	}
+.feature-card .card-title {
+	color: {{ site_globals.secondary_text_color }};
+}
+
+.feature-card .card-text {
+	color: {{ site_globals.secondary_text_color }};
+	font-size: larger;
+}
+
+.img-logo {
+	width: 15%;
+	padding: 1rem
+}
+
+.border-container{
+    margin-top: 40px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+    padding-top: 5px;
+	border: 3px solid #1e6b8b;
+}
+
+.btn-extra-border{
+	border: 3px solid #1e6b8b;
+}
