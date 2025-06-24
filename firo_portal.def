@@ -1,14 +1,16 @@
 Bootstrap: docker
 From: tethysplatform/tethys-core:dev-py3.12-dj5.0
-
 %labels
     Author "aquaveollc"
     Version "1.1"
 
 %environment
-    export SHELL="/bin/bash"
+    export CONDA_HOME="/opt/conda"
+    export TETHYS_LOG="/var/log/tethys.log"
     export TETHYS_HOME="/usr/lib/tethys"
-    export PATH="/opt/conda/envs/tethys/bin:$PATH"
+    export TETHYS_PERSIST="/var/lib/tethys_persist"
+    export SHELL="/bin/bash"
+    export PATH="$CONDA_HOME/envs/tethys/bin:$PATH"
     export APP_INSTALLER_USER_EMAIL="you@email.com"
     export APP_INSTALLER_USER_NAME="App Installer"
     export NGINX_PORT=8080
@@ -17,8 +19,6 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     export DATA_UPLOAD_MAX_MEMORY_SIZE=1073741824
     export FILE_UPLOAD_MAX_MEMORY_SIZE=1073741824
     export COPYRIGHT='Copyright © 2024 Aquaveo, LLC'
-    export APP_INSTALLER_USER_EMAIL='fake@gmail.com'
-    export APP_INSTALLER_USER_NAME='fakeuser'
     export CHANNEL_LAYERS_CONFIG="\"{'hosts':[{'host': '127.0.0.1', 'port': 6379}]}\""
     export TETHYS_DB_PORT=5437
     export TETHYS_DB_HOST=localhost
@@ -27,9 +27,8 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     export MULTIPLE_APP_MODE=true
     export STANDALONE_APP=tethysdash
     export TETHYSDASH_DB_NAME=tethysdash_primary_db
-    export POSTGRES_PASSWORD=pass
-    export THEME_NAME="firo_theme"
-
+    export POSTGRES_PASSWORD='pass'
+    export HOME_PAGE_TEMPLATE="/default_theme/templates/default_theme/home.html"
 
 %files
     tethysdash                              /usr/lib/tethys/apps/tethysdash
@@ -49,11 +48,23 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     singularity/salt/init_apps.sls          /srv/salt/init_apps.sls
 
     # Docker Salt files
-    docker/salt/top.sls                     /srv/salt/top.sls
+    singularity/salt/top.sls                /srv/salt/top.sls
 
+    # run.sh
+    singularity/salt/run.sh                 /usr/lib/tethys/run.sh
 
+    #themes
+    custom_themes/tethysext-default_theme   /usr/lib/tethys/ext/tethysext-default_theme
+
+    #scripts
+    singularity/scripts/udpate_db.sh        /var/lib/tethys_persist/scripts/update_db.sh
+    
 %post
-    export PATH="/opt/conda/envs/tethys/bin:$PATH"
+    export CONDA_HOME="/opt/conda"
+    export TETHYS_LOG="/var/log/tethys.log"
+    export TETHYS_HOME="/usr/lib/tethys"
+    export TETHYS_PERSIST="/var/lib/tethys_persist"
+    export PATH="$CONDA_HOME/envs/tethys/bin:$PATH"
     export NGINX_USER=www
     export NODE_VERSION="20.12.2"
     export NVM_DIR=/usr/local/nvm
@@ -67,8 +78,8 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     export TETHYSDASH_SRC_ROOT=${TETHYS_HOME}/apps/tethysdash
     export TETHYSDASH_DEV_REACT_CONFIG="$TETHYSDASH_SRC_ROOT/reactapp/config/development.env"
     export TETHYSDASH_PROD_REACT_CONFIG="$TETHYSDASH_SRC_ROOT/reactapp/config/production.env"
-    export TETHYS_PERSIST="/var/lib/tethys_persist"
-    export THEME_NAME="firo_theme"
+    export HOME_PAGE_TEMPLATE="/default_theme/templates/default_theme/home.html"
+
     # (1) Update apt-get and install additional system packages
     apt-get update && apt-get install -y \
         dos2unix \
@@ -114,57 +125,31 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     cd "${TETHYS_HOME}/apps/tethysdash_plugin_usace" && \
         python setup.py install
     
+    echo "Installing Themes..."
+    cd "${TETHYS_HOME}/ext/tethysext-default_theme" && \
+        pip install -e .
+
     #Create dir for tethysdash setting
     mkdir -p $TETHYS_PERSIST/data/tethysdash
+    touch /var/log/tethys/salt.log /var/log/supervisor/supervisord.log
 
-    # Set permissions for the Salt directories
-    #https://docs.saltproject.io/en/latest/ref/configuration/nonroot.html
-    chmod -R 777 /etc/salt /var/cache/salt /var/log/salt /var/run/salt
-
-    # Set permissions for the Tethys directories, this is done on the Tethys_Persist_Permissions salt job at post_app.sls
-    chown -R $NGINX_USER: $TETHYS_PERSIST $TETHYS_HOME && chmod -R 777 $TETHYS_HOME $TETHYS_PERSIST
-    
-    # Set permissions for the ASGI and Nginx directories
-    # The directory creation of /run/asgi and the change of permissions cover the tethyscore.sls job /run/asgi
-    mkdir -p /run/asgi
-    mkdir -p /var/lib/nginx/body
-    chmod -R 777 /run /var/lib/nginx
-
-    # Remove the user=www line from the Supervisor config, no needed since is not the user that runs the process
+    # Need to remove the nginx user from the supervisord config file
+    # Error 1
     sed -i '/^\s*user\s*=\s*www\s*$/d' /etc/supervisor/supervisord.conf
 
-    ## nginx and supervisor permission
-    chmod -R 777 /etc/nginx /etc/supervisor
-
-    ## supervisor logs
-    ## /var/log needs to have write permissions or supervisor will not be able to write the logs, and it will fail to start the nginx and asgi process
-    touch /var/log/supervisor/supervisord.log
-    chmod -R 777 /var/log/supervisor
-
-    ## nginx logs
-    chmod -R 777 /var/log/nginx/
-
-    # tethys logs
-    touch /var/log/tethys/tethys.log
-    # This is a salt stack job to create an change permissions at /var/log/tethys/tethys.log on tethyscore.sls
-    chown -R $NGINX_USER:$NGINX_USER /var/log/tethys/tethys.log
-    chmod 777 /var/log/tethys/tethys.log
-    
-    touch /var/log/tethys/salt.log
-    chmod 777 /var/log/tethys/salt.log
-    
-    # The following lines have been commented out since are 777, an are not required to be own by the nginx user by the salt jobs
-    # chown -R $NGINX_USER:$NGINX_USER /var/log/tethys/salt.log
-    # chown -R $NGINX_USER:$NGINX_USER /var/log/nginx
-    # chown -R $NGINX_USER:$NGINX_USER /var/log/supervisor
-    # chown -R $NGINX_USER:$NGINX_USER /etc/nginx /etc/supervisor
-    # chown -R $NGINX_USER:$NGINX_USER /run /var/lib/nginx
+    # we need to make sure that the run.sh script is executable for the user running the rootless container
+    chmod 755 $TETHYS_HOME/run.sh
 
 %startscript
     echo "Starting container... running run.sh"
     exec /usr/lib/tethys/run.sh --skip-perm 2>&1 | tee /var/log/tethys/salt.log
-    # permissions have been taken care by the post script. As a result, we use --skip-perm
-    # Set permissions for the Tethys directories (this is part of the run.sh, but it cannot be done due to permission)
-    # the following is what the run.sh does, but it cannot be done due to permission
-    # export NGINX_USER=$(grep 'user .*;' /etc/nginx/nginx.conf | awk '{print $2}' | awk -F';' '{print $1}') ; find $TETHYS_PERSIST/workspaces ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {} ; find $TETHYS_PERSIST/media ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {} ; find $TETHYS_PERSIST/static ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {}
 
+
+
+# Errors
+# 1
+# - Starting supervisor
+# /usr/lib/python3/dist-packages/supervisor/options.py:474: UserWarning: Supervisord is running as root and it is searching for its configuration file in default locations (including its current working directory); you probably want to specify a "-c" argument specifying an absolute path to a configuration file for improved security.
+#   self.warnings.warn(
+# Error: Cannot open an HTTP server: socket.error reported errno.EACCES (13)
+# For help, use /usr/bin/supervisord -h
