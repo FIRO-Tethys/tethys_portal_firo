@@ -6,6 +6,7 @@ binds="../nginx_logs:/var/log/nginx,\
 ../salt_logs:/var/log/salt,\
 ../tethys_logs:/var/log/tethys,\
 ./tethys_persist:/var/lib/tethys_persist,\
+./custom_themes/tethysext-default_theme:/usr/lib/tethys/ext/tethysext-default_theme,\
 ../supervisor_logs:/var/log/supervisor"
 envfile="dev.env"
 sif="../firo-portal-singularity_latest.sif"
