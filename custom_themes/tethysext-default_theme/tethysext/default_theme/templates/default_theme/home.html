@@ -394,12 +394,6 @@
 {% endblock %}
 
 
-{% block header %}
-	{% include "default_theme/header.html" %}
-	<div class="clear-header"></div>
-{% endblock %}
-
-
 {% block content %}
 {% url 'app_library' as app_library_url %}
 <div id="content-home" class="site-content">
@@ -444,16 +438,6 @@
 </div>
 
 {% endblock %}
-{% block footer %}
-	<footer id="site-footer" class="site-footer mt-auto container-fluid"  style="max-width: 1320px;">
-
-  {% block footer_content %}
-	{% include "default_theme/footer.html" %}
-
-  {% endblock %}
-	</footer>
-{% endblock %}
-
 
 
 {% block scripts %}

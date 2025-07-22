@@ -119,11 +119,11 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
 
     echo "Installing TethysDash plugins..."
     cd "${TETHYS_HOME}/apps/tethysdash_plugin_cnrfc" && \
-        python setup.py install
+        pip install --user --no-cache-dir --quiet .
     cd "${TETHYS_HOME}/apps/tethysdash_plugin_cw3e" && \
-        python setup.py install
+        pip install --user --no-cache-dir --quiet .
     cd "${TETHYS_HOME}/apps/tethysdash_plugin_usace" && \
-        python setup.py install
+        pip install --user --no-cache-dir --quiet .
     
     echo "Installing Themes..."
     cd "${TETHYS_HOME}/ext/tethysext-default_theme" && \
