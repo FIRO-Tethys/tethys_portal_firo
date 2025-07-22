@@ -3,7 +3,10 @@
 {% set TETHYS_HOME = salt['environ.get']('TETHYS_HOME') %}
 {% set ALLOWED_CIDR_RANGE = salt['environ.get']('ALLOWED_CIDR_RANGE') %}
 {% set PREFIX_URL = salt['environ.get']('PREFIX_URL') %}
-
+{% set FORCE_SCRIPT_NAME = salt['environ.get']('FORCE_SCRIPT_NAME') %}
+{% set STATIC_URL = salt['environ.get']('STATIC_URL') %}
+{% set MEDIA_URL = salt['environ.get']('MEDIA_URL') %}
+{% set WORKSPACES_URL = salt['environ.get']('WORKSPACES_URL') %}
 {% set TETHYS_DB_HOST = salt['environ.get']('TETHYS_DB_HOST') %}
 {% set TETHYS_DB_PORT = salt['environ.get']('TETHYS_DB_PORT') %}
 {% set TETHYS_DB_SUPERUSER = salt['environ.get']('TETHYS_DB_SUPERUSER') %}
@@ -39,6 +42,35 @@ Single_App_Mode:
     - shell: /bin/bash
     - unless: /bin/bash -c "[ -f '{{ TETHYS_PERSIST }}/tethys_services_complete' ]"
 {% endif %}
+
+Config_for_Apache:
+  cmd.run:
+    - name: >
+        tethys settings
+        --set FORCE_SCRIPT_NAME {{ FORCE_SCRIPT_NAME }}
+        --set TETHYS_PORTAL_CONFIG.STATIC_URL {{ STATIC_URL }}
+        --set TETHYS_PORTAL_CONFIG.MEDIA_URL {{ MEDIA_URL }}
+        --set TETHYS_PORTAL_CONFIG.WORKSPACES_URL {{ WORKSPACES_URL }}
+    - shell: /bin/bash
+    - unless: /bin/bash -c "[ -f '{{ TETHYS_PERSIST }}/tethys_services_complete' ]"
+
+Nginx_patch:
+  cmd.run:
+    - name: >
+        FILE="{{ TETHYS_PERSIST }}/tethys_nginx.conf";
+        # Strip any trailing slash from FORCE_SCRIPT_NAME so "/site2/" → "/site2"
+        PREFIX="$(echo "{{ FORCE_SCRIPT_NAME }}" | sed 's#/*$##')";
+        # Only patch if a prefix is defined and the file has not already been updated
+        if [ -n "$PREFIX" ] && ! grep -qE "location ${PREFIX}/static" "$FILE"; then
+          # Workspaces
+          sed -i -E "s#location /workspaces([[:space:]]*\\{)#location ${PREFIX}/workspaces\\1#g" "$FILE";
+          # Static
+          sed -i -E "s#location /static([[:space:]]*\\{)#location ${PREFIX}/static\\1#g" "$FILE";
+          # Media
+          sed -i -E "s#location /media([[:space:]]*\\{)#location ${PREFIX}/media\\1#g" "$FILE";
+        fi
+    - shell: /bin/bash
+    - unless: /bin/bash -c "[ -f '{{ TETHYS_PERSIST }}/tethys_services_complete' ]"
 
 Flag_Tethys_Services_Setup_Complete:
   cmd.run:
