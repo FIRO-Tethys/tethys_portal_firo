@@ -29,7 +29,10 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     export TETHYSDASH_DB_NAME=tethysdash_primary_db
     export POSTGRES_PASSWORD='pass'
     export HOME_PAGE_TEMPLATE="/default_theme/templates/default_theme/home.html"
-
+    export FORCE_SCRIPT_NAME="/"
+    export STATIC_URL="static/"
+    export MEDIA_URL="media/"
+    export WORKSPACES_URL="workspaces/"
 %files
     tethysdash                              /usr/lib/tethys/apps/tethysdash
     tethysdash_plugin_cnrfc                 /usr/lib/tethys/apps/tethysdash_plugin_cnrfc
@@ -80,7 +83,6 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     export TETHYSDASH_DEV_REACT_CONFIG="$TETHYSDASH_SRC_ROOT/reactapp/config/development.env"
     export TETHYSDASH_PROD_REACT_CONFIG="$TETHYSDASH_SRC_ROOT/reactapp/config/production.env"
     export HOME_PAGE_TEMPLATE="/default_theme/templates/default_theme/home.html"
-
     # (1) Update apt-get and install additional system packages
     apt-get update && apt-get install -y \
         dos2unix \

@@ -60,7 +60,12 @@
 		}
   </style>
 {% endblock %}
+
+
 	
+{% block app_header_override %}
+{% endblock %}
+
 {% block custom_styles %}
 	<link rel="stylesheet" id="child-style-css" href="https://cw3e.ucsd.edu/wp-content/themes/twentysixteen-child/style.css?ver=1.0.0" media="all">
 	<link rel="stylesheet" id="twentysixteen-fonts-css" href="https://cw3e.ucsd.edu/wp-content/themes/twentysixteen/fonts/merriweather-plus-montserrat-plus-inconsolata.css?ver=20230328" media="all">
@@ -403,10 +408,10 @@
 				<div class="col-md-7 mx-auto">
 					<h1 class="hero-title mb-3">{% if site_globals.hero_text %}{{ site_globals.hero_text }}{% else %}Welcome to Firo Portal, the hub for your apps.{% endif %}</h2>
 				<div class="card-body">
-					<img src="/static/default_theme/images/CW3E.png"  class="img-logo" style="width: 180px; height: auto;">
-					<img src="/static/default_theme/images/Aquaveo.png" class="img-logo" style="width: 300px; height: auto;">
+					<img src="{% static 'default_theme/images/CW3E.png' %}"  class="img-logo" style="width: 180px; height: auto;">
+					<img src="{% static 'default_theme/images/Aquaveo.png' %}" class="img-logo" style="width: 300px; height: auto;">
 
-					<img src="/static/default_theme/images/USACE.png" class="img-logo" style="width: 200px; height: auto;">
+					<img src="{% static 'default_theme/images/USACE.png' %}" class="img-logo" style="width: 200px; height: auto;">
 				</div>
 
 					<p class="lead mb-4">{% if site_globals.blurb_text %}{{ site_globals.blurb_text }}{% else %}Firo Portal is designed to be customizable, so that you can host apps for your organization. You can change everything on this page from the Home Page settings.{% endif %}</h3>
