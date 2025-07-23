@@ -54,23 +54,6 @@ Config_for_Apache:
     - shell: /bin/bash
     - unless: /bin/bash -c "[ -f '{{ TETHYS_PERSIST }}/tethys_services_complete' ]"
 
-Nginx_patch:
-  cmd.run:
-    - name: >
-        FILE="{{ TETHYS_PERSIST }}/tethys_nginx.conf";
-        # Strip any trailing slash from FORCE_SCRIPT_NAME so "/site2/" → "/site2"
-        PREFIX="$(echo "{{ FORCE_SCRIPT_NAME }}" | sed 's#/*$##')";
-        # Only patch if a prefix is defined and the file has not already been updated
-        if [ -n "$PREFIX" ] && ! grep -qE "location ${PREFIX}/static" "$FILE"; then
-          # Workspaces
-          sed -i -E "s#location /workspaces([[:space:]]*\\{)#location ${PREFIX}/workspaces\\1#g" "$FILE";
-          # Static
-          sed -i -E "s#location /static([[:space:]]*\\{)#location ${PREFIX}/static\\1#g" "$FILE";
-          # Media
-          sed -i -E "s#location /media([[:space:]]*\\{)#location ${PREFIX}/media\\1#g" "$FILE";
-        fi
-    - shell: /bin/bash
-    - unless: /bin/bash -c "[ -f '{{ TETHYS_PERSIST }}/tethys_services_complete' ]"
 
 Flag_Tethys_Services_Setup_Complete:
   cmd.run:

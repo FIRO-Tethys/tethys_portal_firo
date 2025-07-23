@@ -6,3 +6,4 @@ base:
     - init_apps
     - portal_theme
     - post_app
+    - post_nginx

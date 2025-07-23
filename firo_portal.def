@@ -39,25 +39,26 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     # Requirements
     requirements.txt                        /usr/lib/tethys/requirements.txt
 
-    # Singularity Salt files
-    singularity/salt/tethys_services.sls    /srv/salt/tethys_services.sls
-    singularity/salt/portal_theme.sls       /srv/salt/portal_theme.sls
-    singularity/salt/tethyscore.sls         /srv/salt/tethyscore.sls
-    singularity/salt/pre_tethys.sls         /srv/salt/pre_tethys.sls
-    singularity/salt/post_app.sls           /srv/salt/post_app.sls
-    singularity/salt/init_apps.sls          /srv/salt/init_apps.sls
+    # Apptainer Salt files
+    apptainer/salt/tethys_services.sls    /srv/salt/tethys_services.sls
+    apptainer/salt/portal_theme.sls       /srv/salt/portal_theme.sls
+    apptainer/salt/tethyscore.sls         /srv/salt/tethyscore.sls
+    apptainer/salt/pre_tethys.sls         /srv/salt/pre_tethys.sls
+    apptainer/salt/post_app.sls           /srv/salt/post_app.sls
+    apptainer/salt/init_apps.sls          /srv/salt/init_apps.sls
+    apptainer/salt/post_nginx.sls         /srv/salt/post_nginx.sls
 
     # Docker Salt files
-    singularity/salt/top.sls                /srv/salt/top.sls
+    apptainer/salt/top.sls                /srv/salt/top.sls
 
     # run.sh
-    singularity/salt/run.sh                 /usr/lib/tethys/run.sh
+    apptainer/salt/run.sh                 /usr/lib/tethys/run.sh
 
     #themes
     custom_themes/tethysext-default_theme   /usr/lib/tethys/ext/tethysext-default_theme
 
     #scripts
-    singularity/scripts/udpate_db.sh        /var/lib/tethys_persist/scripts/update_db.sh
+    apptainer/scripts/udpate_db.sh        /var/lib/tethys_persist/scripts/update_db.sh
     
 %post
     export CONDA_HOME="/opt/conda"

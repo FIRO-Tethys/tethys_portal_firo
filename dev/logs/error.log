@@ -1,0 +1,6 @@
+[Wed Jul 23 16:02:10.075333 2025] [proxy:error] [pid 11:tid 21] (111)Connection refused: AH00957: http: attempt to connect to 172.17.0.1:8080 (host.docker.internal:8080) failed
+[Wed Jul 23 16:02:10.075493 2025] [proxy_http:error] [pid 11:tid 21] [client 172.23.0.1:34468] AH01114: HTTP: failed to make connection to backend: host.docker.internal
+[Wed Jul 23 16:02:21.086187 2025] [proxy:error] [pid 11:tid 26] (111)Connection refused: AH00957: http: attempt to connect to 172.17.0.1:8080 (host.docker.internal:8080) failed
+[Wed Jul 23 16:02:21.086905 2025] [proxy_http:error] [pid 11:tid 26] [client 172.23.0.1:35496] AH01114: HTTP: failed to make connection to backend: host.docker.internal
+[Wed Jul 23 16:02:25.565376 2025] [proxy:error] [pid 11:tid 35] (111)Connection refused: AH00957: http: attempt to connect to 172.17.0.1:8080 (host.docker.internal:8080) failed
+[Wed Jul 23 16:02:25.565519 2025] [proxy_http:error] [pid 11:tid 35] [client 172.23.0.1:35502] AH01114: HTTP: failed to make connection to backend: host.docker.internal
