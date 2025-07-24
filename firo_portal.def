@@ -29,10 +29,10 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     export TETHYSDASH_DB_NAME=tethysdash_primary_db
     export POSTGRES_PASSWORD='pass'
     export HOME_PAGE_TEMPLATE="/default_theme/templates/default_theme/home.html"
-    export FORCE_SCRIPT_NAME="/"
-    export STATIC_URL="static/"
-    export MEDIA_URL="media/"
-    export WORKSPACES_URL="workspaces/"
+    export FORCE_SCRIPT_NAME="/site2"
+    export STATIC_URL="/site2/static/"
+    export MEDIA_URL="/site2/media/"
+    export WORKSPACES_URL="/site2/workspaces/"
 %files
     tethysdash                              /usr/lib/tethys/apps/tethysdash
     tethysdash_plugin_cnrfc                 /usr/lib/tethys/apps/tethysdash_plugin_cnrfc
