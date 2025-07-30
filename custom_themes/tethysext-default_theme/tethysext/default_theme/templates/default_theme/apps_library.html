@@ -2,67 +2,86 @@
 
 {% load static tethys %}
 
-{% block title %}{{ block.super }} - Welcome!{% endblock %}
-
+{% block title %}{{ block.super }} - {% if site_globals.apps_library_title %}{{ site_globals.apps_library_title }}{% else %}Apps{% endif %}{% endblock %}
 
 {% block styles %}
-	{{ block.super }}
-	{{ tethys.bootstrap.link_tag|safe }}
-	{{ tethys.bootstrap_icons.link_tag|safe }}
+  {{ block.super }}
+  {{ tethys.select2.link_tag|safe }}
+  <style id="app-library-styles">
+    .no-apps-loaded-message {
+      width: 50%;
+      margin: 100px auto;
+      margin-bottom: 150px;
+      text-align: center;
+    }
 
- <style id="header-styles">
-		body {
-			background: {{ site_globals.background_color }};
-		}
+    /* Tag Search */
+    .tag-search-field {
+      width: 100%;
+    }
 
-		.hero-container {
-			margin-top: -206px;
-		}
+    .select2 {
+      width: 100%!important;
+    }
 
-		.hero-bg {
-			background-color: {{ site_globals.secondary_color }};
-			background-image: linear-gradient(345deg, {{ site_globals.primary_color }} 0%, {{ site_globals.secondary_color }} 100%); 
-		}
+    .select2-container .select2-search--inline .select2-search__field {
+      height: 22px!important;
+    }
 
-		.hero {
-			padding-top: 254px;
-			z-index: 100;
-		}
+    /* App Cards */
+    .app-link-wrapper {
+      text-decoration: none;
+      color:#666666;
+    }
+    .app-link-wrapper:hover {
+      color: #666666;
+    }
+    .app-link-wrapper.unconfigured .app-card {
+      background: #666666;
+    }
+    .app-link-wrapper.unconfigured:hover .app-card {
+      background: #555555;
+    }
+    .app-link-wrapper.unconfigured .app-card .app-title {
+      color: #ffffff;
+    }
+    .app-link-wrapper.veiled .app-card {
+      opacity: 0.6;
+    }
+    .app-card {
+        width: 200px;
+    }
+    .app-card:hover {
+        background: #dddddd;
+    }
 
-		.hero .hero-title {
-			color: {{ site_globals.primary_text_color }};
-		}
+    /* App Card Description */
+    .app-help-icon,
+    .redirect-icon{
+      border-radius: 50%;
+      font-size: 10pt;
+      line-height: 1;
+      margin-top: 3px;
+      margin-right: 3px;
+      background: white;
+    }
 
-		.hero .lead {
-			color: {{ site_globals.primary_text_color }};
-		}
+    .app-help-icon:hover{
+        background: #dddddd;
+        cursor: pointer;
+    }
 
-		.btn-sign-up {
-			display: block;
-			width: 150px;
-		}
-		
-		.feature-card {
-			background: none;
-			border: none;
-		}
-		
-		.feature-card .card-img-top {
-			max-width: 250px;
-		}
+    .app-help-info .btn-close {
+      width: 0.25em;
+      height: 0.25em;
+    }
 
-		.feature-card .card-title {
-			color: {{ site_globals.secondary_text_color }};
-		}
-
-		.feature-card .card-text {
-			color: {{ site_globals.secondary_text_color }};
-		}
   </style>
+  {{ site_globals.apps_library_css|load_custom_css|safe }}
 {% endblock %}
 
 
-	
+
 {% block app_header_override %}
 {% endblock %}
 
@@ -398,66 +417,60 @@
 
 {% endblock %}
 
-
+{% block global_scripts %}
+  {{ block.super }}
+  {{ tethys.select2.script_tag|safe }}
+{% endblock %}
 
 {% block header %}
 	{% include "default_theme/header.html" %}
 	<div class="clear-header"></div>
 {% endblock %}
 
-
-{% block content %}
-{% url 'app_library' as app_library_url %}
-<div id="content-home" class="site-content">
-	<div class="container-fluid hero-container">
-		<section class="hero clearfix px-5 pb-5 text-center">
-			<div class="row align-items-center">
-				<div class="col-md-7 mx-auto">
-					<h1 class="hero-title mb-3">{% if site_globals.hero_text %}{{ site_globals.hero_text }}{% else %}Welcome to Firo Portal, the hub for your apps.{% endif %}</h2>
-				<div class="card-body">
-					<img src="{% static 'default_theme/images/CW3E.png' %}"  class="img-logo" style="width: 180px; height: auto;">
-					<img src="{% static 'default_theme/images/Aquaveo.png' %}" class="img-logo" style="width: 300px; height: auto;">
-
-					<img src="{% static 'default_theme/images/USACE.png' %}" class="img-logo" style="width: 200px; height: auto;">
-				</div>
-
-					<p class="lead mb-4">{% if site_globals.blurb_text %}{{ site_globals.blurb_text }}{% else %}Firo Portal is designed to be customizable, so that you can host apps for your organization. You can change everything on this page from the Home Page settings.{% endif %}</h3>
-				</div>
-				<div class="d-flex           
-							flex-column 
-							flex-sm-row
-							justify-content-center
-							align-items-center
-							gap-3">
-
-				{% if not user.is_authenticated and ENABLE_OPEN_SIGNUP %}
-					<a href="{% url 'accounts:register' %}"
-						class="btn  btn-outline-primary btn-extra-border mx-0 my-2">Sign Up</a>
-
-					<a href="{% url 'accounts:login' %}"
-						class="btn btn-outline-primary btn-extra-border mx-0 my-2">Login</a>
-				{% endif %}
-
-				<a href="{{ app_library_url }}"
-					class="btn btn-outline-primary btn-extra-border mx-0 my-2">Apps</a>
-				</div>
-
-			</div>
-		</section>
-	</div>
-
-
-</div>
-
+{% block primary_content %}
+  {# Push content below header #}
+  <div class="app-libary-wrapper">
+    {% if apps.configured or apps.unconfigured %}
+      {# Tag Search #}
+      {% if apps|get_tags_from_apps %}
+      <div class="container-xl">
+        <div class="row justify-content-center mt-4">
+          <div class="col-md-6">
+            <select class="tag-search-field" name="tags" multiple="multiple">
+              {% for tag in apps|get_tags_from_apps %}
+              <option value="{{ tag.0 }}">{{ tag.1 }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+      {# App List #}
+      <div class="container-xl">
+        <div class="row row-cols-auto justify-content-center mb-4 mx-4">
+          {% for app in apps.configured %}
+            <div class="col">
+              {% include 'tethys_apps/app_card.html' with app=app unconfigured=False %}
+            </div>
+          {% endfor %}
+          {% for app in apps.unconfigured %}
+            <div class="col">
+              {% include 'tethys_apps/app_card.html' with app=app unconfigured=True %}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% else %}
+      <h2 class="no-apps-loaded-message">There are no apps loaded.</h2>
+    {% endif %}
+  </div>
+  <div id="app-library-curtain"></div>
 {% endblock %}
-
 
 {% block footer %}
 	<footer id="site-footer" class="site-footer mt-auto container-fluid"  style="max-width: 1320px;">
-
 		{% block footer_content %}
 			{% include "default_theme/footer.html" %}
-
 		{% endblock %}
 	</footer>
 {% endblock %}
