@@ -1,0 +1,30 @@
+services:
+  proxy:
+    image: httpd:2.4
+    container_name: apache-proxy
+
+    ports:
+      - "80:80"
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+    volumes:
+      - ./proxy-vhost.conf:/usr/local/apache2/conf/extra/proxy-vhost.conf:ro
+      - ./load-mods.conf:/usr/local/apache2/conf/extra/load-mods.conf:ro   # ← NEW
+      - ./partials/:/var/www/partials/:ro
+      - ./logs/:/usr/local/apache2/logs
+
+    environment:
+      APACHE_LOG_DIR: /usr/local/apache2/logs
+
+    command: >
+      sh -c 'echo "Include conf/extra/load-mods.conf"   >> conf/httpd.conf &&
+             echo "Include conf/extra/proxy-vhost.conf" >> conf/httpd.conf &&
+             httpd-foreground'
+
+
+  # Placeholder “app” service (unchanged)
+  app:
+    image: alpine:3.20
+    command: ["sleep","infinity"]

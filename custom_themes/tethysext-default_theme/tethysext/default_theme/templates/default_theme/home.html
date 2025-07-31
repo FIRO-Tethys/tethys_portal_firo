@@ -1,0 +1,469 @@
+{% extends "base.html" %}
+
+{% load static tethys %}
+
+{% block title %}{{ block.super }} - Welcome!{% endblock %}
+
+
+{% block styles %}
+	{{ block.super }}
+	{{ tethys.bootstrap.link_tag|safe }}
+	{{ tethys.bootstrap_icons.link_tag|safe }}
+
+ <style id="header-styles">
+		body {
+			background: {{ site_globals.background_color }};
+		}
+
+		.hero-container {
+			margin-top: -206px;
+		}
+
+		.hero-bg {
+			background-color: {{ site_globals.secondary_color }};
+			background-image: linear-gradient(345deg, {{ site_globals.primary_color }} 0%, {{ site_globals.secondary_color }} 100%); 
+		}
+
+		.hero {
+			padding-top: 254px;
+			z-index: 100;
+		}
+
+		.hero .hero-title {
+			color: {{ site_globals.primary_text_color }};
+		}
+
+		.hero .lead {
+			color: {{ site_globals.primary_text_color }};
+		}
+
+		.btn-sign-up {
+			display: block;
+			width: 150px;
+		}
+		
+		.feature-card {
+			background: none;
+			border: none;
+		}
+		
+		.feature-card .card-img-top {
+			max-width: 250px;
+		}
+
+		.feature-card .card-title {
+			color: {{ site_globals.secondary_text_color }};
+		}
+
+		.feature-card .card-text {
+			color: {{ site_globals.secondary_text_color }};
+		}
+  </style>
+{% endblock %}
+
+
+	
+{% block app_header_override %}
+{% endblock %}
+
+{% block custom_styles %}
+	<link rel="stylesheet" id="child-style-css" href="https://cw3e.ucsd.edu/wp-content/themes/twentysixteen-child/style.css?ver=1.0.0" media="all">
+	<link rel="stylesheet" id="twentysixteen-fonts-css" href="https://cw3e.ucsd.edu/wp-content/themes/twentysixteen/fonts/merriweather-plus-montserrat-plus-inconsolata.css?ver=20230328" media="all">
+	<link rel="stylesheet" id="genericons-css" href="https://cw3e.ucsd.edu/wp-content/themes/twentysixteen/genericons/genericons.css?ver=20201208" media="all">
+	<link rel="stylesheet" id="twentysixteen-style-css" href="https://cw3e.ucsd.edu/wp-content/themes/twentysixteen-child/style.css?ver=20230328" media="all">
+	<style id="twentysixteen-style-inline-css">
+
+			/* Custom Page Background Color */
+			.site {
+				background-color: #eaeaea;
+			}
+
+			mark,
+			ins,
+			button,
+			button[disabled]:hover,
+			button[disabled]:focus,
+			input[type="button"],
+			input[type="button"][disabled]:hover,
+			input[type="button"][disabled]:focus,
+			input[type="reset"],
+			input[type="reset"][disabled]:hover,
+			input[type="reset"][disabled]:focus,
+			input[type="submit"],
+			input[type="submit"][disabled]:hover,
+			input[type="submit"][disabled]:focus,
+			.menu-toggle.toggled-on,
+			.menu-toggle.toggled-on:hover,
+			.menu-toggle.toggled-on:focus,
+			.pagination .prev,
+			.pagination .next,
+			.pagination .prev:hover,
+			.pagination .prev:focus,
+			.pagination .next:hover,
+			.pagination .next:focus,
+			.pagination .nav-links:before,
+			.pagination .nav-links:after,
+			.widget_calendar tbody a,
+			.widget_calendar tbody a:hover,
+			.widget_calendar tbody a:focus,
+			.page-links a,
+			.page-links a:hover,
+			.page-links a:focus {
+				color: #eaeaea;
+			}
+
+			@media screen and (min-width: 56.875em) {
+				.main-navigation ul ul li {
+					background-color: #eaeaea;
+				}
+
+				.main-navigation ul ul:after {
+					border-top-color: #eaeaea;
+					border-bottom-color: #eaeaea;
+				}
+			}
+		
+
+			/* Custom Link Color */
+			.menu-toggle:hover,
+			.menu-toggle:focus,
+			a,
+			.main-navigation a:hover,
+			.main-navigation a:focus,
+			.dropdown-toggle:hover,
+			.dropdown-toggle:focus,
+			.social-navigation a:hover:before,
+			.social-navigation a:focus:before,
+			.post-navigation a:hover .post-title,
+			.post-navigation a:focus .post-title,
+			.tagcloud a:hover,
+			.tagcloud a:focus,
+			.site-branding .site-title a:hover,
+			.site-branding .site-title a:focus,
+			.entry-title a:hover,
+			.entry-title a:focus,
+			.entry-footer a:hover,
+			.entry-footer a:focus,
+			.comment-metadata a:hover,
+			.comment-metadata a:focus,
+			.pingback .comment-edit-link:hover,
+			.pingback .comment-edit-link:focus,
+			.comment-reply-link,
+			.comment-reply-link:hover,
+			.comment-reply-link:focus,
+			.required,
+			.site-info a:hover,
+			.site-info a:focus {
+				color: #1e6b8b;
+			}
+
+			mark,
+			ins,
+			button:hover,
+			button:focus,
+			input[type="button"]:hover,
+			input[type="button"]:focus,
+			input[type="reset"]:hover,
+			input[type="reset"]:focus,
+			input[type="submit"]:hover,
+			input[type="submit"]:focus,
+			.pagination .prev:hover,
+			.pagination .prev:focus,
+			.pagination .next:hover,
+			.pagination .next:focus,
+			.widget_calendar tbody a,
+			.page-links a:hover,
+			.page-links a:focus {
+				background-color: #1e6b8b;
+			}
+
+			input[type="date"]:focus,
+			input[type="time"]:focus,
+			input[type="datetime-local"]:focus,
+			input[type="week"]:focus,
+			input[type="month"]:focus,
+			input[type="text"]:focus,
+			input[type="email"]:focus,
+			input[type="url"]:focus,
+			input[type="password"]:focus,
+			input[type="search"]:focus,
+			input[type="tel"]:focus,
+			input[type="number"]:focus,
+			textarea:focus,
+			.tagcloud a:hover,
+			.tagcloud a:focus,
+			.menu-toggle:hover,
+			.menu-toggle:focus {
+				border-color: #1e6b8b;
+			}
+
+			@media screen and (min-width: 56.875em) {
+				.main-navigation li:hover > a,
+				.main-navigation li.focus > a {
+					color: #1e6b8b;
+				}
+			}
+		
+
+			/* Custom Main Text Color */
+			body,
+			blockquote cite,
+			blockquote small,
+			.main-navigation a,
+			.menu-toggle,
+			.dropdown-toggle,
+			.social-navigation a,
+			.post-navigation a,
+			.pagination a:hover,
+			.pagination a:focus,
+			.widget-title a,
+			.site-branding .site-title a,
+			.entry-title a,
+			.page-links > .page-links-title,
+			.comment-author,
+			.comment-reply-title small a:hover,
+			.comment-reply-title small a:focus {
+				color: #000000
+			}
+
+			blockquote,
+			.menu-toggle.toggled-on,
+			.menu-toggle.toggled-on:hover,
+			.menu-toggle.toggled-on:focus,
+			.post-navigation,
+			.post-navigation div + div,
+			.pagination,
+			.widget,
+			.page-header,
+			.page-links a,
+			.comments-title,
+			.comment-reply-title {
+				border-color: #000000;
+			}
+
+			button,
+			button[disabled]:hover,
+			button[disabled]:focus,
+			input[type="button"],
+			input[type="button"][disabled]:hover,
+			input[type="button"][disabled]:focus,
+			input[type="reset"],
+			input[type="reset"][disabled]:hover,
+			input[type="reset"][disabled]:focus,
+			input[type="submit"],
+			input[type="submit"][disabled]:hover,
+			input[type="submit"][disabled]:focus,
+			.menu-toggle.toggled-on,
+			.menu-toggle.toggled-on:hover,
+			.menu-toggle.toggled-on:focus,
+			.pagination:before,
+			.pagination:after,
+			.pagination .prev,
+			.pagination .next,
+			.page-links a {
+				background-color: #000000;
+			}
+
+			/* Border Color */
+			fieldset,
+			pre,
+			abbr,
+			acronym,
+			table,
+			th,
+			td,
+			input[type="date"],
+			input[type="time"],
+			input[type="datetime-local"],
+			input[type="week"],
+			input[type="month"],
+			input[type="text"],
+			input[type="email"],
+			input[type="url"],
+			input[type="password"],
+			input[type="search"],
+			input[type="tel"],
+			input[type="number"],
+			textarea,
+			.main-navigation li,
+			.main-navigation .primary-menu,
+			.menu-toggle,
+			.dropdown-toggle:after,
+			.social-navigation a,
+			.image-navigation,
+			.comment-navigation,
+			.tagcloud a,
+			.entry-content,
+			.entry-summary,
+			.page-links a,
+			.page-links > span,
+			.comment-list article,
+			.comment-list .pingback,
+			.comment-list .trackback,
+			.comment-reply-link,
+			.no-comments,
+			.widecolumn .mu_register .mu_alert {
+				border-color: #000000; /* Fallback for IE7 and IE8 */
+				border-color: rgba( 0, 0, 0, 0.2);
+			}
+
+			hr,
+			code {
+				background-color: #000000; /* Fallback for IE7 and IE8 */
+				background-color: rgba( 0, 0, 0, 0.2);
+			}
+
+			@media screen and (min-width: 56.875em) {
+				.main-navigation ul ul,
+				.main-navigation ul ul li {
+					border-color: rgba( 0, 0, 0, 0.2);
+				}
+
+				.main-navigation ul ul:before {
+					border-top-color: rgba( 0, 0, 0, 0.2);
+					border-bottom-color: rgba( 0, 0, 0, 0.2);
+				}
+			}
+		
+
+			/* Custom Secondary Text Color */
+
+			/**
+			* IE8 and earlier will drop any block with CSS3 selectors.
+			* Do not combine these styles with the next block.
+			*/
+			body:not(.search-results) .entry-summary {
+				color: #5e5e5e;
+			}
+
+			blockquote,
+			.post-password-form label,
+			a:hover,
+			a:focus,
+			a:active,
+			.post-navigation .meta-nav,
+			.image-navigation,
+			.comment-navigation,
+			.widget_recent_entries .post-date,
+			.widget_rss .rss-date,
+			.widget_rss cite,
+			.site-description,
+			.author-bio,
+			.entry-footer,
+			.entry-footer a,
+			.sticky-post,
+			.taxonomy-description,
+			.entry-caption,
+			.comment-metadata,
+			.pingback .edit-link,
+			.comment-metadata a,
+			.pingback .comment-edit-link,
+			.comment-form label,
+			.comment-notes,
+			.comment-awaiting-moderation,
+			.logged-in-as,
+			.form-allowed-tags,
+			.site-info,
+			.site-info a,
+			.wp-caption .wp-caption-text,
+			.gallery-caption,
+			.widecolumn label,
+			.widecolumn .mu_register label {
+				color: #5e5e5e;
+			}
+
+			.widget_calendar tbody a:hover,
+			.widget_calendar tbody a:focus {
+				background-color: #5e5e5e;
+			}
+		
+	</style>
+	<link rel="stylesheet" id="twentysixteen-block-style-css" href="https://cw3e.ucsd.edu/wp-content/themes/twentysixteen/css/blocks.css?ver=20230206" media="all">
+	<link rel="stylesheet" id="wp-add-custom-css-css" href="https://cw3e.ucsd.edu?display_custom_css=css&amp;ver=6.8.1" media="all">
+	<!--[if lt IE 10]>
+		<link rel='stylesheet' id='twentysixteen-ie-css' href='https://cw3e.ucsd.edu/wp-content/themes/twentysixteen/css/ie.css?ver=20170530' media='all' />
+	<![endif]-->
+	<!--[if lt IE 9]>
+		<link rel='stylesheet' id='twentysixteen-ie8-css' href='https://cw3e.ucsd.edu/wp-content/themes/twentysixteen/css/ie8.css?ver=20170530' media='all' />
+	<![endif]-->
+	<!--[if lt IE 8]>
+		<link rel='stylesheet' id='twentysixteen-ie7-css' href='https://cw3e.ucsd.edu/wp-content/themes/twentysixteen/css/ie7.css?ver=20170530' media='all' />
+	<![endif]-->
+	<link href="{% static 'default_theme/css/footer-extra.css' %}"  rel="stylesheet" />
+	<link href="{% static 'default_theme/css/home-extra.css' %}"  rel="stylesheet" />
+	<link href="{% static 'default_theme/css/content-extra.css' %}"  rel="stylesheet" />
+	<link href="{% static 'default_theme/css/main.css' %}"  rel="stylesheet" />
+	<link href="{% static 'tethys_portal/css/tethys_main.min.css' %}"  rel="stylesheet" />
+	<link href="{% static 'tethys_portal/css/termsandconditions.min.css' %}"  rel="stylesheet" />
+
+{% endblock %}
+
+
+
+{% block header %}
+	{% include "default_theme/header.html" %}
+	<div class="clear-header"></div>
+{% endblock %}
+
+
+{% block content %}
+{% url 'app_library' as app_library_url %}
+<div id="content-home" class="site-content">
+	<div class="container-fluid hero-container">
+		<section class="hero clearfix px-5 pb-5 text-center">
+			<div class="row align-items-center">
+				<div class="col-md-7 mx-auto">
+					<h1 class="hero-title mb-3">{% if site_globals.hero_text %}{{ site_globals.hero_text }}{% else %}Welcome to Firo Portal, the hub for your apps.{% endif %}</h2>
+				<div class="card-body">
+					<img src="{% static 'default_theme/images/CW3E.png' %}"  class="img-logo" style="width: 180px; height: auto;">
+					<img src="{% static 'default_theme/images/Aquaveo.png' %}" class="img-logo" style="width: 300px; height: auto;">
+
+					<img src="{% static 'default_theme/images/USACE.png' %}" class="img-logo" style="width: 200px; height: auto;">
+				</div>
+
+					<p class="lead mb-4">{% if site_globals.blurb_text %}{{ site_globals.blurb_text }}{% else %}Firo Portal is designed to be customizable, so that you can host apps for your organization. You can change everything on this page from the Home Page settings.{% endif %}</h3>
+				</div>
+				<div class="d-flex           
+							flex-column 
+							flex-sm-row
+							justify-content-center
+							align-items-center
+							gap-3">
+
+				{% if not user.is_authenticated and ENABLE_OPEN_SIGNUP %}
+					<a href="{% url 'accounts:register' %}"
+						class="btn  btn-outline-primary btn-extra-border mx-0 my-2">Sign Up</a>
+
+					<a href="{% url 'accounts:login' %}"
+						class="btn btn-outline-primary btn-extra-border mx-0 my-2">Login</a>
+				{% endif %}
+
+				<a href="{{ app_library_url }}"
+					class="btn btn-outline-primary btn-extra-border mx-0 my-2">Apps</a>
+				</div>
+
+			</div>
+		</section>
+	</div>
+
+
+</div>
+
+{% endblock %}
+
+
+{% block footer %}
+	<footer id="site-footer" class="site-footer mt-auto container-fluid"  style="max-width: 1320px;">
+
+		{% block footer_content %}
+			{% include "default_theme/footer.html" %}
+
+		{% endblock %}
+	</footer>
+{% endblock %}
+
+
+{% block scripts %}
+  {{ block.super }}
+  <script src="{% static 'default_theme/js/main.js' %}" type="text/javascript"></script>
+{% endblock %}

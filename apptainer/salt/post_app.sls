@@ -15,10 +15,10 @@ Restore_Portal_Config_Post_App:
     - target: {{ TETHYS_PERSIST }}/portal_config.yml
     - force: True
 
-# Chown_Portal_Config_Post_App:
-#   cmd.run:
-#     - name: chown www:www {{ TETHYS_HOME }}/portal_config.yml
-#     - shell: /bin/bash
+Chown_Portal_Config_Post_App:
+  cmd.run:
+    - name: chown www:www {{ TETHYS_HOME }}/portal_config.yml
+    - shell: /bin/bash
 
 Collect_Static:
   cmd.run:
@@ -66,7 +66,7 @@ Link_ASGI_Supervisor_Post_App:
     - target: {{ TETHYS_PERSIST }}/asgi_supervisord.conf
     - force: True
 
-# Tethys_Persist_Permissions:
-#   cmd.run:
-#     - name: "chown -R www: {{ TETHYS_PERSIST }} && chmod -R g+rw {{ TETHYS_PERSIST }}"
-#     - shell: /bin/bash
+Tethys_Persist_Permissions:
+  cmd.run:
+    - name: "chown -R www: {{ TETHYS_PERSIST }} && chmod -R g+rw {{ TETHYS_PERSIST }}"
+    - shell: /bin/bash

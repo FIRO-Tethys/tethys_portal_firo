@@ -1,0 +1,47 @@
+<script type="speculationrules">
+{"prefetch":[{"source":"document","where":{"and":[{"href_matches":"\/*"},{"not":{"href_matches":["\/wp-*.php","\/wp-admin\/*","\/wp-content\/uploads\/*","\/wp-content\/*","\/wp-content\/plugins\/*","\/wp-content\/themes\/cw3e\/*","\/*\\?(.+)"]}},{"not":{"selector_matches":"a[rel~=\"nofollow\"]"}},{"not":{"selector_matches":".no-prefetch, .no-prefetch a"}}]},"eagerness":"conservative"}]}
+</script>
+<script id="wp-block-template-skip-link-js-after">
+        ( function() {
+                var skipLinkTarget = document.querySelector( 'main' ),
+                        sibling,
+                        skipLinkTargetID,
+                        skipLink;
+
+                // Early exit if a skip-link target can't be located.
+                if ( ! skipLinkTarget ) {
+                        return;
+                }
+
+                /*
+                 * Get the site wrapper.
+                 * The skip-link will be injected in the beginning of it.
+                 */
+                sibling = document.querySelector( '.wp-site-blocks' );
+
+                // Early exit if the root element was not found.
+                if ( ! sibling ) {
+                        return;
+                }
+
+                // Get the skip-link target's ID, and generate one if it doesn't exist.
+                skipLinkTargetID = skipLinkTarget.id;
+                if ( ! skipLinkTargetID ) {
+                        skipLinkTargetID = 'wp--skip-link--target';
+                        skipLinkTarget.id = skipLinkTargetID;
+                }
+
+                // Create the skip link.
+                skipLink = document.createElement( 'a' );
+                skipLink.classList.add( 'skip-link', 'screen-reader-text' );
+                skipLink.id = 'wp-skip-link';
+                skipLink.href = '#' + skipLinkTargetID;
+                skipLink.innerText = 'Skip to content';
+
+                // Inject the skip link.
+                sibling.parentElement.insertBefore( skipLink, sibling );
+        }() );
+
+</script>
+<script src="https://cw3e-sites.ucsd.edu/wp-content/plugins/tabs-responsive/assets/js/tabs-custom.js?ver=6.8.1" id="wpsm_tabs_r_custom-js-front-js"></script
+<script src="https://cw3e-sites.ucsd.edu/wp-content/themes/cw3e/public/js/screen.js?ver=1" id="cw3e-screen-js-js"></script>

@@ -87,7 +87,7 @@ if configuration realted to env variables need to be passed you can use the `--e
 singularity instance start --env-file dev.env --writable-tmpfs ../firo-portal-singularity_latest.sif firo_portal
 ```
 
-**Note** *the variable `SKIP_DB_SETUP` allows the user to skip the db setup. If you have already run the container, and your databse has been configured, please set `SKIP_DB_SETUP` to true, so the scripts to configure the db can be skipped.*
+**Note** *the variable `SKIP_DB_SETUP` allows the user to skip the db setup. If you have already run the container, and your database has been configured, please set `SKIP_DB_SETUP` to true, so the scripts to configure the db can be skipped.*
 
 Similarly, if the theme needs to be changed at run time, you can do it by mounting a directory containing the theme.
 

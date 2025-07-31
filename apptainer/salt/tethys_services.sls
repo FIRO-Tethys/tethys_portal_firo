@@ -3,7 +3,10 @@
 {% set TETHYS_HOME = salt['environ.get']('TETHYS_HOME') %}
 {% set ALLOWED_CIDR_RANGE = salt['environ.get']('ALLOWED_CIDR_RANGE') %}
 {% set PREFIX_URL = salt['environ.get']('PREFIX_URL') %}
-
+{% set FORCE_SCRIPT_NAME = salt['environ.get']('FORCE_SCRIPT_NAME') %}
+{% set STATIC_URL = salt['environ.get']('STATIC_URL') %}
+{% set MEDIA_URL = salt['environ.get']('MEDIA_URL') %}
+{% set WORKSPACES_URL = salt['environ.get']('WORKSPACES_URL') %}
 {% set TETHYS_DB_HOST = salt['environ.get']('TETHYS_DB_HOST') %}
 {% set TETHYS_DB_PORT = salt['environ.get']('TETHYS_DB_PORT') %}
 {% set TETHYS_DB_SUPERUSER = salt['environ.get']('TETHYS_DB_SUPERUSER') %}
@@ -39,6 +42,18 @@ Single_App_Mode:
     - shell: /bin/bash
     - unless: /bin/bash -c "[ -f '{{ TETHYS_PERSIST }}/tethys_services_complete' ]"
 {% endif %}
+
+Config_for_Apache:
+  cmd.run:
+    - name: >
+        tethys settings
+        --set FORCE_SCRIPT_NAME {{ FORCE_SCRIPT_NAME }}
+        --set TETHYS_PORTAL_CONFIG.STATIC_URL {{ STATIC_URL }}
+        --set TETHYS_PORTAL_CONFIG.MEDIA_URL {{ MEDIA_URL }}
+        --set TETHYS_PORTAL_CONFIG.WORKSPACES_URL {{ WORKSPACES_URL }}
+    - shell: /bin/bash
+    - unless: /bin/bash -c "[ -f '{{ TETHYS_PERSIST }}/tethys_services_complete' ]"
+
 
 Flag_Tethys_Services_Setup_Complete:
   cmd.run:
