@@ -13,4 +13,4 @@ tethys_persist
 firo_tethys_portal_home
 
 custom_themes/tethysext-default_theme/tethysext/default_theme/public/cw3e_ucsd_edu
-dev/logs
+dev/logs/*
