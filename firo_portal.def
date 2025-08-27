@@ -4,6 +4,7 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     Author "aquaveollc"
     Version "1.1"
 
+
 %environment
     export CONDA_HOME="/opt/conda"
     export TETHYS_LOG="/var/log/tethys.log"
@@ -31,6 +32,8 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     export HOME_PAGE_TEMPLATE="/default_theme/templates/default_theme/home.html"
     export PREFIX_URL="/site2"
     export MEDIA_URL="/site2/media/"
+
+
 %files
     tethysdash                              /usr/lib/tethys/apps/tethysdash
     tethysdash_plugin_cnrfc                 /usr/lib/tethys/apps/tethysdash_plugin_cnrfc
@@ -61,6 +64,7 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     #scripts
     apptainer/scripts/udpate_db.sh        /var/lib/tethys_persist/scripts/update_db.sh
     
+
 %post
     export CONDA_HOME="/opt/conda"
     export TETHYS_LOG="/var/log/tethys.log"
@@ -141,6 +145,7 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
 
     # we need to make sure that the run.sh script is executable for the user running the rootless container
     chmod 755 $TETHYS_HOME/run.sh
+
 
 %startscript
     echo "Starting container... running run.sh"
