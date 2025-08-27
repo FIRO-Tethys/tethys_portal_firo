@@ -1,12 +1,11 @@
-name: Singularity Build and Publish Dev
-on: 
+name: Apptainer Build and Publish Dev
+on:
   push:
-    branches:
-      - main
-      
+    branches: [ main ]
+
 jobs:
   changes:
-    name: "Changed Singularity Recipes"
+    name: "Changed Definition Files"
     runs-on: ubuntu-latest
     outputs:
       changed_file: ${{ steps.files.outputs.added_modified }}
@@ -26,7 +25,7 @@ jobs:
 
     name: Check ${{ matrix.changed_file }}
     steps:
-      - name: Continue if Singularity Recipe
+      - name: Continue if Apptainer Recipe
         run: |
           if [[ "${{ matrix.changed_file }}" = *.def ]]; then
             echo "keepgoing=true" >> $GITHUB_ENV
@@ -35,7 +34,7 @@ jobs:
       - name: Checkout repository
         if: ${{ env.keepgoing == 'true' }}
         uses: actions/checkout@v4
-    
+
       - name: Update submodules recursively
         if: ${{ env.keepgoing == 'true' }}
         run: |
@@ -51,12 +50,16 @@ jobs:
 
       - name: Set up Go
         if: ${{ env.keepgoing == 'true' }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Go
+        if: ${{ env.keepgoing == 'true' }}
         uses: actions/setup-go@v5
         with:
           go-version: '1.24.1'
-        id: go
 
-      - name: Install Dependencies
+      - name: Install Build Dependencies
         if: ${{ env.keepgoing == 'true' }}
         run: |
           sudo apt-get update && sudo apt-get install -y \
@@ -64,52 +67,61 @@ jobs:
             libssl-dev \
             uuid-dev \
             libgpgme11-dev \
-            squashfs-tools \
             libseccomp-dev \
             pkg-config \
             autoconf \
             automake \
+            libtool \
+            squashfs-tools \
+            squashfs-tools-ng \
+            zlib1g-dev \
+            libsubid-dev \
             cryptsetup \
-            fuse2fs \
             git \
+            wget \
             fuse \
             libfuse-dev \
-            libtool \
-            runc \
-            squashfs-tools-ng \
             uidmap \
-            wget \
-            zlib1g-dev \
-            libsubid-dev
+            runc \
+            fuse2fs
 
-      - name: Install Singularity
+      - name: Install Apptainer
         if: ${{ env.keepgoing == 'true' }}
         env:
-          SINGULARITY_VERSION: 4.3.0
+          APPTAINER_VERSION: 1.3.5
           GOPATH: /tmp/go
         run: |
-          mkdir -p $GOPATH
-          sudo mkdir -p /usr/local/var/singularity/mnt
-          mkdir -p $GOPATH/src/github.com/sylabs
-          cd $GOPATH/src/github.com/sylabs
-          wget -qO- https://github.com/sylabs/singularity/releases/download/v${SINGULARITY_VERSION}/singularity-ce-${SINGULARITY_VERSION}.tar.gz | tar xzv
-          cd singularity-ce-${SINGULARITY_VERSION}
+          set -euo pipefail
+          mkdir -p "$GOPATH"
+          sudo mkdir -p /usr/local/var/apptainer/mnt
+          # Build apptainer from source
+          wget -qO- https://github.com/apptainer/apptainer/releases/download/v${APPTAINER_VERSION}/apptainer-${APPTAINER_VERSION}.tar.gz | tar xz
+          cd apptainer-${APPTAINER_VERSION}
           ./mconfig -p /usr/local
           make -C builddir
           sudo make -C builddir install
+          apptainer --version
 
       - name: Build Container
         if: ${{ env.keepgoing == 'true' }}
         env:
           recipe: ${{ matrix.changed_file }}
         run: |
-          sudo -E singularity build container.sif "${{ matrix.changed_file }}"
+          sudo -E apptainer build container.sif "${{ matrix.changed_file }}"
 
-      - name: Login and Deploy Container to Github Regsitry
+      - name: Login and Push to GHCR (ORAS)
         if: ${{ env.keepgoing == 'true' }}
-        run: |         
-          echo "${{ secrets.GITHUB_TOKEN }}" | singularity registry login -u "${{ secrets.GHCR_USERNAME }}" --password-stdin oras://ghcr.io
-          singularity push container.sif \
-          "oras://ghcr.io/$(echo "${GITHUB_REPOSITORY}" \
-          | tr '[:upper:]' '[:lower:]' \
-          | sed 's/_/-/g')-singularity:${{ env.tag }}-x86"
+        env:
+          GH_USER: ${{ secrets.GHCR_USERNAME }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          IMAGE_PATH="$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]' | sed 's/_/-/g')-apptainer"
+          REF="oras://ghcr.io/${IMAGE_PATH}:${{ env.tag }}-x86"
+
+          # Newer apptainer has `registry login`; older uses `remote login`.
+          echo "${GH_TOKEN}" | apptainer registry login -u "${GH_USER}" --password-stdin oras://ghcr.io \
+            || echo "${GH_TOKEN}" | apptainer remote login -u "${GH_USER}" --password-stdin oras://ghcr.io
+
+          apptainer push container.sif "$REF"
+          echo "Pushed: $REF"
