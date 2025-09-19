@@ -96,10 +96,10 @@ singularity instance start --env-file dev.env -B <local_path_to_theme_directory>
  
 ```
 
-This repository comes with an example on the folder `custom_themes/firo_theme`, and **Note** *the variable `THEME_NAME`, this variable needs to be the name of the theme directory*
+This repository comes with an example on the folder `custom_themes/tethysext-default_theme`, and **Note** *the variable `THEME_NAME`, this variable needs to be the name of the theme directory*
 
 ```bash
-singularity instance start --env-file dev.env -B custom_themes/firo_theme:/usr/lib/tethys/firo_theme --writable-tmpfs ../firo-portal-singularity_latest.sif firo_portal
+singularity instance start --env-file dev.env -B custom_themes/tethysext-default_theme:/usr/lib/tethys/default_theme --writable-tmpfs ../firo-portal-singularity_latest.sif firo_portal
  
 ```
 
