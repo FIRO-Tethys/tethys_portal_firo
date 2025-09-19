@@ -13,7 +13,15 @@ Sync_Tethysdash_Persistent_Stores:
   cmd.run:
     - name: tethys syncstores tethysdash
     - shell: /bin/bash
-    - unless: /bin/bash -c "[ -f "{{ TETHYS_PERSIST }}/init_apps_setup_complete" ];"
+
+Collect_Plugin_Metadata:
+  cmd.run:
+  - name: |
+      SCRIPT_DIR=$(dirname $(python -c 'import tethysapp.tethysdash as m; print(m.__file__)'))
+      cd $SCRIPT_DIR
+      python collect_plugin_static.py
+  - shell: /bin/bash
+  - cwd: /
 
 Flag_Init_Apps_Setup_Complete:
   cmd.run:
