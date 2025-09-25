@@ -173,6 +173,7 @@ Create_Database_User_and_SuperUser_TethysCore:
         -P "{{ TETHYS_DB_SUPERUSER_PASS }}"
     - shell: /bin/bash
     - unless: /bin/bash -c "[ -f '{{ TETHYS_PERSIST }}/setup_complete' ] || {{ SKIP_DB_SETUP | lower }};"
+{% endif %}
 
 Migrate_Database_TethysCore:
   cmd.run:
