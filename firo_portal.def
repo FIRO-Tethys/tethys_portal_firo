@@ -39,6 +39,13 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     tethysdash_plugin_cnrfc                 /usr/lib/tethys/apps/tethysdash_plugin_cnrfc
     tethysdash_plugin_cw3e                  /usr/lib/tethys/apps/tethysdash_plugin_cw3e
     tethysdash_plugin_usace                 /usr/lib/tethys/apps/tethysdash_plugin_usace
+    
+    # patch for prefix
+    apptainer/patches/tethysdash/Error.js             /usr/lib/tethys/apps/tethysdash/reactapp/components/error/Error.js
+    apptainer/patches/tethysdash/development.env      /usr/lib/tethys/apps/tethysdash/reactapp/config/development.env
+    apptainer/patches/tethysdash/index.js             /usr/lib/tethys/apps/tethysdash/reactapp/index.js
+    apptainer/patches/tethysdash/app.js               /usr/lib/tethys/apps/tethysdash/reactapp/services/api/app.js
+    apptainer/patches/tethysdash/utilities.js         /usr/lib/tethys/apps/tethysdash/reactapp/services/utilities.js
 
     # Requirements
     requirements.txt                        /usr/lib/tethys/requirements.txt
@@ -63,7 +70,8 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
 
     #scripts
     apptainer/scripts/udpate_db.sh        /var/lib/tethys_persist/scripts/update_db.sh
-    
+
+
 
 %post
     export CONDA_HOME="/opt/conda"
@@ -79,6 +87,7 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     export NPM="$NODE_VERSION_DIR/bin/npm"
     export TETHYS_PORTAL_HOST=""
     export TETHYS_APP_ROOT_URL="/apps/tethysdash/"
+    export TETHYS_PREFIX_URL="site2"
     export TETHYS_LOADER_DELAY="500"
     export TETHYS_DEBUG_MODE="false"
     export TETHYSDASH_SRC_ROOT=${TETHYS_HOME}/apps/tethysdash
@@ -86,6 +95,8 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     export TETHYSDASH_PROD_REACT_CONFIG="$TETHYSDASH_SRC_ROOT/reactapp/config/production.env"
     export HOME_PAGE_TEMPLATE="/default_theme/templates/default_theme/home.html"
     export PREFIX_URL="/site2"
+
+
     # (1) Update apt-get and install additional system packages
     apt-get update && apt-get install -y \
         dos2unix \
@@ -105,9 +116,9 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     && sed -i "s#TETHYS_DEBUG_MODE.*#TETHYS_DEBUG_MODE = ${TETHYS_DEBUG_MODE}#g" ${TETHYSDASH_PROD_REACT_CONFIG} \
     && sed -i "s#TETHYS_LOADER_DELAY.*#TETHYS_LOADER_DELAY = ${TETHYS_LOADER_DELAY}#g" ${TETHYSDASH_PROD_REACT_CONFIG} \
     && sed -i "s#TETHYS_PORTAL_HOST.*#TETHYS_PORTAL_HOST = ${TETHYS_PORTAL_HOST}#g" ${TETHYSDASH_PROD_REACT_CONFIG} \
-    && sed -i "s#TETHYS_APP_ROOT_URL.*#TETHYS_APP_ROOT_URL = ${TETHYS_APP_ROOT_URL}#g" ${TETHYSDASH_PROD_REACT_CONFIG}
-
-
+    && sed -i "s#TETHYS_APP_ROOT_URL.*#TETHYS_APP_ROOT_URL = ${TETHYS_APP_ROOT_URL}#g" ${TETHYSDASH_PROD_REACT_CONFIG} \
+    && sed -i "s#TETHYS_PREFIX_URL.*#TETHYS_PREFIX_URL = ${TETHYS_PREFIX_URL}#g" ${TETHYSDASH_PROD_REACT_CONFIG} \
+ 
     cd $TETHYSDASH_SRC_ROOT
     $NPM install
     $NPM run build
