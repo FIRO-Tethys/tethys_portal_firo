@@ -1,6 +1,7 @@
 import { BrowserRouter } from "react-router-dom";
 import { createRoot } from "react-dom/client";
-import getTethysAppRoot from 'services/utilities';
+import { getTethysAppRoot } from 'services/utilities';
+
 import App from "App";
 
 const APP_ROOT_URL = getTethysAppRoot();
