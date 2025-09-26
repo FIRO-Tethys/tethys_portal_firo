@@ -46,7 +46,7 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     apptainer/patches/tethysdash/index.js             /usr/lib/tethys/apps/tethysdash/reactapp/index.js
     apptainer/patches/tethysdash/app.js               /usr/lib/tethys/apps/tethysdash/reactapp/services/api/app.js
     apptainer/patches/tethysdash/utilities.js         /usr/lib/tethys/apps/tethysdash/reactapp/services/utilities.js
-
+    apptainer/patches/tethysdash/webpack.config.js    /usr/lib/tethys/apps/tethysdash/reactapp/config/webpack.config.js
     # Requirements
     requirements.txt                        /usr/lib/tethys/requirements.txt
 
