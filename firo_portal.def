@@ -23,8 +23,6 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     export CHANNEL_LAYERS_CONFIG="\"{'hosts':[{'host': '127.0.0.1', 'port': 6379}]}\""
     export TETHYS_DB_PORT=5437
     export TETHYS_DB_HOST=localhost
-    export ALLOWED_HOSTS="\"[localhost, 127.0.0.1]\""
-    export CSRF_TRUSTED_ORIGINS="\"[http://localhost:8080, http://127.0.0.1:8080]\""
     export MULTIPLE_APP_MODE=true
     export STANDALONE_APP=tethysdash
     export TETHYSDASH_DB_NAME=tethysdash_primary_db
@@ -127,7 +125,7 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
 
     # Install Python requirements
     echo "Installing Python packages from requirements.txt..."
-    pip install --user --no-cache-dir --quiet -r ${TETHYS_HOME}/requirements.txt
+    pip install --user --no-cache-dir -r ${TETHYS_HOME}/requirements.txt
 
     # Install TethysDash & its plugins
     echo "Installing TethysDash..."
@@ -160,7 +158,7 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
 
 %startscript
     echo "Starting container... running run.sh"
-    exec /usr/lib/tethys/run.sh --skip-perm 2>&1 | tee /var/log/tethys/salt.log
+    exec /usr/lib/tethys/run.sh --debug --skip-perm 2>&1 | tee /var/log/tethys/salt.log
 
 
 
