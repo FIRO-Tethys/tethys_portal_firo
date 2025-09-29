@@ -50,10 +50,21 @@ echo_status() {
   tput sgr0
 }
 
+echo_debug() {
+  if [[ $debug==true ]]; then
+  local args="${@}"
+  tput setaf 4
+  tput bold
+  echo -e "- $args"
+  tput sgr0
+  fi
+}
+
 db_max_count=24;
 no_daemon=true;
 skip_perm=false;
 test=false;
+debug=false;
 db_engine=${TETHYS_DB_ENGINE} # Get the DB engine from environment variable
 skip_db_setup=${SKIP_DB_SETUP} # Get the DB setup flag from environment variable
 USAGE="USAGE: . run.sh [options]
@@ -62,6 +73,7 @@ OPTIONS:
 --skip-perm               \t skip fixing permissions step.
 --db-max-count <INT>      \t number of attempt to connect to the database. Default is at 24.
 --test                    \t only run test.
+--debug                   \t Increaded verbosity for debugging
 "
 
 while [[ $# -gt 0 ]]; do
@@ -79,6 +91,9 @@ while [[ $# -gt 0 ]]; do
     --test)
       test=true;
     ;;
+    --debug)
+      debug=true;
+    ;;
     *)
       echo -e "${USAGE}"
       return 0
@@ -90,10 +105,12 @@ echo_status "Starting up..."
 
 # ───────────────────────── DB readiness / setup ────────────
 if [[ $test == false ]]; then
+  echo_debug "DB readiness/setup step inside \$test == false block"
   export NGINX_USER=$(grep 'user .*;' /etc/nginx/nginx.conf \
                       | awk '{print $2}' | awk -F';' '{print $1}')
 
     if [[ $db_engine == "django.db.backends.postgresql" ]]; then
+	echo_debug '$db_engine == django.db.backends.postgresql'
         db_check_count=0
 
         until ${CONDA_HOME}/envs/${CONDA_ENV_NAME}/bin/pg_isready -h ${TETHYS_DB_HOST} -p ${TETHYS_DB_PORT} -U postgres; do
