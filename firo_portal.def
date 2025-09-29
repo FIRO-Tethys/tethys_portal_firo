@@ -125,7 +125,7 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
 
     # Install Python requirements
     echo "Installing Python packages from requirements.txt..."
-    pip install --user --no-cache-dir -r ${TETHYS_HOME}/requirements.txt
+    pip install --no-cache-dir -r ${TETHYS_HOME}/requirements.txt
 
     # Install TethysDash & its plugins
     echo "Installing TethysDash..."
@@ -134,11 +134,11 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
 
     echo "Installing TethysDash plugins..."
     cd "${TETHYS_HOME}/apps/tethysdash_plugin_cnrfc" && \
-        pip install --user --no-cache-dir .
+        pip install --no-cache-dir .
     cd "${TETHYS_HOME}/apps/tethysdash_plugin_cw3e" && \
-        pip install --user --no-cache-dir .
+        pip install --no-cache-dir .
     cd "${TETHYS_HOME}/apps/tethysdash_plugin_usace" && \
-        pip install --user --no-cache-dir .
+        pip install --no-cache-dir .
     
     echo "Installing Themes..."
     cd "${TETHYS_HOME}/ext/tethysext-default_theme" && \
