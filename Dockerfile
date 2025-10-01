@@ -26,6 +26,8 @@ COPY tethysdash_plugin_cnrfc ${TETHYS_HOME}/apps/tethysdash_plugin_cnrfc
 COPY tethysdash_plugin_cw3e ${TETHYS_HOME}/apps/tethysdash_plugin_cw3e
 COPY tethysdash_plugin_usace ${TETHYS_HOME}/apps/tethysdash_plugin_usace
 COPY requirements.txt .
+COPY images/firo_dash_default_dashboard.png ${TETHYS_HOME}/apps/tethysdash/tethysapp/tethysdash/default_dashboard.png
+COPY images/firo_dash_logo.png ${TETHYS_HOME}/apps/tethysdash/tethysapp/tethysdash/public/images/tethys_dash.png
 
 
 ##############

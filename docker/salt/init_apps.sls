@@ -9,9 +9,8 @@ Sync_Apps:
 
 Sync_App_Persistent_Stores:
   cmd.run:
-    - name: tethys syncstores all
+    - name: tethys syncstores tethysdash
     - shell: /bin/bash
-    - unless: /bin/bash -c "[ -f "{{ TETHYS_PERSIST }}/init_apps_setup_complete" ];"
 
 
 Collect_Plugin_Metadata:
