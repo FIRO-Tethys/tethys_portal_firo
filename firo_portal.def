@@ -37,7 +37,8 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     tethysdash_plugin_cnrfc                 /usr/lib/tethys/apps/tethysdash_plugin_cnrfc
     tethysdash_plugin_cw3e                  /usr/lib/tethys/apps/tethysdash_plugin_cw3e
     tethysdash_plugin_usace                 /usr/lib/tethys/apps/tethysdash_plugin_usace
-    
+    images/firo_dash_logo.png               /usr/lib/tethys/apps/tethysdash/tethysapp/tethysdash/public/images/tethys_dash.png
+
     # patch for prefix
     apptainer/patches/tethysdash/Error.js             /usr/lib/tethys/apps/tethysdash/reactapp/components/error/Error.js
     apptainer/patches/tethysdash/development.env      /usr/lib/tethys/apps/tethysdash/reactapp/config/development.env
