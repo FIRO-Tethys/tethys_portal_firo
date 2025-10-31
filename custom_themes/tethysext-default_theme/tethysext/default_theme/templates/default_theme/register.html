@@ -1,197 +1,153 @@
-{% extends "base.html" %}
-
+{% extends "tethys_portal/accounts/base.html" %}
 {% load static tethys %}
+{% load django_bootstrap5 tethys %}
 
-{% block title %}{{ block.super }} - {% if site_globals.apps_library_title %}{{ site_globals.apps_library_title }}{% else %}Apps{% endif %}{% endblock %}
+{% block title %}{{ block.super }} - Sign Up{% endblock %}
 
 {% block styles %}
   {{ block.super }}
-  {{ tethys.select2.link_tag|safe }}
-  <style id="app-library-styles">
+  {{ site_globals.register_css|load_custom_css|safe }}
+  <style id="portal-auth-styles">
     :root {
       --portal-border: {{ site_globals.primary_color|default:'#0d5c7d' }};
       --portal-hover: #f3961c;
       --portal-surface: #dce3ea;
       --portal-surface-alt: #e9eff4;
       --portal-text: {{ site_globals.primary_text_color|default:'#14506f' }};
+      --portal-muted: rgba(20, 80, 111, 0.65);
     }
 
     body {
       background: {{ site_globals.background_color }};
       color: var(--portal-text);
+      font-family: Merriweather, Georgia, serif !important;
     }
     .wrapper{
         padding: 30px;
     }
-    .app-libary-wrapper {
-      padding-top: 2.5rem;
-      padding-bottom: 4.5rem;
+    .account-form-wrapper {
+      max-width: 560px;
+      margin: 0 auto;
+      border: 3px solid var(--portal-border) !important;
+      border-radius: 10px !important;
+      padding: 3rem 2.75rem !important;
+      box-shadow: 0 20px 44px rgba(13, 92, 125, 0.24) !important;
+      color: inherit;
     }
 
-    .no-apps-loaded-message {
-      width: min(480px, 90%);
-      margin: 120px auto 180px;
-      text-align: center;
+    @media (max-width: 575.98px) {
+      .account-form-wrapper {
+        padding: 2.5rem 1.75rem !important;
+      }
+    }
+
+    .account-form-title {
       color: var(--portal-border);
-      font-weight: 600;
-      border: 3px solid var(--portal-border);
-      border-radius: 16px;
-      padding: 2.25rem;
-      background: linear-gradient(180deg, var(--portal-surface) 0%, var(--portal-surface-alt) 100%);
-      box-shadow: 0 18px 36px rgba(13, 92, 125, 0.18);
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      letter-spacing: 0.04em;
     }
 
-    /* Tag Search */
-    .tag-search-field {
-      width: 100%;
+    .account-form-body {
+      color: var(--portal-text);
     }
 
-    .select2 {
-      width: 100% !important;
-    }
-
-    .select2-container--default .select2-selection--multiple {
-      min-height: 3.25rem;
+    .account-form-body .form-control {
       border: 2px solid rgba(13, 92, 125, 0.35);
-      border-radius: 14px;
-      background: rgba(255, 255, 255, 0.92);
-      box-shadow: 0 12px 24px rgba(13, 92, 125, 0.15);
-      padding: 0.35rem 0.5rem;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      border-radius: 12px;
+      padding: 0.75rem 1rem;
+      background: rgba(255, 255, 255, 0.95);
+      box-shadow: inset 0 1px 2px rgba(13, 63, 92, 0.08);
     }
 
-    .select2-container--default .select2-selection--multiple:focus,
-    .select2-container--default .select2-selection--multiple.select2-selection--focus {
+    .account-form-body .form-control:focus {
       border-color: var(--portal-border);
-      box-shadow: 0 0 0 0.25rem rgba(13, 92, 125, 0.18);
+      box-shadow: 0 0 0 0.25rem rgba(13, 92, 125, 0.2);
     }
 
-    .select2-container .select2-search--inline .select2-search__field {
-      height: 26px !important;
-      color: var(--portal-text);
+    .account-form-body .form-check-input {
+      border: 2px solid rgba(13, 92, 125, 0.4);
     }
 
-    .select2-container--default .select2-selection--multiple .select2-selection__choice {
-      background: var(--portal-border);
-      border: none;
-      color: #ffffff;
-      border-radius: 10px;
-      padding: 0.25rem 0.65rem;
+    .account-form-body .form-check-input:checked {
+      background-color: var(--portal-border);
+      border-color: var(--portal-border);
     }
 
-    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
-      color: rgba(255, 255, 255, 0.8);
-      margin-right: 0.35rem;
-    }
-
-    /* App Cards */
-    .app-link-wrapper {
-      text-decoration: none;
-      color: var(--portal-text);
-      transition: color 0.2s ease;
-    }
-
-    .app-link-wrapper:hover,
-    .app-link-wrapper:focus {
-      color: var(--portal-hover);
-      text-decoration: none;
-    }
-
-    .app-link-wrapper.veiled .app-card {
-      opacity: 0.6;
-      filter: saturate(0.85);
-    }
-
-    .app-card {
-      width: 240px;
-      min-height: 320px;
-      /* background: linear-gradient(180deg, var(--portal-surface) 0%, var(--portal-surface-alt) 100%); */
-      border: 3px solid var(--portal-border);
-      border-radius: 10px;
-      padding: 1.75rem 1.5rem;
-      box-shadow: 0 20px 36px rgba(13, 92, 125, 0.18);
+    .portal-auth-shell {
       display: flex;
       flex-direction: column;
-      gap: 1.25rem;
-      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+      gap: 1.5rem;
     }
 
-    .app-card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 26px 44px rgba(13, 92, 125, 0.24);
-	  color: var(--portal-hover); 
-      /* background: linear-gradient(180deg, rgba(255, 255, 255, 0.88) 0%, var(--portal-surface-alt) 100%); */
-    }
-
-    .app-link-wrapper.unconfigured .app-card {
-      background: linear-gradient(180deg, rgba(102, 102, 102, 0.85) 0%, rgba(68, 68, 68, 0.95) 100%);
-      border-color: #3a3a3a;
-      color: #ffffff;
-      box-shadow: 0 18px 30px rgba(34, 34, 34, 0.35);
-    }
-
-    .app-link-wrapper.unconfigured:hover .app-card {
-      transform: translateY(-6px);
-      background: linear-gradient(180deg, rgba(102, 102, 102, 0.95) 0%, rgba(51, 51, 51, 1) 100%);
-	  color: var(--portal-hover);   
-    }
-
-    .app-link-wrapper.unconfigured .app-card .app-title {
-      color: #ffffff;
-    }
-
-    .app-card .app-title {
-      font-weight: 700;
+    .portal-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 0.75rem 1.75rem;
+      border: 2px solid var(--portal-border);
+      border-radius: 14px;
+      background: #f7fafc;
       color: var(--portal-border);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.045em;
+      box-shadow: 0 14px 28px rgba(13, 92, 125, 0.2);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+    }
+
+    .portal-button:hover,
+    .portal-button:focus {
+      background: #ffffff;
+      color: var(--portal-hover);
+      border-color: var(--portal-hover);
+      text-decoration: none;
+      box-shadow: 0 18px 32px rgba(13, 92, 125, 0.28);
+      transform: translateY(-2px);
+    }
+
+    .portal-auth-link {
+      color: var(--portal-muted);
+      font-size: 0.95rem;
+      text-align: center;
+    }
+
+    .portal-inline-link {
+      color: var(--portal-border);
+      font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.04em;
-      margin-bottom: 0;
     }
 
-    .app-card .description,
-    .app-card .app-description {
-      color: rgba(20, 80, 111, 0.9);
-      font-size: 0.95rem;
-      line-height: 1.5;
+    .portal-inline-link:hover,
+    .portal-inline-link:focus {
+      color: var(--portal-hover);
     }
 
-    .app-card .app-thumbnail,
-    .app-card .thumbnail {
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.45);
+    .social-divide-or {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin: 1.75rem 0;
+      color: var(--portal-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
-    .app-help-icon,
-    .redirect-icon {
-      border-radius: 50%;
-      font-size: 10pt;
-      line-height: 1;
-      margin-top: 3px;
-      margin-right: 3px;
-      background: #ffffff;
-      box-shadow: 0 4px 10px rgba(13, 92, 125, 0.18);
+    .social-divide-or .line {
+      flex: 1;
+      height: 1px;
+      background: rgba(13, 92, 125, 0.25);
     }
 
-    .app-help-icon:hover,
-    .redirect-icon:hover {
-      background: #f7fafc;
-      cursor: pointer;
-    }
-
-    .app-help-info .btn-close {
-      width: 0.25em;
-      height: 0.25em;
+    .social-divide-or .or {
+      color: var(--portal-border);
     }
   </style>
-  {{ site_globals.apps_library_css|load_custom_css|safe }}
 {% endblock %}
-
-
-
-{% block app_header_override %}
-{% endblock %}
-
 {% block custom_styles %}
 	<link rel="stylesheet" id="child-style-css" href="https://cw3e.ucsd.edu/wp-content/themes/twentysixteen-child/style.css?ver=1.0.0" media="all">
 	<link rel="stylesheet" id="twentysixteen-fonts-css" href="https://cw3e.ucsd.edu/wp-content/themes/twentysixteen/fonts/merriweather-plus-montserrat-plus-inconsolata.css?ver=20230328" media="all">
@@ -524,9 +480,9 @@
 
 {% endblock %}
 
-{% block global_scripts %}
-  {{ block.super }}
-  {{ tethys.select2.script_tag|safe }}
+{% block account_form_title %}Sign Up{% endblock %}
+
+{% block app_header_override %}
 {% endblock %}
 
 {% block header %}
@@ -534,56 +490,29 @@
 	<div class="clear-header"></div>
 {% endblock %}
 
-{% block primary_content %}
-  {# Push content below header #}
-  <div class="app-libary-wrapper">
-    {% if apps.configured or apps.unconfigured %}
-      {# Tag Search #}
-      {% if apps|get_tags_from_apps %}
-      <div class="container-xl">
-        <div class="row justify-content-center mt-4">
-          <div class="col-md-6">
-            <select class="tag-search-field" name="tags" multiple="multiple">
-              {% for tag in apps|get_tags_from_apps %}
-              <option value="{{ tag.0 }}">{{ tag.1 }}</option>
-              {% endfor %}
-            </select>
-          </div>
-        </div>
-      </div>
-      {% endif %}
-      {# App List #}
-      <div class="container-xl">
-        <div class="row row-cols-auto justify-content-center mb-4 mx-4">
-          {% for app in apps.configured %}
-            <div class="col">
-              {% include 'tethys_apps/app_card.html' with app=app unconfigured=False %}
-            </div>
-          {% endfor %}
-          {% for app in apps.unconfigured %}
-            <div class="col">
-              {% include 'tethys_apps/app_card.html' with app=app unconfigured=True %}
-            </div>
-          {% endfor %}
-        </div>
-      </div>
-    {% else %}
-      <h2 class="no-apps-loaded-message">There are no apps loaded.</h2>
-    {% endif %}
-  </div>
-  <div id="app-library-curtain"></div>
+
+{% block account_form_body %}
+<form role="form" method="post" class="portal-auth-shell">
+  {% if backends.not_associated %}
+    {% include 'tethys_portal/accounts/social_buttons.html' with action='Sign up' backends=backends.not_associated %}
+    <div class="social-divide-or">
+      <div class="line"></div>
+      <span class="or">or</span>
+    </div>
+  {% endif %}
+  {% csrf_token %}
+  {% bootstrap_form form %}
+  <button type="submit" id="register-submit" class="btn portal-button mb-3" name="register-submit">Sign Up</button>
+  <span class="portal-auth-link">Already have an account? <a class="portal-inline-link" href="{% url 'accounts:login' %}">Login</a></span>
+</form>
 {% endblock %}
 
 {% block footer %}
 	<footer id="site-footer" class="site-footer mt-auto container-fluid"  style="max-width: 1320px;">
+
 		{% block footer_content %}
 			{% include "default_theme/footer.html" %}
+
 		{% endblock %}
 	</footer>
-{% endblock %}
-
-
-{% block scripts %}
-  {{ block.super }}
-  <script src="{% static 'default_theme/js/main.js' %}" type="text/javascript"></script>
 {% endblock %}
