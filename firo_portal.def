@@ -39,13 +39,6 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     tethysdash_plugin_usace                 /usr/lib/tethys/apps/tethysdash_plugin_usace
     images/firo_dash_logo.png               /usr/lib/tethys/apps/tethysdash/tethysapp/tethysdash/public/images/tethys_dash.png
 
-    # patch for prefix
-    apptainer/patches/tethysdash/Error.js             /usr/lib/tethys/apps/tethysdash/reactapp/components/error/Error.js
-    apptainer/patches/tethysdash/development.env      /usr/lib/tethys/apps/tethysdash/reactapp/config/development.env
-    apptainer/patches/tethysdash/index.js             /usr/lib/tethys/apps/tethysdash/reactapp/index.js
-    apptainer/patches/tethysdash/app.js               /usr/lib/tethys/apps/tethysdash/reactapp/services/api/app.js
-    apptainer/patches/tethysdash/utilities.js         /usr/lib/tethys/apps/tethysdash/reactapp/services/utilities.js
-    apptainer/patches/tethysdash/webpack.config.js    /usr/lib/tethys/apps/tethysdash/reactapp/config/webpack.config.js
     # Requirements
     requirements.txt                        /usr/lib/tethys/requirements.txt
 
