@@ -517,7 +517,10 @@
 						<a href="{% url 'accounts:register' %}" class="portal-button">Sign Up</a>
 						<a href="{% url 'accounts:login' %}" class="portal-button">Login</a>
 					{% endif %}
-					<a href="{{ app_library_url }}" class="portal-button">Apps</a>
+					<a href="{{ app_library_url }}" class="portal-button">Applications</a>
+					{% if user.is_staff %}
+						<a href="{% url 'admin:index' %}" class="portal-button"> ⚙️ Settings</a>
+					{% endif %}
 				</div>
 			</div>
 		</section>
