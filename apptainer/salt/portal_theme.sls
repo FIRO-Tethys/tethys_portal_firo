@@ -29,14 +29,11 @@
 
 {% set TETHYS_SITE_CONTENT = TETHYS_SITE_CONTENT_LIST|join(' ') %}
 
-
-
 Move_Custom_Theme_Files_to_Static_Root:
   file.symlink:
     - name: {{ TETHYS_PERSIST }}/tethysext-default_theme
     - target: {{ TETHYS_HOME }}/ext/tethysext-default_theme
     - force: False
-
 
 {% if TETHYS_SITE_CONTENT %}
 Set_Tethys_Site_Settings:

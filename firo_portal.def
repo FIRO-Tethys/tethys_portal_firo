@@ -7,7 +7,7 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
 
 %environment
     export CONDA_HOME="/opt/conda"
-    export TETHYS_LOG="/var/log/tethys.log"
+    export TETHYS_LOG="/var/log/tethys"
     export TETHYS_HOME="/usr/lib/tethys"
     export TETHYS_PERSIST="/var/lib/tethys_persist"
     export SHELL="/bin/bash"
@@ -23,22 +23,23 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     export CHANNEL_LAYERS_CONFIG="\"{'hosts':[{'host': '127.0.0.1', 'port': 6379}]}\""
     export TETHYS_DB_PORT=5437
     export TETHYS_DB_HOST=localhost
-    export ALLOWED_HOSTS="\"[localhost, 127.0.0.1]\""
-    export CSRF_TRUSTED_ORIGINS="\"[http://localhost:8080, http://127.0.0.1:8080]\""
     export MULTIPLE_APP_MODE=true
     export STANDALONE_APP=tethysdash
     export TETHYSDASH_DB_NAME=tethysdash_primary_db
     export POSTGRES_PASSWORD='pass'
-    export HOME_PAGE_TEMPLATE="/default_theme/templates/default_theme/home.html"
+    export HOME_PAGE_TEMPLATE="/default_theme/home.html"
+    export APPS_LIBRARY_TEMPLATE="/default_theme/apps_library.html"
+    export LOGIN_PAGE_TEMPLATE="/default_theme/login.html"
+    export REGISTER_PAGE_TEMPLATE="/default_theme/register.html"
     export PREFIX_URL="/site2"
     export MEDIA_URL="/site2/media/"
-
 
 %files
     tethysdash                              /usr/lib/tethys/apps/tethysdash
     tethysdash_plugin_cnrfc                 /usr/lib/tethys/apps/tethysdash_plugin_cnrfc
     tethysdash_plugin_cw3e                  /usr/lib/tethys/apps/tethysdash_plugin_cw3e
     tethysdash_plugin_usace                 /usr/lib/tethys/apps/tethysdash_plugin_usace
+    images/firo_dash_logo.png               /usr/lib/tethys/apps/tethysdash/tethysapp/tethysdash/public/images/tethys_dash.png
 
     # Requirements
     requirements.txt                        /usr/lib/tethys/requirements.txt
@@ -63,15 +64,16 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
 
     #scripts
     apptainer/scripts/udpate_db.sh        /var/lib/tethys_persist/scripts/update_db.sh
-    
+
+
 
 %post
     export CONDA_HOME="/opt/conda"
-    export TETHYS_LOG="/var/log/tethys.log"
+    export TETHYS_LOG="/var/log/tethys"
     export TETHYS_HOME="/usr/lib/tethys"
     export TETHYS_PERSIST="/var/lib/tethys_persist"
     export PATH="$CONDA_HOME/envs/tethys/bin:$PATH"
-    export NGINX_USER=www
+    # export NGINX_USER=www
     export NODE_VERSION="20.12.2"
     export NVM_DIR=/usr/local/nvm
     export NODE_VERSION_DIR="$NVM_DIR/versions/node/v${NODE_VERSION}"
@@ -79,13 +81,18 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     export NPM="$NODE_VERSION_DIR/bin/npm"
     export TETHYS_PORTAL_HOST=""
     export TETHYS_APP_ROOT_URL="/apps/tethysdash/"
+    export TETHYS_PREFIX_URL="site2"
     export TETHYS_LOADER_DELAY="500"
     export TETHYS_DEBUG_MODE="false"
     export TETHYSDASH_SRC_ROOT=${TETHYS_HOME}/apps/tethysdash
     export TETHYSDASH_DEV_REACT_CONFIG="$TETHYSDASH_SRC_ROOT/reactapp/config/development.env"
     export TETHYSDASH_PROD_REACT_CONFIG="$TETHYSDASH_SRC_ROOT/reactapp/config/production.env"
-    export HOME_PAGE_TEMPLATE="/default_theme/templates/default_theme/home.html"
+    export HOME_PAGE_TEMPLATE="/default_theme/home.html"
+    export APPS_LIBRARY_TEMPLATE="/default_theme/apps_library.html"
+    export LOGIN_PAGE_TEMPLATE="/default_theme/login.html"
+    export REGISTER_PAGE_TEMPLATE="/default_theme/register.html"
     export PREFIX_URL="/site2"
+
     # (1) Update apt-get and install additional system packages
     apt-get update && apt-get install -y \
         dos2unix \
@@ -105,9 +112,9 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     && sed -i "s#TETHYS_DEBUG_MODE.*#TETHYS_DEBUG_MODE = ${TETHYS_DEBUG_MODE}#g" ${TETHYSDASH_PROD_REACT_CONFIG} \
     && sed -i "s#TETHYS_LOADER_DELAY.*#TETHYS_LOADER_DELAY = ${TETHYS_LOADER_DELAY}#g" ${TETHYSDASH_PROD_REACT_CONFIG} \
     && sed -i "s#TETHYS_PORTAL_HOST.*#TETHYS_PORTAL_HOST = ${TETHYS_PORTAL_HOST}#g" ${TETHYSDASH_PROD_REACT_CONFIG} \
-    && sed -i "s#TETHYS_APP_ROOT_URL.*#TETHYS_APP_ROOT_URL = ${TETHYS_APP_ROOT_URL}#g" ${TETHYSDASH_PROD_REACT_CONFIG}
-
-
+    && sed -i "s#TETHYS_APP_ROOT_URL.*#TETHYS_APP_ROOT_URL = ${TETHYS_APP_ROOT_URL}#g" ${TETHYSDASH_PROD_REACT_CONFIG} \
+    && sed -i "s#TETHYS_PREFIX_URL.*#TETHYS_PREFIX_URL = ${TETHYS_PREFIX_URL}#g" ${TETHYSDASH_PROD_REACT_CONFIG} \
+ 
     cd $TETHYSDASH_SRC_ROOT
     $NPM install
     $NPM run build
@@ -116,7 +123,7 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
 
     # Install Python requirements
     echo "Installing Python packages from requirements.txt..."
-    pip install --user --no-cache-dir --quiet -r ${TETHYS_HOME}/requirements.txt
+    pip install --no-cache-dir -r ${TETHYS_HOME}/requirements.txt
 
     # Install TethysDash & its plugins
     echo "Installing TethysDash..."
@@ -125,11 +132,11 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
 
     echo "Installing TethysDash plugins..."
     cd "${TETHYS_HOME}/apps/tethysdash_plugin_cnrfc" && \
-        pip install --user --no-cache-dir --quiet .
+        pip install --no-cache-dir .
     cd "${TETHYS_HOME}/apps/tethysdash_plugin_cw3e" && \
-        pip install --user --no-cache-dir --quiet .
+        pip install --no-cache-dir .
     cd "${TETHYS_HOME}/apps/tethysdash_plugin_usace" && \
-        pip install --user --no-cache-dir --quiet .
+        pip install --no-cache-dir .
     
     echo "Installing Themes..."
     cd "${TETHYS_HOME}/ext/tethysext-default_theme" && \
@@ -138,23 +145,31 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     #Create dir for tethysdash setting
     mkdir -p $TETHYS_PERSIST/data/tethysdash
     touch /var/log/tethys/salt.log /var/log/supervisor/supervisord.log
+    
+    # we are using 1012 for the proxy user to avoid conflict with the existing www user.
+    groupadd {{ PROXY_USER }} \
+      ; useradd -r -u 1012 -g {{ PROXY_USER }} {{ PROXY_USER }} \
+      ; sed -i 's/^user.*/user {{ PROXY_USER }} {{ PROXY_USER }};/' /etc/nginx/nginx.conf \
+      ; sed -i "/^\[supervisord\]$/a user={{ PROXY_USER }}" /etc/supervisor/supervisord.conf \
+      ; sed -i '/^\s*user\s*=\s*www\s*$/d' /etc/supervisor/supervisord.conf \
+      ; chown -R {{ PROXY_USER }}: ${TETHYS_LOG} /run /var/log/supervisor /var/log/nginx /var/lib/nginx
 
-    # Need to remove the nginx user from the supervisord config file
-    # Error 1
-    sed -i '/^\s*user\s*=\s*www\s*$/d' /etc/supervisor/supervisord.conf
+    # Need to have proper permissions on conda home for the proxy user    
+    chown -R {{ PROXY_USER }}: ${CONDA_HOME}
 
+    echo "Making run.sh executable..."
     # we need to make sure that the run.sh script is executable for the user running the rootless container
     chmod 755 $TETHYS_HOME/run.sh
 
 
 %startscript
     echo "Starting container... running run.sh"
-    exec /usr/lib/tethys/run.sh --skip-perm 2>&1 | tee /var/log/tethys/salt.log
+    exec /usr/lib/tethys/run.sh --debug --skip-perm 2>&1 | tee /var/log/tethys/salt.log
 
 
 
 # Errors
-# 1
+#  Error 1: Need to remove the nginx user from the supervisord config file
 # - Starting supervisor
 # /usr/lib/python3/dist-packages/supervisor/options.py:474: UserWarning: Supervisord is running as root and it is searching for its configuration file in default locations (including its current working directory); you probably want to specify a "-c" argument specifying an absolute path to a configuration file for improved security.
 #   self.warnings.warn(

@@ -2,6 +2,7 @@
 {% set CONDA_ENV_NAME = salt['environ.get']('CONDA_ENV_NAME') %}
 {% set CONDA_HOME = salt['environ.get']('CONDA_HOME') %}
 {% set TETHYS_PERSIST = salt['environ.get']('TETHYS_PERSIST') %}
+{% set NGINX_USER = salt['environ.get']('NGINX_USER') %}
 
 Persist_Portal_Config_Post_App:
   file.rename:
@@ -17,7 +18,7 @@ Restore_Portal_Config_Post_App:
 
 Chown_Portal_Config_Post_App:
   cmd.run:
-    - name: chown www:www {{ TETHYS_HOME }}/portal_config.yml
+    - name: chown {{ NGINX_USER }}:{{ NGINX_USER }} {{ TETHYS_HOME }}/portal_config.yml
     - shell: /bin/bash
 
 Collect_Static:
@@ -68,5 +69,5 @@ Link_ASGI_Supervisor_Post_App:
 
 Tethys_Persist_Permissions:
   cmd.run:
-    - name: "chown -R www: {{ TETHYS_PERSIST }} && chmod -R g+rw {{ TETHYS_PERSIST }}"
+    - name: "chown -R {{ NGINX_USER }}: {{ TETHYS_PERSIST }} && chmod -R g+rw {{ TETHYS_PERSIST }}"
     - shell: /bin/bash
