@@ -14,3 +14,9 @@
 [submodule "tethysdash"]
 	path = tethysdash
 	url = https://github.com/tethysplatform/tethysapp-tethys_dash.git
+[submodule "ciroh_plugins"]
+	path = ciroh_plugins
+	url = https://github.com/FIRO-Tethys/ciroh_plugins.git
+[submodule "Custom_CW3E_Visualizations"]
+	path = Custom_CW3E_Visualizations
+	url = https://github.com/FIRO-Tethys/Custom_CW3E_Visualizations.git
