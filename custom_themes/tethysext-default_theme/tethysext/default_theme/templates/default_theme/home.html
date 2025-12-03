@@ -11,52 +11,145 @@
 	{{ tethys.bootstrap_icons.link_tag|safe }}
 
  <style id="header-styles">
+		:root {
+			--portal-border: {{ site_globals.primary_color|default:'#0d5c7d' }};
+			--portal-accent: {{ site_globals.secondary_color|default:'#0f81b2' }};
+			--portal-hover: #f3961c;
+			--portal-surface: #dce3ea;
+			--portal-surface-alt: #e9eff4;
+			--portal-text: {{ site_globals.primary_text_color|default:'#14506f' }};
+		}
+
 		body {
 			background: {{ site_globals.background_color }};
+			color: var(--portal-text);
+			font-family: Merriweather, Georgia, serif !important;
 		}
 
 		.hero-container {
 			margin-top: -206px;
+			padding-top: 240px;
+			padding-bottom: 90px;
 		}
 
-		.hero-bg {
-			background-color: {{ site_globals.secondary_color }};
-			background-image: linear-gradient(345deg, {{ site_globals.primary_color }} 0%, {{ site_globals.secondary_color }} 100%); 
+		.portal-hero-panel {
+			max-width: 960px;
+			margin: 0 auto;
+			padding: 4rem 4rem 3rem;
+			/* border: 3px solid var(--portal-border); */
+			border-radius: 18px;
 		}
 
-		.hero {
-			padding-top: 254px;
-			z-index: 100;
+		@media (max-width: 991.98px) {
+			.hero-container {
+				margin-top: -150px;
+				padding-top: 210px;
+				padding-bottom: 70px;
+			}
+
+			.portal-hero-panel {
+				padding: 2.5rem 2.25rem 2.25rem;
+			}
 		}
 
-		.hero .hero-title {
-			color: {{ site_globals.primary_text_color }};
+		@media (max-width: 767.98px) {
+			.hero-container {
+				margin-top: -110px;
+				padding-top: 190px;
+				padding-bottom: 56px;
+			}
+
+			.portal-hero-panel {
+				padding: 2.25rem 1.75rem 2rem;
+			}
 		}
 
-		.hero .lead {
-			color: {{ site_globals.primary_text_color }};
+		.portal-title {
+			color: var(--portal-border);
+			font-weight: 700;
+			font-size: clamp(2rem, 4vw, 2.6rem);
+			margin-bottom: 2rem;
 		}
 
-		.btn-sign-up {
-			display: block;
-			width: 150px;
+		.portal-logos {
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: center;
+			align-items: center;
+			gap: 2.5rem;
+			margin-bottom: 2.25rem;
 		}
-		
+
+		.portal-logo {
+			max-height: 110px;
+			width: auto;
+			filter: drop-shadow(0 8px 18px rgba(13, 92, 125, 0.18));
+			transition: transform 0.2s ease, filter 0.2s ease;
+		}
+
+		.portal-logo:hover,
+		.portal-logo:focus {
+			transform: translateY(-4px);
+			filter: drop-shadow(0 14px 24px rgba(13, 92, 125, 0.28));
+		}
+
+		.portal-lead {
+			color: rgba(20, 80, 111, 0.85);
+			font-size: 1.05rem;
+			line-height: 1.6;
+			margin-bottom: 2rem;
+		}
+
+		.portal-actions {
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: center;
+			align-items: center;
+			gap: 1rem;
+		}
+
+		.portal-button {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			padding: 0.65rem 1.75rem;
+			border: 2px solid var(--portal-border);
+			border-radius: 10px;
+			min-width: 140px;
+			background: #f7fafc;
+			color: var(--portal-border);
+			font-weight: 600;
+			text-transform: uppercase;
+			letter-spacing: 0.045em;
+			box-shadow: 0 10px 24px rgba(13, 92, 125, 0.18);
+			transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+		}
+
+		.portal-button:hover,
+		.portal-button:focus {
+			background: #ffffff;
+			color: var(--portal-hover);
+			text-decoration: none;
+			box-shadow: 0 16px 32px rgba(13, 92, 125, 0.24);
+			transform: translateY(-2px);
+		}
+
 		.feature-card {
-			background: none;
-			border: none;
-		}
-		
-		.feature-card .card-img-top {
-			max-width: 250px;
+			background: linear-gradient(180deg, var(--portal-surface) 0%, var(--portal-surface-alt) 100%);
+			border: 3px solid var(--portal-border);
+			border-radius: 16px;
+			padding: 1.75rem 1.5rem;
+			box-shadow: 0 18px 36px rgba(13, 92, 125, 0.18);
 		}
 
 		.feature-card .card-title {
-			color: {{ site_globals.secondary_text_color }};
+			color: var(--portal-border);
+			font-weight: 700;
 		}
 
 		.feature-card .card-text {
-			color: {{ site_globals.secondary_text_color }};
+			color: rgba(20, 80, 111, 0.85);
+			font-size: 1rem;
 		}
   </style>
 {% endblock %}
@@ -410,38 +503,25 @@
 {% url 'app_library' as app_library_url %}
 <div id="content-home" class="site-content">
 	<div class="container-fluid hero-container">
-		<section class="hero clearfix px-5 pb-5 text-center">
-			<div class="row align-items-center">
-				<div class="col-md-7 mx-auto">
-					<h1 class="hero-title mb-3">{% if site_globals.hero_text %}{{ site_globals.hero_text }}{% else %}Welcome to Firo Portal, the hub for your apps.{% endif %}</h2>
-				<div class="card-body">
-					<img src="{% static 'default_theme/images/CW3E.png' %}"  class="img-logo" style="width: 180px; height: auto;">
-					<img src="{% static 'default_theme/images/ERDCLogo.png' %}" class="img-logo" style="width: 300px; height: auto;">
-					<img src="{% static 'default_theme/images/USACE.png' %}" class="img-logo" style="width: 200px; height: auto;">
-
+		<section class="hero text-center">
+			<div class="portal-hero-panel">
+				<h1 class="portal-title">{% if site_globals.hero_text %}{{ site_globals.hero_text }}{% else %}Welcome to Firo Portal, the hub for your apps.{% endif %}</h1>
+				<div class="portal-logos">
+					<img src="{% static 'default_theme/images/CW3E.png' %}" class="portal-logo" alt="CW3E logo">
+					<img src="{% static 'default_theme/images/ERDCLogo.png' %}" class="portal-logo" alt="ERDC logo">
+					<img src="{% static 'default_theme/images/USACE.png' %}" class="portal-logo" alt="USACE logo">
 				</div>
-
-					<p class="lead mb-4">{% if site_globals.blurb_text %}{{ site_globals.blurb_text }}{% else %}Firo Portal is designed to be customizable, so that you can host apps for your organization. You can change everything on this page from the Home Page settings.{% endif %}</h3>
+				<p class="portal-lead">{% if site_globals.blurb_text %}{{ site_globals.blurb_text }}{% else %}Firo Portal is designed to be customizable, so that you can host apps for your organization. You can change everything on this page from the Home Page settings.{% endif %}</p>
+				<div class="portal-actions">
+					{% if not user.is_authenticated and ENABLE_OPEN_SIGNUP %}
+						<a href="{% url 'accounts:register' %}" class="portal-button">Sign Up</a>
+						<a href="{% url 'accounts:login' %}" class="portal-button">Login</a>
+					{% endif %}
+					<a href="{{ app_library_url }}" class="portal-button">Applications</a>
+					{% if user.is_staff %}
+						<a href="{% url 'admin:index' %}" class="portal-button"> ⚙️ Settings</a>
+					{% endif %}
 				</div>
-				<div class="d-flex           
-							flex-column 
-							flex-sm-row
-							justify-content-center
-							align-items-center
-							gap-3">
-
-				{% if not user.is_authenticated and ENABLE_OPEN_SIGNUP %}
-					<a href="{% url 'accounts:register' %}"
-						class="btn  btn-outline-primary btn-extra-border mx-0 my-2">Sign Up</a>
-
-					<a href="{% url 'accounts:login' %}"
-						class="btn btn-outline-primary btn-extra-border mx-0 my-2">Login</a>
-				{% endif %}
-
-				<a href="{{ app_library_url }}"
-					class="btn btn-outline-primary btn-extra-border mx-0 my-2">Apps</a>
-				</div>
-
 			</div>
 		</section>
 	</div>

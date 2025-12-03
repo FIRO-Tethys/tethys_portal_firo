@@ -33,6 +33,7 @@
 {% set MEDIA_URL = salt['environ.get']('MEDIA_URL') %}
 {% set MEDIA_ROOT = salt['environ.get']('MEDIA_ROOT') %}
 {% set BYPASS_TETHYS_HOME_PAGE = salt['environ.get']('BYPASS_TETHYS_HOME_PAGE') %}
+{% set ENABLE_OPEN_PORTAL = salt['environ.get']('ENABLE_OPEN_PORTAL') %}
 {% set QUOTA_HANDLERS = salt['environ.get']('QUOTA_HANDLERS') %}
 {% set DJANGO_ANALYTICAL = salt['environ.get']('DJANGO_ANALYTICAL') %}
 {% set ADD_BACKENDS = salt['environ.get']('ADD_BACKENDS') %}
@@ -94,6 +95,7 @@ Generate_Tethys_Settings_TethysCore:
         --set TETHYS_PORTAL_CONFIG.MEDIA_URL "{{ MEDIA_URL }}"
         --set TETHYS_PORTAL_CONFIG.MEDIA_ROOT "{{ MEDIA_ROOT }}"
         --set TETHYS_PORTAL_CONFIG.BYPASS_TETHYS_HOME_PAGE {{ BYPASS_TETHYS_HOME_PAGE }}
+        --set TETHYS_PORTAL_CONFIG.ENABLE_OPEN_PORTAL {{ ENABLE_OPEN_PORTAL }}
         --set RESOURCE_QUOTA_HANDLERS {{ QUOTA_HANDLERS }}
         --set ANALYTICS_CONFIG {{ DJANGO_ANALYTICAL }}
         --set AUTHENTICATION_BACKENDS {{ ADD_BACKENDS }}
