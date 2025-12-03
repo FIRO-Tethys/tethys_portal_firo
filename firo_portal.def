@@ -31,8 +31,8 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     export APPS_LIBRARY_TEMPLATE="/default_theme/apps_library.html"
     export LOGIN_PAGE_TEMPLATE="/default_theme/login.html"
     export REGISTER_PAGE_TEMPLATE="/default_theme/register.html"
-    export PREFIX_URL="/site2"
-    export MEDIA_URL="/site2/media/"
+    export PREFIX_URL="/firo_apps"
+    export MEDIA_URL="/firo_apps/media/"
 
 %files
     tethysdash                              /usr/lib/tethys/apps/tethysdash
@@ -81,7 +81,7 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     export NPM="$NODE_VERSION_DIR/bin/npm"
     export TETHYS_PORTAL_HOST=""
     export TETHYS_APP_ROOT_URL="/apps/tethysdash/"
-    export TETHYS_PREFIX_URL="site2"
+    export TETHYS_PREFIX_URL="firo_apps"
     export TETHYS_LOADER_DELAY="500"
     export TETHYS_DEBUG_MODE="false"
     export TETHYSDASH_SRC_ROOT=${TETHYS_HOME}/apps/tethysdash
@@ -91,7 +91,7 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     export APPS_LIBRARY_TEMPLATE="/default_theme/apps_library.html"
     export LOGIN_PAGE_TEMPLATE="/default_theme/login.html"
     export REGISTER_PAGE_TEMPLATE="/default_theme/register.html"
-    export PREFIX_URL="/site2"
+    export PREFIX_URL="/firo_apps"
 
     # (1) Update apt-get and install additional system packages
     apt-get update && apt-get install -y \
