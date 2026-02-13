@@ -1,0 +1,64 @@
+@import "custom-bootstrap";
+
+:root {
+  --ts-header-height: 56px;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  /* offset for fixed header */
+  padding-top: var(--ts-header-height);
+}
+
+body.has-cw3e-header {
+  padding-top: 0;
+}
+
+.no-caret {
+  caret-color: transparent;
+  user-select: text; /* Ensures text can be selected */
+}
+
+/* Override for input/textarea elements inside .no-caret */
+.no-caret input,
+.no-caret textarea {
+  caret-color: auto; /* or any visible color like black */
+}
+
+/* Scrollbar width */
+::-webkit-scrollbar {
+  width: 8px; /* Adjust width */
+  height: 8px; /* For horizontal scrollbars */
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.form-check-input {
+  border-color: black;
+}
+
+.date-picker input::placeholder {
+  color: inherit; /* Same color as input text */
+  font-style: normal; /* Remove italic if present */
+  opacity: 1; /* Remove transparency in Firefox */
+}
