@@ -93,7 +93,7 @@ a,
 .comment-reply-link:focus,
 .required,
 .site-info a:hover,
-.site-info a:focus {
+.site-info {
 	color: #1e6b8b;
 }
 
@@ -113,7 +113,7 @@ input[type="submit"]:focus,
 .pagination .next:focus,
 .widget_calendar tbody a,
 .page-links a:hover,
-.page-links a:focus {
+.page-links{
 	background-color: #1e6b8b;
 }
 
@@ -140,7 +140,7 @@ textarea:focus,
 @media screen and (min-width: 56.875em) {
 	.main-navigation li:hover > a,
 	.main-navigation li.focus > a {
-		color: #1e6b8b;
+		color: #fd9b04;
 	}
 }
 

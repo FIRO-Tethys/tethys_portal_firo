@@ -2,16 +2,10 @@ import React, { useContext, useState } from "react";
 import "./content-extra.css";
 import "./styles.css";
 import "./cw3e-twentysixteen.css";
-import Navbar from "react-bootstrap/Navbar";
-import styled from "styled-components";
 import { AppContext } from "components/contexts/Contexts";
 import { getTethysPortalHost } from "services/utilities";
 
 const TETHYS_PORTAL_HOST = getTethysPortalHost();
-
-const CustomNavBar = styled(Navbar)`
-  min-height: var(--ts-header-height);
-`;
 
 const Cw3eHeader = () => {
   const { tethysApp, user } = useContext(AppContext);
@@ -32,7 +26,6 @@ const Cw3eHeader = () => {
   };
 
   return (
-        // <CustomNavBar ifixed="top" bg="primary" variant="dark" className="shadow site-header" id="masthead" style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: 0 }}>
             <div>
             <div className="header-image" style={{ position: "relative"}}>
                 <a
@@ -705,6 +698,30 @@ const Cw3eHeader = () => {
                                     <a href="https://cw3e.ucsd.edu/cw3e-north-sonoma-county-water-agency/">
                                         CW3E North
                                     </a>
+                                </li>
+                                <li
+                                    id="menu-item-25382"
+                                    className="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-25382"
+                                    aria-haspopup="true"
+                                >
+                                    <a href="https://cw3e.ucsd.edu/arrecon_overview/">
+                                        Web Applications
+                                    </a>
+                                    <button
+                                        className="dropdown-toggle" onClick={handleDropdownToggle}
+                                        aria-expanded="false"
+                                        type="button"
+                                    >
+                                        <span className="screen-reader-text">expand child menu</span>
+                                    </button>
+                                    <ul className="sub-menu">
+                                        <li
+                                            id="menu-item-25384"
+                                            className="menu-item menu-item-type-post_type menu-item-object-page menu-item-25384"
+                                        >
+                                            <a href="/tethysdash">TethysDash</a>
+                                        </li>
+                                    </ul>
                                 </li>
                                 {!user?.username && (
                                     <li className="menu-item menu-item-type-custom menu-item-object-custom">

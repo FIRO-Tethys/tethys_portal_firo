@@ -2,7 +2,6 @@ import PropTypes from "prop-types";
 import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Container from "react-bootstrap/Container";
-import Navbar from "react-bootstrap/Navbar";
 import Spinner from "react-bootstrap/Spinner";
 import styled from "styled-components";
 import Cw3eHeader from "./cw3eHeader";
@@ -52,21 +51,20 @@ const StyledSpinner = styled(Spinner)`
   margin-right: 0.5rem;
 `;
 
-const CustomNavBar = styled(Navbar)`
-  // min-height: var(--ts-header-height);
+const CustomDiv = styled.div`
+  top: 40%;
+  right: 0;
+  width: fit-content;
 `;
 
-const TitleDiv = styled.div`
-  justify-content: center;
-`;
 
 const WhiteTitle = styled.h1`
-  position: absolute;
-  left: 50%;
-  top: 0;
-  transform: translateX(-50%);
+  position: relative;
+  width: 100%;
+  margin: 0.5rem 0;
+  text-align: center;
   white-space: nowrap;
-  color: white;
+  color: black;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
@@ -124,12 +122,9 @@ export const LandingPageHeader = () => {
   return (
     <>
       <Cw3eHeader />
-      <CustomNavBar sticky="top" bg="primary" variant="dark" className="shadow">
-        <Container as="header" fluid className="px-4">
-          {/* <TitleDiv>
-            <WhiteTitle>Available Dashboards</WhiteTitle>
-          </TitleDiv> */}
-          <div>
+      <CustomDiv className="d-flex flex-column position-absolute">
+        <Container fluid className="px-2 d-flex justify-content-end">
+          <div className="d-flex flex-column align-items-center gap-2">
             {user?.username && (
               <>
                 {allowedToManageVisualizations && (
@@ -184,7 +179,7 @@ export const LandingPageHeader = () => {
             )}
           </div>
         </Container>
-      </CustomNavBar>
+      </CustomDiv>
       {showInfoModal && (
         <AppInfoModal
           showModal={showInfoModal}
@@ -329,8 +324,15 @@ export const DashboardHeader = () => {
 
   return (
     <>
-      <CustomNavBar fixed="top" bg="primary" variant="dark" className="shadow">
-        <Container as="header" fluid className="px-4">
+      <Cw3eHeader />
+
+      <WhiteTitle>{name}</WhiteTitle>
+      <CustomDiv className="d-flex flex-column position-absolute">
+        <Container
+          as="header"
+          fluid
+          className="px-2 d-flex flex-column align-items-end dashboard-header-container z-3"
+        >
           <TooltipButton
             onClick={() => {
               navigate("/");
@@ -343,8 +345,7 @@ export const DashboardHeader = () => {
           >
             <BsGrid3X3Gap size="1.5rem" />
           </TooltipButton>
-          <WhiteTitle>{name}</WhiteTitle>
-          <div>
+          <div className="dashboard-header-actions">
             {editable && (
               <>
                 {isEditing ? (
@@ -460,7 +461,7 @@ export const DashboardHeader = () => {
             </TooltipButton>
           </div>
         </Container>
-      </CustomNavBar>
+      </CustomDiv>
       {showEditCanvas && (
         <DashboardEditorCanvas
           showCanvas={showEditCanvas}
