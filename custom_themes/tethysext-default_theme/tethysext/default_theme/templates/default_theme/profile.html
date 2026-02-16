@@ -1,0 +1,528 @@
+{% extends "tethys_portal/user/base.html" %}
+
+{% load static tethys %}
+
+{% block title %}{{ block.super }} - Profile{% endblock %}
+
+
+{% block custom_styles %}
+	<link rel="stylesheet" id="child-style-css" href="https://cw3e.ucsd.edu/wp-content/themes/twentysixteen-child/style.css?ver=1.0.0" media="all">
+	<link rel="stylesheet" id="twentysixteen-fonts-css" href="https://cw3e.ucsd.edu/wp-content/themes/twentysixteen/fonts/merriweather-plus-montserrat-plus-inconsolata.css?ver=20230328" media="all">
+	<link rel="stylesheet" id="genericons-css" href="https://cw3e.ucsd.edu/wp-content/themes/twentysixteen/genericons/genericons.css?ver=20201208" media="all">
+	<link rel="stylesheet" id="twentysixteen-style-css" href="https://cw3e.ucsd.edu/wp-content/themes/twentysixteen-child/style.css?ver=20230328" media="all">
+	<style id="twentysixteen-style-inline-css">
+
+			/* Custom Page Background Color */
+			.site {
+				background-color: #eaeaea;
+			}
+
+			mark,
+			ins,
+			button,
+			button[disabled]:hover,
+			button[disabled]:focus,
+			input[type="button"],
+			input[type="button"][disabled]:hover,
+			input[type="button"][disabled]:focus,
+			input[type="reset"],
+			input[type="reset"][disabled]:hover,
+			input[type="reset"][disabled]:focus,
+			input[type="submit"],
+			input[type="submit"][disabled]:hover,
+			input[type="submit"][disabled]:focus,
+			.menu-toggle.toggled-on,
+			.menu-toggle.toggled-on:hover,
+			.menu-toggle.toggled-on:focus,
+			.pagination .prev,
+			.pagination .next,
+			.pagination .prev:hover,
+			.pagination .prev:focus,
+			.pagination .next:hover,
+			.pagination .next:focus,
+			.pagination .nav-links:before,
+			.pagination .nav-links:after,
+			.widget_calendar tbody a,
+			.widget_calendar tbody a:hover,
+			.widget_calendar tbody a:focus,
+			.page-links a,
+			.page-links a:hover,
+			.page-links a:focus {
+				color: #eaeaea;
+			}
+
+			@media screen and (min-width: 56.875em) {
+				.main-navigation ul ul li {
+					background-color: #eaeaea;
+				}
+
+				.main-navigation ul ul:after {
+					border-top-color: #eaeaea;
+					border-bottom-color: #eaeaea;
+				}
+			}
+		
+
+			/* Custom Link Color */
+			.menu-toggle:hover,
+			.menu-toggle:focus,
+			a,
+			.main-navigation a:hover,
+			.main-navigation a:focus,
+			.dropdown-toggle:hover,
+			.dropdown-toggle:focus,
+			.social-navigation a:hover:before,
+			.social-navigation a:focus:before,
+			.post-navigation a:hover .post-title,
+			.post-navigation a:focus .post-title,
+			.tagcloud a:hover,
+			.tagcloud a:focus,
+			.site-branding .site-title a:hover,
+			.site-branding .site-title a:focus,
+			.entry-title a:hover,
+			.entry-title a:focus,
+			.entry-footer a:hover,
+			.entry-footer a:focus,
+			.comment-metadata a:hover,
+			.comment-metadata a:focus,
+			.pingback .comment-edit-link:hover,
+			.pingback .comment-edit-link:focus,
+			.comment-reply-link,
+			.comment-reply-link:hover,
+			.comment-reply-link:focus,
+			.required,
+			.site-info a:hover,
+			.site-info a:focus {
+				color: #1e6b8b;
+			}
+
+			mark,
+			ins,
+			button:hover,
+			button:focus,
+			input[type="button"]:hover,
+			input[type="button"]:focus,
+			input[type="reset"]:hover,
+			input[type="reset"]:focus,
+			input[type="submit"]:hover,
+			input[type="submit"]:focus,
+			.pagination .prev:hover,
+			.pagination .prev:focus,
+			.pagination .next:hover,
+			.pagination .next:focus,
+			.widget_calendar tbody a,
+			.page-links a:hover,
+			.page-links a:focus {
+				background-color: #1e6b8b;
+			}
+
+			input[type="date"]:focus,
+			input[type="time"]:focus,
+			input[type="datetime-local"]:focus,
+			input[type="week"]:focus,
+			input[type="month"]:focus,
+			input[type="text"]:focus,
+			input[type="email"]:focus,
+			input[type="url"]:focus,
+			input[type="password"]:focus,
+			input[type="search"]:focus,
+			input[type="tel"]:focus,
+			input[type="number"]:focus,
+			textarea:focus,
+			.tagcloud a:hover,
+			.tagcloud a:focus,
+			.menu-toggle:hover,
+			.menu-toggle:focus {
+				border-color: #1e6b8b;
+			}
+
+			@media screen and (min-width: 56.875em) {
+				.main-navigation li:hover > a,
+				.main-navigation li.focus > a {
+					color: #1e6b8b;
+				}
+			}
+		
+
+			/* Custom Main Text Color */
+			body,
+			blockquote cite,
+			blockquote small,
+			.main-navigation a,
+			.menu-toggle,
+			.dropdown-toggle,
+			.social-navigation a,
+			.post-navigation a,
+			.pagination a:hover,
+			.pagination a:focus,
+			.widget-title a,
+			.site-branding .site-title a,
+			.entry-title a,
+			.page-links > .page-links-title,
+			.comment-author,
+			.comment-reply-title small a:hover,
+			.comment-reply-title small a:focus {
+				color: #000000
+			}
+
+			blockquote,
+			.menu-toggle.toggled-on,
+			.menu-toggle.toggled-on:hover,
+			.menu-toggle.toggled-on:focus,
+			.post-navigation,
+			.post-navigation div + div,
+			.pagination,
+			.widget,
+			.page-header,
+			.page-links a,
+			.comments-title,
+			.comment-reply-title {
+				border-color: #000000;
+			}
+
+			button,
+			button[disabled]:hover,
+			button[disabled]:focus,
+			input[type="button"],
+			input[type="button"][disabled]:hover,
+			input[type="button"][disabled]:focus,
+			input[type="reset"],
+			input[type="reset"][disabled]:hover,
+			input[type="reset"][disabled]:focus,
+			input[type="submit"],
+			input[type="submit"][disabled]:hover,
+			input[type="submit"][disabled]:focus,
+			.menu-toggle.toggled-on,
+			.menu-toggle.toggled-on:hover,
+			.menu-toggle.toggled-on:focus,
+			.pagination:before,
+			.pagination:after,
+			.pagination .prev,
+			.pagination .next,
+			.page-links a {
+				background-color: #000000;
+			}
+
+			/* Border Color */
+			fieldset,
+			pre,
+			abbr,
+			acronym,
+			table,
+			th,
+			td,
+			input[type="date"],
+			input[type="time"],
+			input[type="datetime-local"],
+			input[type="week"],
+			input[type="month"],
+			input[type="text"],
+			input[type="email"],
+			input[type="url"],
+			input[type="password"],
+			input[type="search"],
+			input[type="tel"],
+			input[type="number"],
+			textarea,
+			.main-navigation li,
+			.main-navigation .primary-menu,
+			.menu-toggle,
+			.dropdown-toggle:after,
+			.social-navigation a,
+			.image-navigation,
+			.comment-navigation,
+			.tagcloud a,
+			.entry-content,
+			.entry-summary,
+			.page-links a,
+			.page-links > span,
+			.comment-list article,
+			.comment-list .pingback,
+			.comment-list .trackback,
+			.comment-reply-link,
+			.no-comments,
+			.widecolumn .mu_register .mu_alert {
+				border-color: #000000; /* Fallback for IE7 and IE8 */
+				border-color: rgba( 0, 0, 0, 0.2);
+			}
+
+			hr,
+			code {
+				background-color: #000000; /* Fallback for IE7 and IE8 */
+				background-color: rgba( 0, 0, 0, 0.2);
+			}
+
+			@media screen and (min-width: 56.875em) {
+				.main-navigation ul ul,
+				.main-navigation ul ul li {
+					border-color: rgba( 0, 0, 0, 0.2);
+				}
+
+				.main-navigation ul ul:before {
+					border-top-color: rgba( 0, 0, 0, 0.2);
+					border-bottom-color: rgba( 0, 0, 0, 0.2);
+				}
+			}
+		
+
+			/* Custom Secondary Text Color */
+
+			/**
+			* IE8 and earlier will drop any block with CSS3 selectors.
+			* Do not combine these styles with the next block.
+			*/
+			body:not(.search-results) .entry-summary {
+				color: #5e5e5e;
+			}
+
+			blockquote,
+			.post-password-form label,
+			a:hover,
+			a:focus,
+			a:active,
+			.post-navigation .meta-nav,
+			.image-navigation,
+			.comment-navigation,
+			.widget_recent_entries .post-date,
+			.widget_rss .rss-date,
+			.widget_rss cite,
+			.site-description,
+			.author-bio,
+			.entry-footer,
+			.entry-footer a,
+			.sticky-post,
+			.taxonomy-description,
+			.entry-caption,
+			.comment-metadata,
+			.pingback .edit-link,
+			.comment-metadata a,
+			.pingback .comment-edit-link,
+			.comment-form label,
+			.comment-notes,
+			.comment-awaiting-moderation,
+			.logged-in-as,
+			.form-allowed-tags,
+			.site-info,
+			.site-info a,
+			.wp-caption .wp-caption-text,
+			.gallery-caption,
+			.widecolumn label,
+			.widecolumn .mu_register label {
+				color: #5e5e5e;
+			}
+
+			.widget_calendar tbody a:hover,
+			.widget_calendar tbody a:focus {
+				background-color: #5e5e5e;
+			}
+		
+	</style>
+	<link rel="stylesheet" id="twentysixteen-block-style-css" href="https://cw3e.ucsd.edu/wp-content/themes/twentysixteen/css/blocks.css?ver=20230206" media="all">
+	<link rel="stylesheet" id="wp-add-custom-css-css" href="https://cw3e.ucsd.edu?display_custom_css=css&amp;ver=6.8.1" media="all">
+	<!--[if lt IE 10]>
+		<link rel='stylesheet' id='twentysixteen-ie-css' href='https://cw3e.ucsd.edu/wp-content/themes/twentysixteen/css/ie.css?ver=20170530' media='all' />
+	<![endif]-->
+	<!--[if lt IE 9]>
+		<link rel='stylesheet' id='twentysixteen-ie8-css' href='https://cw3e.ucsd.edu/wp-content/themes/twentysixteen/css/ie8.css?ver=20170530' media='all' />
+	<![endif]-->
+	<!--[if lt IE 8]>
+		<link rel='stylesheet' id='twentysixteen-ie7-css' href='https://cw3e.ucsd.edu/wp-content/themes/twentysixteen/css/ie7.css?ver=20170530' media='all' />
+	<![endif]-->
+	<link href="{% static 'default_theme/css/footer-extra.css' %}"  rel="stylesheet" />
+	<link href="{% static 'default_theme/css/home-extra.css' %}"  rel="stylesheet" />
+	<link href="{% static 'default_theme/css/content-extra.css' %}"  rel="stylesheet" />
+	<link href="{% static 'default_theme/css/main.css' %}"  rel="stylesheet" />
+	<link href="{% static 'tethys_portal/css/tethys_main.min.css' %}"  rel="stylesheet" />
+	<link href="{% static 'tethys_portal/css/termsandconditions.min.css' %}"  rel="stylesheet" />
+
+{% endblock %}
+
+
+{% block header %}
+	{% include "default_theme/header.html" %}
+	<div class="clear-header"></div>
+{% endblock %}
+
+{% block back_button %}
+<a href="{% url 'user:settings' %}" class="btn btn-primary"><i class="bi bi-pencil"></i> Edit</a>
+{% endblock %}
+
+{% block secondary_content %}
+    {% block profile_sections %}
+    <div id="profile-sections" class="container">
+      {% block name_override %}
+      <div class="profile-section row mx-2 my-3">
+        <hr>
+        <div class="col-xl-4">
+          <h3>Name</h3>
+        </div>
+        {% block name_parameters %}
+        <div class="profile-parameters col-xl-8">
+          <dl class="row">
+            <dt class="col-sm-4">First Name:</dt>
+            <dd class="col-sm-8">{{ user.first_name|default:"Not Given" }}</dd>
+
+            <dt class="col-sm-4">Last Name:</dt>
+            <dd class="col-sm-8">{{ user.last_name|default:"Not Given" }}</dd>
+          </dl>
+        </div>
+        {% endblock %}
+        <hr>
+      </div>
+      {% endblock %}
+      {% block email_override %}
+      <div class="profile-section row mx-2">
+        <div class="col-xl-4">
+          <h3>Email</h3>
+        </div>
+        {% block email_parameters %}
+        <div class="profile-parameters col-xl-8">
+          <dl class="row">
+            <dt class="col-sm-4">Email:</dt>
+            <dd class="col-sm-8">{{ user.email|default:"Not Given" }}</dd>
+          </dl>
+        </div>
+        {% endblock %}
+        <hr>
+      </div>
+      {% endblock %}
+      {% block credentials_override %}
+      <div class="profile-section row mx-2">
+        <div class="col-xl-4">
+          <h3>Credentials</h3>
+        </div>
+        {% block credential_parameters %}
+        <div class="profile-parameters col-xl-8">
+          <dl class="row">
+            <dt class="col-sm-4">Username:</dt>
+            <dd class="col-sm-8">{{ user.username }}</dd>
+            {% if user.has_usable_password %}
+            <dt class="col-sm-4">Password:</dt>
+            <dd class="col-sm-8">********</dd>
+            {% endif %}
+            {% if has_mfa %}
+            <dt class="col-sm-4">2-Step Verification: </dt>
+            <dd class="col-sm-8">{% if has_mfa %}Enabled{% else %}Not Enabled{% endif %}</dd>
+            {% endif  %}
+          </dl>
+        </div>
+        {% endblock %}
+        <hr>
+      </div>
+      {% endblock %}
+      {% block sso_override %}
+      {% if backends.backends %}
+      <div class="profile-section row mx-2">
+        <div class="col-xl-4">
+          <h3>Single Sign On</h3>
+        </div>
+        {% block social_parameters %}
+        <div class="profile-parameters col-xl-8">
+          <dl class="row">
+            <dt class="col-sm-4">Connected:</dt>
+            {% if backends.associated %}
+              {% include 'tethys_portal/user/social_labels.html' with backends=backends.associated %}
+            {% else %}
+              <dd class="col-sm-8">None</dd>
+            {% endif %}
+            <dt class="col-sm-4">Not Connected:</dt>
+            {% if backends.not_associated %}
+              {% include 'tethys_portal/user/social_labels.html' with backends=backends.not_associated %}
+            {% else %}
+              <dd class="col-sm-8">None</dd>
+            {% endif %}
+          </dl>
+        </div>
+        {% endblock %}
+        <hr>
+      </div>
+      {% endif %}
+      {% endblock %}
+      {% block api_key_override %}
+      <div class="profile-section row mx-2">
+        <div class="col-xl-4">
+          <h3>API Key</h3>
+        </div>
+        <div class="profile-parameters col-xl-8">
+          <dl class="row">
+            <dt class="col-sm-4">Token:</dt>
+            {% if show_user_token_mfa %}
+            <dd class="col-sm-8">{{ user_token }}</dd>
+            {% else %}
+            <dd class="col-sm-8">Enable 2-Step verification to view token</dd>
+            {% endif %}
+          </dl>
+        </div>
+        <hr>
+      </div>
+      {% endblock %}
+      {% block account_override %}
+      <div class="profile-section row mx-2">
+        <div class="col-xl-4">
+          <h3>Account</h3>
+        </div>
+        {% block account_parameters %}
+        <div class="profile-parameters col-xl-8">
+          <dl class="row">
+            <dt class="col-sm-4">Member Since:</dt>
+            <dd class="col-sm-8">{{ user.date_joined|date:"F j, Y" }}</dd>
+            <dt class="col-sm-4">Status:</dt>
+            <dd class="col-sm-8">{% if user.is_active %}Active{% else %}Inactive{% endif %}</dd>
+            {% block extend_account_parameters %}
+            {% endblock %}
+          </dl>
+        </div>
+        {% endblock %}
+        <hr>
+      </div>
+      {% endblock %}
+      {% block workspace_override %}
+      <div class="profile-section row mx-2">
+        <div class="col-xl-4">
+          <h3>Workspace</h3>
+        </div>
+        {% block storage_parameters %}
+        <div class="profile-parameters col-xl-8">
+          <dl class="row">
+            <dt class="col-sm-4">Storage Summary:</dt>
+            <dd class="col-sm-8">{{ current_use }} of {{ quota|default:"&#8734;" }}</dd>
+            {% block extend_storage_parameters %}
+            {% endblock %}
+          </dl>
+        </div>
+        {% endblock %}
+        <hr>
+      </div>
+      {% endblock %}
+      {% block oauth2_provider_override %}
+      {% if has_oauth2_provider %}
+      <div class="profile-section row mx-2">
+        <div class="col-xl-4">
+          <h3>OAuth2 Provider</h3>
+        </div>
+        <div class="profile-parameters col-xl-8">
+          <dl class="row">
+            <dd class="col-sm-8"><a class="btn btn-success" href="{% url 'oauth2_provider:list' %}">My Applications</a></dd>
+          </dl>
+        </div>
+        <hr>
+      </div>
+      {% endif %}
+      {% endblock %}
+      {% block custom_sections %}
+      {% endblock %}
+    </div> <!-- #profile-sections.container -->
+    {% endblock %}
+  </div>  <!-- #profile-content.container -->
+{% endblock %}
+
+
+{% block footer %}
+	<footer id="site-footer" class="site-footer mt-auto container-fluid"  style="max-width: 1320px;">
+
+		{% block footer_content %}
+			{% include "default_theme/footer.html" %}
+
+		{% endblock %}
+	</footer>
+{% endblock %}

@@ -31,6 +31,7 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     export APPS_LIBRARY_TEMPLATE="/default_theme/apps_library.html"
     export LOGIN_PAGE_TEMPLATE="/default_theme/login.html"
     export REGISTER_PAGE_TEMPLATE="/default_theme/register.html"
+    export USER_PAGE_TEMPLATE="/default_theme/profile.html"
     export PREFIX_URL="/firo_apps"
     export MEDIA_URL="/firo_apps/media/"
 
