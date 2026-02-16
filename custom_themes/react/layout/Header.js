@@ -1,18 +1,15 @@
 import PropTypes from "prop-types";
-import { useContext, useState, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Container from "react-bootstrap/Container";
-import Navbar from "react-bootstrap/Navbar";
 import Spinner from "react-bootstrap/Spinner";
 import styled from "styled-components";
-import { useModalPriority } from "components/contexts/ModalPriorityContext";
-
+import Cw3eHeader from "./cw3eHeader";
 import {
   LayoutContext,
   EditingContext,
   DisabledEditingMovementContext,
   AppContext,
-  TabContext,
 } from "components/contexts/Contexts";
 import TooltipButton from "components/buttons/TooltipButton";
 import DashboardEditorCanvas from "components/modals/DashboardEditor";
@@ -25,10 +22,8 @@ import {
   useLayoutSuccessAlertContext,
   useLayoutErrorAlertContext,
 } from "components/contexts/LayoutAlertContext";
-import { getTethysPortalBase } from "services/utilities";
-
+import { getTethysPortalHost } from "services/utilities";
 import {
-  BsX,
   BsGear,
   BsGrid3X3Gap,
   BsInfo,
@@ -49,28 +44,26 @@ const prefixUrlSegment = (process.env.TETHYS_PREFIX_URL || "").replace(
 );
 const staticBasePath = `${prefixUrlSegment ? `/${prefixUrlSegment}` : ""}/static/tethysdash/images/`;
 
-const TETHYS_PORTAL_BASE = getTethysPortalBase();
-
+const TETHYS_PORTAL_HOST = getTethysPortalHost();
 const StyledSpinner = styled(Spinner)`
   vertical-align: middle;
   margin-right: 0.5rem;
 `;
 
-const CustomNavBar = styled(Navbar)`
-  min-height: var(--ts-header-height);
+const CustomDiv = styled.div`
+  top: 40%;
+  right: 0;
+  width: fit-content;
 `;
 
-const TitleDiv = styled.div`
-  justify-content: center;
-`;
 
 const WhiteTitle = styled.h1`
-  position: absolute;
-  left: 50%;
-  top: 0;
-  transform: translateX(-50%);
+  position: relative;
+  width: 100%;
+  margin: 0.5rem 0;
+  text-align: center;
   white-space: nowrap;
-  color: white;
+  color: black;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
@@ -101,17 +94,12 @@ function LockedIcon({ locked }) {
 
 export const LandingPageHeader = () => {
   const { tethysApp, user, userAppPermissions } = useContext(AppContext);
-  const {
-    showingPublicUserModal,
-    publicUserModalChecked,
-    showingIdleTimeoutModal,
-    appInfoModalWasOpen,
-    setAppInfoModalWasOpen,
-  } = useModalPriority();
   const dontShowLandingPageInfoOnStart = localStorage.getItem(
     "dontShowLandingPageInfoOnStart"
   );
-  const [showInfoModal, setShowInfoModal] = useState(false);
+  const [showInfoModal, setShowInfoModal] = useState(
+    dontShowLandingPageInfoOnStart !== "true"
+  );
   const [showImportModal, setShowImportModal] = useState(false);
   const [showPermissionGroupsModal, setShowPermissionGroupsModal] =
     useState(false);
@@ -123,46 +111,20 @@ export const LandingPageHeader = () => {
     Array.isArray(userAppPermissions) &&
     userAppPermissions.includes("manage_visualizations");
 
-  // Only show AppInfoModal on startup after public user modal check is complete and modal is dismissed
   useEffect(() => {
-    if (
-      publicUserModalChecked &&
-      !showingPublicUserModal &&
-      dontShowLandingPageInfoOnStart !== "true"
-    ) {
-      setShowInfoModal(true);
-    }
-  }, [
-    publicUserModalChecked,
-    showingPublicUserModal,
-    dontShowLandingPageInfoOnStart,
-  ]);
-
-  // Auto-close AppInfo when idle timeout modal appears, and reopen after
-  useEffect(() => {
-    if (showingIdleTimeoutModal && showInfoModal) {
-      setShowInfoModal(false);
-      setAppInfoModalWasOpen(true);
-    } else if (!showingIdleTimeoutModal && appInfoModalWasOpen) {
-      setShowInfoModal(true);
-      setAppInfoModalWasOpen(false);
-    }
-  }, [
-    showingIdleTimeoutModal,
-    showInfoModal,
-    appInfoModalWasOpen,
-    setAppInfoModalWasOpen,
-  ]);
+    document.body.classList.add("has-cw3e-header");
+    return () => {
+      document.body.classList.remove("has-cw3e-header");
+    };
+  }, []);
 
   return (
     <>
-      <CustomNavBar fixed="top" bg="primary" variant="dark" className="shadow">
-        <Container as="header" fluid className="px-4">
-          <TitleDiv>
-            <WhiteTitle>Available Dashboards</WhiteTitle>
-          </TitleDiv>
-          <div>
-            {user?.username ? (
+      <Cw3eHeader />
+      <CustomDiv className="d-flex flex-column position-absolute">
+        <Container fluid className="px-2 d-flex justify-content-end">
+          <div className="d-flex flex-column align-items-center gap-2">
+            {user?.username && (
               <>
                 {allowedToManageVisualizations && (
                   <TooltipButton
@@ -203,19 +165,6 @@ export const LandingPageHeader = () => {
                   <BsInfo size="1.5rem" />
                 </TooltipButton>
               </>
-            ) : (
-              <TooltipButton
-                onClick={() => {
-                  window.location.assign(
-                    `${TETHYS_PORTAL_BASE}/accounts/login?next=${window.location.pathname}`
-                  );
-                }}
-                tooltipPlacement="bottom"
-                tooltipText="Login"
-                aria-label={"dashboardLoginButton"}
-              >
-                <BsFillPersonFill size="1.5rem" />
-              </TooltipButton>
             )}
             {user.isStaff && (
               <TooltipButton
@@ -227,17 +176,10 @@ export const LandingPageHeader = () => {
                 <BsGear size="1.5rem" />
               </TooltipButton>
             )}
-            <TooltipButton
-              href={tethysApp.exitUrl}
-              tooltipPlacement="bottom"
-              tooltipText="Exit TethysDash"
-              aria-label={"appExitButton"}
-            >
-              <BsX size="1.5rem" />
-            </TooltipButton>
           </div>
         </Container>
-      </CustomNavBar>
+      </CustomDiv>
+ 
       {showInfoModal && (
         <AppInfoModal
           showModal={showInfoModal}
@@ -268,21 +210,22 @@ export const LandingPageHeader = () => {
 
 export const DashboardHeader = () => {
   const [showEditCanvas, setShowEditCanvas] = useState(false);
-  const {
-    showingPublicUserModal,
-    publicUserModalChecked,
-    showingIdleTimeoutModal,
-    appInfoModalWasOpen,
-    setAppInfoModalWasOpen,
-  } = useModalPriority();
   const dontShowDashboardInfoOnStart = localStorage.getItem(
     "dontShowDashboardInfoOnStart"
   );
-  const [showInfoModal, setShowInfoModal] = useState(false);
+  const [showInfoModal, setShowInfoModal] = useState(
+    dontShowDashboardInfoOnStart !== "true"
+  );
   const { user } = useContext(AppContext);
-  const { name, editable, saveLayoutContext, unrestrictedPlacement } =
-    useContext(LayoutContext);
-  const { tabs, updateTab, resetTabs, getActiveTab } = useContext(TabContext);
+  const {
+    name,
+    editable,
+    gridItems,
+    updateGridItems,
+    resetGridItems,
+    saveLayoutContext,
+    unrestrictedPlacement,
+  } = useContext(LayoutContext);
   const { isEditing, setIsEditing } = useContext(EditingContext);
   const [isSaving, setIsSaving] = useState(false);
   const { disabledEditingMovement, setDisabledEditingMovement } = useContext(
@@ -294,52 +237,7 @@ export const DashboardHeader = () => {
   const { setErrorMessage, setShowErrorMessage } = useLayoutErrorAlertContext();
   const [showImportModal, setShowImportModal] = useState(false);
   const navigate = useNavigate();
-
-  // Only show AppInfoModal on startup after public user modal check is complete and modal is dismissed
-  useEffect(() => {
-    if (
-      publicUserModalChecked &&
-      !showingPublicUserModal &&
-      dontShowDashboardInfoOnStart !== "true"
-    ) {
-      setShowInfoModal(true);
-    }
-  }, [
-    publicUserModalChecked,
-    showingPublicUserModal,
-    dontShowDashboardInfoOnStart,
-  ]);
-
-  // Auto-close AppInfo when idle timeout modal appears, and reopen after
-  useEffect(() => {
-    if (showingIdleTimeoutModal && showInfoModal) {
-      setShowInfoModal(false);
-      setAppInfoModalWasOpen(true);
-    } else if (!showingIdleTimeoutModal && appInfoModalWasOpen) {
-      setShowInfoModal(true);
-      setAppInfoModalWasOpen(false);
-    }
-  }, [
-    showingIdleTimeoutModal,
-    showInfoModal,
-    appInfoModalWasOpen,
-    setAppInfoModalWasOpen,
-  ]);
-
-  // Only show AppInfoModal on startup after public user modal check is complete and modal is dismissed
-  useEffect(() => {
-    if (
-      publicUserModalChecked &&
-      !showingPublicUserModal &&
-      dontShowDashboardInfoOnStart !== "true"
-    ) {
-      setShowInfoModal(true);
-    }
-  }, [
-    publicUserModalChecked,
-    showingPublicUserModal,
-    dontShowDashboardInfoOnStart,
-  ]);
+  const TETHYS_PORTAL_HOST = getTethysPortalHost();
 
   const showNav = () => {
     setShowEditCanvas(true);
@@ -352,13 +250,12 @@ export const DashboardHeader = () => {
 
   function onCancel() {
     setTimeout(() => {
-      resetTabs();
+      resetGridItems();
       setIsEditing(false);
     }, 100); // This ensures that the old overlay doesn't show after the new buttons appear
   }
 
   function onAddGridItem({ importedGridItem }) {
-    const { gridItems, id: activeTabId } = getActiveTab();
     let maxGridItemI = gridItems.reduce((acc, value) => {
       return (acc = acc > parseInt(value.i) ? acc : parseInt(value.i));
     }, 0);
@@ -386,7 +283,7 @@ export const DashboardHeader = () => {
     } else {
       updatedGridItems = [newGridItem, ...gridItems];
     }
-    updateTab(activeTabId, { gridItems: updatedGridItems });
+    updateGridItems(updatedGridItems);
   }
 
   function onImportGridItem(importedGridItem) {
@@ -410,7 +307,7 @@ export const DashboardHeader = () => {
     setShowErrorMessage(false);
     setIsSaving(true);
 
-    const response = await saveLayoutContext({ tabs });
+    const response = await saveLayoutContext({ gridItems });
     if (response.success) {
       setSuccessMessage("Change have been saved.");
       setShowSuccessMessage(true);
@@ -427,8 +324,15 @@ export const DashboardHeader = () => {
 
   return (
     <>
-      <CustomNavBar fixed="top" bg="primary" variant="dark" className="shadow">
-        <Container as="header" fluid className="px-4">
+      <Cw3eHeader />
+
+      <WhiteTitle>{name}</WhiteTitle>
+      <CustomDiv className="d-flex flex-column position-absolute">
+        <Container
+          as="header"
+          fluid
+          className="px-2 d-flex flex-column align-items-end dashboard-header-container z-3"
+        >
           <TooltipButton
             onClick={() => {
               navigate("/");
@@ -441,8 +345,7 @@ export const DashboardHeader = () => {
           >
             <BsGrid3X3Gap size="1.5rem" />
           </TooltipButton>
-          <WhiteTitle>{name}</WhiteTitle>
-          <div>
+          <div className="dashboard-header-actions">
             {editable && (
               <>
                 {isEditing ? (
@@ -535,7 +438,7 @@ export const DashboardHeader = () => {
               <TooltipButton
                 onClick={() => {
                   window.location.assign(
-                    `${TETHYS_PORTAL_BASE}/accounts/login?next=${window.location.pathname}`
+                    `${TETHYS_PORTAL_HOST}/accounts/login?next=${window.location.pathname}`
                   );
                 }}
                 tooltipPlacement="bottom"
@@ -558,7 +461,7 @@ export const DashboardHeader = () => {
             </TooltipButton>
           </div>
         </Container>
-      </CustomNavBar>
+      </CustomDiv>
       {showEditCanvas && (
         <DashboardEditorCanvas
           showCanvas={showEditCanvas}
@@ -586,4 +489,3 @@ export const DashboardHeader = () => {
 LockedIcon.propTypes = {
   locked: PropTypes.bool,
 };
-
