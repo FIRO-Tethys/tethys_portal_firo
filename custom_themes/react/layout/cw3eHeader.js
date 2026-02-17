@@ -3,17 +3,20 @@ import "./content-extra.css";
 import "./styles.css";
 import "./cw3e-twentysixteen.css";
 import { AppContext } from "components/contexts/Contexts";
-import { getTethysPortalHost } from "services/utilities";
+import { getTethysPortalBase } from "services/utilities";
 import Container from "react-bootstrap/Container";
 
-const TETHYS_PORTAL_HOST = getTethysPortalHost();
+
+const TETHYS_PORTAL_BASE = getTethysPortalBase();
 
 const Cw3eHeader = () => {
   const { tethysApp, user } = useContext(AppContext);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuToggleClassName = `menu-toggle${isMenuOpen ? " toggled-on" : ""}`;
   const menuClassName = `site-header-menu${isMenuOpen ? " toggled-on" : ""}`;
-  const loginUrl = `${TETHYS_PORTAL_HOST}/accounts/login?next=${window.location.pathname}`;
+  const loginUrl = `${TETHYS_PORTAL_BASE}/accounts/login?next=${window.location.pathname}`;
+  const appUrl = `${TETHYS_PORTAL_BASE}/apps/${tethysApp}/`;
+  const appsUrl = `${TETHYS_PORTAL_BASE}/apps/`;
   const handleDropdownToggle = (event) => {
     event.preventDefault();
     const button = event.currentTarget;
@@ -705,7 +708,7 @@ const Cw3eHeader = () => {
                                     className="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-25382"
                                     aria-haspopup="true"
                                 >
-                                    <a href="https://cw3e.ucsd.edu/arrecon_overview/">
+                                    <a href={appsUrl}>
                                         Web Applications
                                     </a>
                                     <button
@@ -720,8 +723,13 @@ const Cw3eHeader = () => {
                                             id="menu-item-25384"
                                             className="menu-item menu-item-type-post_type menu-item-object-page menu-item-25384"
                                         >
-                                            <a href="/tethysdash">TethysDash</a>
+                                            <a href={appUrl}>TethysDash</a>
                                         </li>
+                                        {!user?.username && (
+                                            <li className="menu-item menu-item-type-custom menu-item-object-custom">
+                                                <a href={tethysApp?.settingsUrl}>Settings</a>
+                                            </li>
+                                        )}
                                     </ul>
                                 </li>
                                 {!user?.username && (

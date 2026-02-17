@@ -96,12 +96,12 @@
               <a href="{{ app_library_url }}">Web Applications</a>
               <button class="dropdown-toggle" aria-expanded="false"><span class="screen-reader-text">expand child menu</span></button>
               <ul class="sub-menu">
-                <li class="menu-item menu-item-type-custom menu-item-object-custom"><a href="/tethysdash">TethysDash</a></li>
-				{% if user.is_staff %}
-					<li class="menu-item menu-item-type-custom menu-item-object-custom">
-						<a href="{% url 'admin:index' %}" class="portal-button">Settings</a>
-					</li>
-				{% endif %}
+                <li class="menu-item menu-item-type-custom menu-item-object-custom"><a href="{% url 'tethysdash:home' %}">TethysDash</a></li>
+              {% if user.is_staff %}
+                <li class="menu-item menu-item-type-custom menu-item-object-custom">
+                  <a href="{% url 'admin:index' %}" class="portal-button">Settings</a>
+                </li>
+              {% endif %}
               </ul>
             </li>
 
