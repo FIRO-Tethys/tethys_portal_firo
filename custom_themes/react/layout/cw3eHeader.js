@@ -725,7 +725,7 @@ const Cw3eHeader = () => {
                                         >
                                             <a href={appUrl}>TethysDash</a>
                                         </li>
-                                        {!user?.username && (
+                                        {user?.username && (
                                             <li className="menu-item menu-item-type-custom menu-item-object-custom">
                                                 <a href={tethysApp?.settingsUrl}>Settings</a>
                                             </li>
