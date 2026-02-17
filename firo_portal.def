@@ -62,15 +62,16 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
 
     #themes
     custom_themes/tethysext-default_theme               /usr/lib/tethys/ext/tethysext-default_theme
-    custom_themes/react/layout/App.scss                 /usr/lib/tethys/apps/tethysdash/tethysapp/tethysdash/reactapp/App.scss
-    custom_themes/react/layout/content-extra.css        /usr/lib/tethys/apps/tethysdash/tethysapp/tethysdash/reactapp/components/layout/content-extra.css
-    custom_themes/react/layout/cw3e-twentysixteen.css   /usr/lib/tethys/apps/tethysdash/tethysapp/tethysdash/reactapp/components/layout/cw3e-twentysixteen.css
-    custom_themes/react/layout/cw3eFooter.js            /usr/lib/tethys/apps/tethysdash/tethysapp/tethysdash/reactapp/components/layout/cw3eFooter.js
-    custom_themes/react/layout/footer-extra.css         /usr/lib/tethys/apps/tethysdash/tethysapp/tethysdash/reactapp/components/layout/footer-extra.css
-    custom_themes/react/layout/Header.js                /usr/lib/tethys/apps/tethysdash/tethysapp/tethysdash/reactapp/components/layout/Header.js
-    custom_themes/react/layout/LandingPage.js           /usr/lib/tethys/apps/tethysdash/tethysapp/tethysdash/reactapp/views/LandingPage.js
-    custom_themes/react/layout/styles.css               /usr/lib/tethys/apps/tethysdash/tethysapp/tethysdash/reactapp/components/layout/styles.css
-    custom_themes/react/layout/TooltipButton.js         /usr/lib/tethys/apps/tethysdash/tethysapp/tethysdash/reactapp/components/buttons/TooltipButton.js
+    custom_themes/react/layout/App.scss                 /usr/lib/tethys/apps/tethysdash/reactapp/App.scss
+    custom_themes/react/layout/content-extra.css        /usr/lib/tethys/apps/tethysdash/reactapp/components/layout/content-extra.css
+    custom_themes/react/layout/cw3e-twentysixteen.css   /usr/lib/tethys/apps/tethysdash/reactapp/components/layout/cw3e-twentysixteen.css
+    custom_themes/react/layout/cw3eFooter.js            /usr/lib/tethys/apps/tethysdash/reactapp/components/layout/cw3eFooter.js
+    custom_themes/react/layout/cw3eHeader.js            /usr/lib/tethys/apps/tethysdash/reactapp/components/layout/cw3eHeader.js
+    custom_themes/react/layout/footer-extra.css         /usr/lib/tethys/apps/tethysdash/reactapp/components/layout/footer-extra.css
+    custom_themes/react/layout/Header.js                /usr/lib/tethys/apps/tethysdash/reactapp/components/layout/Header.js
+    custom_themes/react/layout/LandingPage.js           /usr/lib/tethys/apps/tethysdash/reactapp/views/LandingPage.js
+    custom_themes/react/layout/styles.css               /usr/lib/tethys/apps/tethysdash/reactapp/components/layout/styles.css
+    custom_themes/react/layout/TooltipButton.js         /usr/lib/tethys/apps/tethysdash/reactapp/components/buttons/TooltipButton.js
     
     #scripts
     apptainer/scripts/udpate_db.sh        /var/lib/tethys_persist/scripts/update_db.sh
@@ -106,7 +107,10 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     # (1) Update apt-get and install additional system packages
     apt-get update && apt-get install -y \
         dos2unix \
-    && rm -rf /var/lib/apt/lists/*
+        gcc g++ make \
+        libpq-dev \
+        python3-dev \
+        && rm -rf /var/lib/apt/lists/*
 
     #Install nvm
     echo "Installing Node.js..."

@@ -17,25 +17,6 @@
   <div class="site-header-main">
     <button id="menu-toggle" class="menu-toggle">Menu</button>
 
-    {# Optional: “portal buttons” area like your example #}
-    <div class="portal-actions" style="margin-left:auto; display:flex; gap:8px; align-items:center;">
-      {% if not user.is_authenticated %}
-        {% if ENABLE_OPEN_SIGNUP %}
-          <a href="{% url 'accounts:register' %}" class="portal-button">Sign Up</a>
-        {% endif %}
-        <a href="{% url 'accounts:login' %}" class="portal-button">Login</a>
-      {% else %}
-        {# If your logout URL name differs, change it here #}
-        <a href="{% url 'accounts:logout' %}" class="portal-button">Exit</a>
-      {% endif %}
-
-      <a href="{{ app_library_url }}" class="portal-button">Applications</a>
-
-      {% if user.is_staff %}
-        <a href="{% url 'admin:index' %}" class="portal-button">⚙️ Settings</a>
-      {% endif %}
-    </div>
-
     <div id="site-header-menu" class="site-header-menu" style="width: 100%;">
       <nav id="site-navigation" class="main-navigation" role="navigation" aria-label="Primary Menu">
         <div class="menu-main-menu-container">
