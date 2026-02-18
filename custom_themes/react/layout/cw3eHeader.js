@@ -15,7 +15,7 @@ const Cw3eHeader = () => {
   const menuToggleClassName = `menu-toggle${isMenuOpen ? " toggled-on" : ""}`;
   const menuClassName = `site-header-menu${isMenuOpen ? " toggled-on" : ""}`;
   const loginUrl = `${TETHYS_PORTAL_BASE}/accounts/login?next=${window.location.pathname}`;
-  const appUrl = `${TETHYS_PORTAL_BASE}/apps/${tethysApp}/`;
+  const appUrl = `${TETHYS_PORTAL_BASE}/apps/tethysdash/`;
   const appsUrl = `${TETHYS_PORTAL_BASE}/apps/`;
   const handleDropdownToggle = (event) => {
     event.preventDefault();
