@@ -26,7 +26,6 @@ Link_PostGIS_To_Dashboard_App:
   cmd.run:
     - name: "tethys link persistent:{{ POSTGIS_SERVICE_NAME }} tethysdash:ps_database:primary_db"
     - shell: /bin/bash
-    - unless: /bin/bash -c "[ -f "{{ TETHYS_PERSIST }}/tethys_services_complete" ];"
 
 #Set single mode app
 {% if not MULTIPLE_APP_MODE %}
