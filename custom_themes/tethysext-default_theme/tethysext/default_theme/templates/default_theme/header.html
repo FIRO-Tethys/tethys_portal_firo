@@ -1,4 +1,4 @@
-{# templates/partials/header.html #}
+
 <header id="masthead" class="site-header" role="banner">
   <div class="header-image" style="position: relative; max-width: 1320px;">
     <a href="https://cw3e.ucsd.edu/" rel="home" style="width: 100%; justify-content: center;">
@@ -155,6 +155,19 @@
                 <li class="menu-item menu-item-type-custom menu-item-object-custom">
                   <a href="{% url 'admin:index' %}">Settings</a>
                 </li>
+                {% if debug_mode %}
+                <li><hr class="dropdown-divider"></li>
+                <li class="menu-item menu-item-type-custom menu-item-object-custom">
+                  <a class="dropdown-item" href="{% url 'admin:create_app' %}" title="Create App">
+                    Create App
+                  </a>
+                </li>
+                <li class="menu-item menu-item-type-custom menu-item-object-custom">
+                  <a class="dropdown-item" href="{% url 'admin:import_app' %}" title="Import App">
+                    Import App
+                  </a>
+                </li>
+                {% endif %}
               {% endif %}
               </ul>
             </li>
