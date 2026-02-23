@@ -147,10 +147,24 @@
             </ul>
             </li>
             <li id="menu-item-25350-webapps" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children" aria-haspopup="true">
-              <a href="{{ app_library_url }}">Web Applications</a>
+              <a href="{%  url 'app_library' %}">Web Applications</a>
               <button class="dropdown-toggle" aria-expanded="false"><span class="screen-reader-text">expand child menu</span></button>
               <ul class="sub-menu">
                 <li class="menu-item menu-item-type-custom menu-item-object-custom"><a href="{% url 'tethysdash:home' %}">TethysDash</a></li>
+              {% if not user.is_authenticated %}
+                <li class="menu-item menu-item-type-custom menu-item-object-custom">
+                  <a href="{% url 'accounts:login' %}">Login</a>
+                </li>
+              {% else %}
+
+                <li class="menu-item menu-item-type-custom menu-item-object-custom">
+                  <a href="{% url 'accounts:logout' %}">Logout</a>
+                </li>
+
+
+              {% endif %}
+
+
               {% if user.is_staff %}
                 <li class="menu-item menu-item-type-custom menu-item-object-custom">
                   <a href="{% url 'admin:index' %}">Settings</a>
@@ -171,21 +185,6 @@
               {% endif %}
               </ul>
             </li>
-
-            {% if not user.is_authenticated %}
-              {% if ENABLE_OPEN_SIGNUP %}
-                <li class="menu-item menu-item-type-custom menu-item-object-custom">
-                  <a href="{% url 'accounts:register' %}">Sign Up</a>
-                </li>
-              {% endif %}
-              <li class="menu-item menu-item-type-custom menu-item-object-custom">
-                <a href="{% url 'accounts:login' %}">Login</a>
-              </li>
-            {% else %}
-              <li class="menu-item menu-item-type-custom menu-item-object-custom">
-                <a href="{% url 'accounts:logout' %}">Exit</a>
-              </li>
-            {% endif %}
 
          </ul>
         </div>

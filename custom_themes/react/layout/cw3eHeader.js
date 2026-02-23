@@ -730,16 +730,17 @@ const Cw3eHeader = () => {
                                                 <a href={tethysApp?.settingsUrl}>Settings</a>
                                             </li>
                                         )}
+                                        {!user?.username && (
+                                            <li className="menu-item menu-item-type-custom menu-item-object-custom">
+                                                <a href={loginUrl}>Login</a>
+                                            </li>
+                                        )}
+                                        <li className="menu-item menu-item-type-custom menu-item-object-custom">
+                                            <a href={tethysApp?.exitUrl}>Logout</a>
+                                        </li>
                                     </ul>
                                 </li>
-                                {!user?.username && (
-                                    <li className="menu-item menu-item-type-custom menu-item-object-custom">
-                                        <a href={loginUrl}>Login</a>
-                                    </li>
-                                )}
-                                <li className="menu-item menu-item-type-custom menu-item-object-custom">
-                                    <a href={tethysApp?.exitUrl}>Exit</a>
-                                </li>
+
                             </ul>
                         </div>
                     </nav>

@@ -4042,3 +4042,7 @@ p > video {
 		padding: 0;
 	}
 }
+  /* Scoped to this header so you don't affect other dropdowns site-wide */
+  #masthead .dropdown-toggle::after{
+    margin-left: 0 !important;
+  }

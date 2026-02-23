@@ -146,6 +146,8 @@
 			color: rgba(20, 80, 111, 0.85);
 			font-size: 1rem;
 		}
+
+		
   </style>
 {% endblock %}
 
@@ -469,6 +471,13 @@
 			}
 		
 	</style>
+	<style>
+		/* Scoped to this header so you don't affect other dropdowns site-wide */
+		#masthead .dropdown-toggle::after{
+			margin-left: 0 !important;
+		}
+	</style>
+
 	<link rel="stylesheet" id="twentysixteen-block-style-css" href="https://cw3e.ucsd.edu/wp-content/themes/twentysixteen/css/blocks.css?ver=20230206" media="all">
 	<link rel="stylesheet" id="wp-add-custom-css-css" href="https://cw3e.ucsd.edu?display_custom_css=css&amp;ver=6.8.1" media="all">
 	<!--[if lt IE 10]>
@@ -481,12 +490,12 @@
 		<link rel='stylesheet' id='twentysixteen-ie7-css' href='https://cw3e.ucsd.edu/wp-content/themes/twentysixteen/css/ie7.css?ver=20170530' media='all' />
 	<![endif]-->
 	<link href="{% static 'default_theme/css/footer-extra.css' %}"  rel="stylesheet" />
-	<link href="{% static 'default_theme/css/home-extra.css' %}"  rel="stylesheet" />
 	<link href="{% static 'default_theme/css/content-extra.css' %}"  rel="stylesheet" />
 	<link href="{% static 'default_theme/css/main.css' %}"  rel="stylesheet" />
 	<link href="{% static 'tethys_portal/css/tethys_main.min.css' %}"  rel="stylesheet" />
 	<link href="{% static 'tethys_portal/css/termsandconditions.min.css' %}"  rel="stylesheet" />
 
+	<link href="{% static 'default_theme/css/home-extra.css' %}"  rel="stylesheet" />
 {% endblock %}
 
 
@@ -498,7 +507,10 @@
 
 
 {% block content %}
+
 {% url 'app_library' as app_library_url %}
+
+
 <div id="content-home" class="site-content">
 	<div class="container-fluid hero-container">
 		<section class="hero text-center">
@@ -514,6 +526,8 @@
 					{% if not user.is_authenticated and ENABLE_OPEN_SIGNUP %}
 						<a href="{% url 'accounts:register' %}" class="portal-button">Sign Up</a>
 						<a href="{% url 'accounts:login' %}" class="portal-button">Login</a>
+					{% else %}
+						<a href="{% url 'accounts:logout' %}" class="portal-button">Logout</a>
 					{% endif %}
 				</div>				
 			</div>
@@ -523,17 +537,18 @@
 
 </div>
 
+
 {% endblock %}
 
 
 {% block footer %}
-	<footer id="site-footer" class="site-footer mt-auto container-fluid"  style="max-width: 1320px;">
+	<div class="site-inner" style="max-width: 1320px;">
 
 		{% block footer_content %}
 			{% include "default_theme/footer.html" %}
 
 		{% endblock %}
-	</footer>
+	</div>
 {% endblock %}
 
 

@@ -330,6 +330,12 @@
 			}
 		
 	</style>
+	<style>
+		/* Scoped to this header so you don't affect other dropdowns site-wide */
+		#masthead .dropdown-toggle::after{
+			margin-left: 0 !important;
+		}
+	</style>
 	<link rel="stylesheet" id="twentysixteen-block-style-css" href="https://cw3e.ucsd.edu/wp-content/themes/twentysixteen/css/blocks.css?ver=20230206" media="all">
 	<link rel="stylesheet" id="wp-add-custom-css-css" href="https://cw3e.ucsd.edu?display_custom_css=css&amp;ver=6.8.1" media="all">
 	<!--[if lt IE 10]>
@@ -460,15 +466,18 @@
     </div>
   </form>
 {% endblock %}
+
 {% block footer %}
-	<footer id="site-footer" class="site-footer mt-auto container-fluid"  style="max-width: 1320px;">
+	<div class="site-inner" style="max-width: 1320px;">
 
 		{% block footer_content %}
 			{% include "default_theme/footer.html" %}
 
 		{% endblock %}
-	</footer>
+	</div>
 {% endblock %}
+
+
 {% block scripts %}
   {{ block.super }}
   <script src="{% static 'default_theme/js/main.js' %}" type="text/javascript"></script>
