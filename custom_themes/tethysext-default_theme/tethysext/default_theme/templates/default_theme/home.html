@@ -510,6 +510,12 @@
 					<img src="{% static 'default_theme/images/USACE.png' %}" class="portal-logo" alt="USACE logo">
 				</div>
 				<p class="portal-lead">{% if site_globals.blurb_text %}{{ site_globals.blurb_text }}{% else %}Firo Portal is designed to be customizable, so that you can host apps for your organization. You can change everything on this page from the Home Page settings.{% endif %}</p>
+				<div class="portal-actions">
+					{% if not user.is_authenticated and ENABLE_OPEN_SIGNUP %}
+						<a href="{% url 'accounts:register' %}" class="portal-button">Sign Up</a>
+						<a href="{% url 'accounts:login' %}" class="portal-button">Login</a>
+					{% endif %}
+				</div>				
 			</div>
 		</section>
 	</div>
