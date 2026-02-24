@@ -483,21 +483,7 @@
 	<link href="{% static 'default_theme/css/main.css' %}"  rel="stylesheet" />
 	<link href="{% static 'tethys_portal/css/tethys_main.min.css' %}"  rel="stylesheet" />
 	<link href="{% static 'tethys_portal/css/termsandconditions.min.css' %}"  rel="stylesheet" />
-	<style>
-		/* Mobile: hide submenus until toggled */
-		#masthead .main-navigation .sub-menu { display: none; }
 
-		/* When the parent <li> is toggled-on, show its submenu */
-		#masthead .main-navigation li.toggled-on > .sub-menu { display: block; }
-
-		/* Optional: make sure the submenu is positioned nicely on mobile */
-		@media screen and (max-width: 56.875em) {
-			#masthead .main-navigation ul ul {
-			position: static;
-			width: 100%;
-			}
-		}
-	</style>
 {% endblock %}
 
 {% block account_form_title %}Sign Up{% endblock %}
