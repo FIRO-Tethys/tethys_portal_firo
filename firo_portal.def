@@ -66,6 +66,7 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     custom_themes/tethysext-default_theme/tethysext/default_theme/templates/default_theme/base.html             /usr/lib/tethys/tethys/tethys_portal/templates/base.html
     custom_themes/tethysext-default_theme/tethysext/default_theme/templates/default_theme/footer.html           /usr/lib/tethys/tethys/tethys_portal/templates/footer.html
     custom_themes/tethysext-default_theme/tethysext/default_theme/templates/default_theme/header_gen.html       /usr/lib/tethys/tethys/tethys_portal/templates/header.html
+    custom_themes/tethysext-default_theme/tethysext/default_theme/templates/default_theme/footer_gen.html       /usr/lib/tethys/tethys/tethys_portal/templates/footer.html
     
     custom_themes/react/layout/App.scss                                                                         /usr/lib/tethys/apps/tethysdash/reactapp/App.scss
     custom_themes/react/layout/content-extra.css                                                                /usr/lib/tethys/apps/tethysdash/reactapp/components/layout/content-extra.css

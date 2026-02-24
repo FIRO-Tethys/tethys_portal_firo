@@ -527,7 +527,21 @@
 	<link href="{% static 'default_theme/css/main.css' %}"  rel="stylesheet" />
 	<link href="{% static 'tethys_portal/css/tethys_main.min.css' %}"  rel="stylesheet" />
 	<link href="{% static 'tethys_portal/css/termsandconditions.min.css' %}"  rel="stylesheet" />
+	<style>
+		/* Mobile: hide submenus until toggled */
+		#masthead .main-navigation .sub-menu { display: none; }
 
+		/* When the parent <li> is toggled-on, show its submenu */
+		#masthead .main-navigation li.toggled-on > .sub-menu { display: block; }
+
+		/* Optional: make sure the submenu is positioned nicely on mobile */
+		@media screen and (max-width: 56.875em) {
+			#masthead .main-navigation ul ul {
+			position: static;
+			width: 100%;
+			}
+		}
+	</style>
 {% endblock %}
 
 {% block global_scripts %}
@@ -594,5 +608,42 @@
 	var screenReaderText = {"expand":"expand child menu","collapse":"collapse child menu"};
 	//# sourceURL=twentysixteen-script-js-extra
 	</script>
-	<script src="https://cw3e.ucsd.edu/wp-content/themes/twentysixteen/js/functions.js?ver=20211130" id="twentysixteen-script-js"></script>
+	<script>
+		document.addEventListener("DOMContentLoaded", () => {
+		const masthead = document.getElementById("masthead");
+		if (!masthead) return;
+
+		const menuBtn = masthead.querySelector("#menu-toggle");
+		const menuWrap = masthead.querySelector("#site-header-menu");
+
+		// Top-level Menu toggle
+		if (menuBtn && menuWrap) {
+			menuBtn.setAttribute("aria-controls", "site-header-menu");
+			menuBtn.setAttribute("aria-expanded", menuWrap.classList.contains("toggled-on") ? "true" : "false");
+
+			menuBtn.addEventListener("click", (e) => {
+			e.preventDefault();
+			const open = menuWrap.classList.toggle("toggled-on");
+			menuBtn.classList.toggle("toggled-on", open);
+			menuBtn.setAttribute("aria-expanded", open ? "true" : "false");
+			});
+		}
+
+		// Submenu toggles (works for nested menus too)
+		masthead.addEventListener("click", (e) => {
+			const btn = e.target.closest("button.dropdown-toggle");
+			if (!btn) return;
+
+			e.preventDefault();
+			e.stopPropagation();
+
+			const li = btn.closest("li");
+			if (!li) return;
+
+			const open = li.classList.toggle("toggled-on");
+			btn.classList.toggle("toggled-on", open);
+			btn.setAttribute("aria-expanded", open ? "true" : "false");
+		});
+		});
+	</script>	
 {% endblock %}
