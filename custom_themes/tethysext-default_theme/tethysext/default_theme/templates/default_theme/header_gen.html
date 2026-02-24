@@ -313,13 +313,22 @@
 		#masthead .dropdown-toggle::after{
 			margin-left: 0 !important;
 		}
-		.cw3e-scope #site-header-menu { display: none; }
-		.cw3e-scope #site-header-menu.toggled-on { display: block; }
 
-		@media screen and (min-width: 56.875em) {
-		.cw3e-scope #site-header-menu { display: block; }
-		.cw3e-scope #menu-toggle { display: none; }
+		/* MOBILE: use the toggle buttons */
+		@media screen and (max-width: 56.875em) {
+			#masthead .main-navigation .sub-menu { display: none; }
+			#masthead .main-navigation li.toggled-on > .sub-menu { display: block; }
+			#masthead .main-navigation ul ul { position: static; width: 100%; }
 		}
+
+		/* DESKTOP: show submenu on hover/focus like the original theme */
+		@media screen and (min-width: 56.875em) {
+			#masthead .main-navigation li:hover > .sub-menu,
+			#masthead .main-navigation li:focus-within > .sub-menu {
+			display: block;
+			}
+		}
+
 	</style>
 
 	
@@ -486,11 +495,8 @@
                 <li class="menu-item menu-item-type-custom menu-item-object-custom">
                   <a href="{% url 'accounts:logout' %}">Logout</a>
                 </li>
-
-
               {% endif %}
-
-
+				<li class="menu-item menu-item-type-custom menu-item-object-custom"><a href="{% url 'home' %}">About</a></li>
               {% if user.is_staff %}
                 <li class="menu-item menu-item-type-custom menu-item-object-custom">
                   <a href="{% url 'admin:index' %}">Settings</a>
@@ -525,4 +531,43 @@
 	//# sourceURL=twentysixteen-script-js-extra
 	</script>
 	<script src="https://cw3e.ucsd.edu/wp-content/themes/twentysixteen/js/functions.js?ver=20211130" id="twentysixteen-script-js"></script>
+	<script>
+		var screenReaderText = {"expand":"expand child menu","collapse":"collapse child menu"};
+		document.addEventListener("DOMContentLoaded", () => {
+			const masthead = document.getElementById("masthead");
+			if (!masthead) return;
+
+			const menuBtn = masthead.querySelector("#menu-toggle");
+			const menuWrap = masthead.querySelector("#site-header-menu");
+
+			// Top-level Menu toggle
+			if (menuBtn && menuWrap) {
+				menuBtn.setAttribute("aria-controls", "site-header-menu");
+				menuBtn.setAttribute("aria-expanded", menuWrap.classList.contains("toggled-on") ? "true" : "false");
+
+				menuBtn.addEventListener("click", (e) => {
+				e.preventDefault();
+				const open = menuWrap.classList.toggle("toggled-on");
+				menuBtn.classList.toggle("toggled-on", open);
+				menuBtn.setAttribute("aria-expanded", open ? "true" : "false");
+				});
+			}
+
+			// Submenu toggles (works for nested menus too)
+			masthead.addEventListener("click", (e) => {
+					const btn = e.target.closest("button.dropdown-toggle");
+					if (!btn) return;
+
+					e.preventDefault();
+					e.stopPropagation();
+
+					const li = btn.closest("li");
+					if (!li) return;
+
+					const open = li.classList.toggle("toggled-on");
+					btn.classList.toggle("toggled-on", open);
+					btn.setAttribute("aria-expanded", open ? "true" : "false");
+			});
+		});
+	</script>
 {% endblock %}
