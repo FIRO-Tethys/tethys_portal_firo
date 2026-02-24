@@ -160,17 +160,11 @@
                 <li class="menu-item menu-item-type-custom menu-item-object-custom">
                   <a href="{% url 'user:profile' %}">My Account</a>
                 </li>
-
-
-
                 <li class="menu-item menu-item-type-custom menu-item-object-custom">
                   <a href="{% url 'accounts:logout' %}">Logout</a>
                 </li>
-
-
               {% endif %}
-
-
+                <li class="menu-item menu-item-type-custom menu-item-object-custom"><a href="{% url 'home' %}">About</a></li>
               {% if user.is_staff %}
                 <li class="menu-item menu-item-type-custom menu-item-object-custom">
                   <a href="{% url 'admin:index' %}">Settings</a>
