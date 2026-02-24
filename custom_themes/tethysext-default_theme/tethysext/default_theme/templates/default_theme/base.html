@@ -232,7 +232,7 @@
   </head>
 
   {# Allows custom attributes to be added to the body tag #}
-  <body class="d-flex flex-column h-100" {% block bodytag %}{% endblock %}>
+  <body class="d-flex flex-column h-100 align-items-center" {% block bodytag %}{% endblock %}>
     {% if has_analytical %}
     {% include "analytical_body_top.html" %}
     {% endif %}
