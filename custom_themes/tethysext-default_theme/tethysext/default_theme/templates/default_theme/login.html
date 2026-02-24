@@ -498,8 +498,8 @@
 {% endblock %}
 
 
+	<div class="col-xl-12 w-100">
 {% block account_form_body %}
-
     <form role="form" method="post" class="portal-auth-shell">
         {% if backends.not_associated %}
         {% include 'tethys_portal/accounts/social_buttons.html' with action='Log in' backends=backends.not_associated %}
@@ -518,9 +518,9 @@
     </form>
 
 
-
 {% endblock %}
 
+	</div>
 {% block terms-of-service-override %}
 {% endblock %}
 

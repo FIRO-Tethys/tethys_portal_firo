@@ -1,10 +1,6 @@
 {% load static %}
 
 {% block custom_styles %}
-	<link rel="stylesheet" id="child-style-css" href="https://cw3e.ucsd.edu/wp-content/themes/twentysixteen-child/style.css?ver=1.0.0" media="all">
-	<link rel="stylesheet" id="twentysixteen-fonts-css" href="https://cw3e.ucsd.edu/wp-content/themes/twentysixteen/fonts/merriweather-plus-montserrat-plus-inconsolata.css?ver=20230328" media="all">
-	<link rel="stylesheet" id="genericons-css" href="https://cw3e.ucsd.edu/wp-content/themes/twentysixteen/genericons/genericons.css?ver=20201208" media="all">
-	<link rel="stylesheet" id="twentysixteen-style-css" href="https://cw3e.ucsd.edu/wp-content/themes/twentysixteen-child/style.css?ver=20230328" media="all">
 	<style id="twentysixteen-style-inline-css">
 
 			/* Custom Page Background Color */
@@ -317,20 +313,17 @@
 		#masthead .dropdown-toggle::after{
 			margin-left: 0 !important;
 		}
+		.cw3e-scope #site-header-menu { display: none; }
+		.cw3e-scope #site-header-menu.toggled-on { display: block; }
+
+		@media screen and (min-width: 56.875em) {
+		.cw3e-scope #site-header-menu { display: block; }
+		.cw3e-scope #menu-toggle { display: none; }
+		}
 	</style>
 
-	<link rel="stylesheet" id="twentysixteen-block-style-css" href="https://cw3e.ucsd.edu/wp-content/themes/twentysixteen/css/blocks.css?ver=20230206" media="all">
-	<link rel="stylesheet" id="wp-add-custom-css-css" href="https://cw3e.ucsd.edu?display_custom_css=css&amp;ver=6.8.1" media="all">
-	<!--[if lt IE 10]>
-		<link rel='stylesheet' id='twentysixteen-ie-css' href='https://cw3e.ucsd.edu/wp-content/themes/twentysixteen/css/ie.css?ver=20170530' media='all' />
-	<![endif]-->
-	<!--[if lt IE 9]>
-		<link rel='stylesheet' id='twentysixteen-ie8-css' href='https://cw3e.ucsd.edu/wp-content/themes/twentysixteen/css/ie8.css?ver=20170530' media='all' />
-	<![endif]-->
-	<!--[if lt IE 8]>
-		<link rel='stylesheet' id='twentysixteen-ie7-css' href='https://cw3e.ucsd.edu/wp-content/themes/twentysixteen/css/ie7.css?ver=20170530' media='all' />
-	<![endif]-->
-
+	
+	<link href="{% static 'default_theme/css/cw3e_scoped.css' %}"  rel="stylesheet" />
 {% endblock %}
 <header id="masthead" class="site-header" role="banner">
   <div class="header-image" style="position: relative; max-width: 1320px;">
@@ -526,7 +519,6 @@
   </div>
 </header>
 {% block scripts %}
-  {{ block.super }}
    <script src="https://cw3e.ucsd.edu/wp-content/themes/twentysixteen/js/skip-link-focus-fix.js?ver=20170530" id="twentysixteen-skip-link-focus-fix-js"></script>
   <script id="twentysixteen-script-js-extra">
 	var screenReaderText = {"expand":"expand child menu","collapse":"collapse child menu"};

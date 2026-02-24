@@ -37,46 +37,48 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     export MEDIA_URL="/firo_apps/media/"
 
 %files
-    tethysdash                                          /usr/lib/tethys/apps/tethysdash
-    tethysdash_plugin_cnrfc                             /usr/lib/tethys/apps/tethysdash_plugin_cnrfc
-    tethysdash_plugin_cw3e                              /usr/lib/tethys/apps/tethysdash_plugin_cw3e
-    tethysdash_plugin_usace                             /usr/lib/tethys/apps/tethysdash_plugin_usace
-    images/firo_dash_logo.png                           /usr/lib/tethys/apps/tethysdash/tethysapp/tethysdash/public/images/tethys_dash.png
+    tethysdash                                                                                                  /usr/lib/tethys/apps/tethysdash
+    tethysdash_plugin_cnrfc                                                                                     /usr/lib/tethys/apps/tethysdash_plugin_cnrfc
+    tethysdash_plugin_cw3e                                                                                      /usr/lib/tethys/apps/tethysdash_plugin_cw3e
+    tethysdash_plugin_usace                                                                                     /usr/lib/tethys/apps/tethysdash_plugin_usace
+    images/firo_dash_logo.png                                                                                   /usr/lib/tethys/apps/tethysdash/tethysapp/tethysdash/public/images/tethys_dash.png
 
     # Requirements
-    requirements.txt                                    /usr/lib/tethys/requirements.txt
+    requirements.txt                                                                                            /usr/lib/tethys/requirements.txt
 
     # Apptainer Salt files
-    apptainer/salt/tethys_services.sls                  /srv/salt/tethys_services.sls
-    apptainer/salt/portal_theme.sls                     /srv/salt/portal_theme.sls
-    apptainer/salt/tethyscore.sls                       /srv/salt/tethyscore.sls
-    apptainer/salt/pre_tethys.sls                       /srv/salt/pre_tethys.sls
-    apptainer/salt/post_app.sls                         /srv/salt/post_app.sls
-    apptainer/salt/init_apps.sls                        /srv/salt/init_apps.sls
-    apptainer/salt/post_nginx.sls                       /srv/salt/post_nginx.sls
+    apptainer/salt/tethys_services.sls                                                                          /srv/salt/tethys_services.sls
+    apptainer/salt/portal_theme.sls                                                                             /srv/salt/portal_theme.sls
+    apptainer/salt/tethyscore.sls                                                                               /srv/salt/tethyscore.sls
+    apptainer/salt/pre_tethys.sls                                                                               /srv/salt/pre_tethys.sls
+    apptainer/salt/post_app.sls                                                                                 /srv/salt/post_app.sls
+    apptainer/salt/init_apps.sls                                                                                /srv/salt/init_apps.sls
+    apptainer/salt/post_nginx.sls                                                                               /srv/salt/post_nginx.sls
 
     # Docker Salt files
-    apptainer/salt/top.sls                              /srv/salt/top.sls
+    apptainer/salt/top.sls                                                                                      /srv/salt/top.sls
 
     # run.sh
-    apptainer/salt/run.sh                               /usr/lib/tethys/run.sh
-    apptainer/salt/ensure_tethys_roles_and_dbs.sh       /usr/lib/tethys/ensure_tethys_roles_and_dbs.sh
+    apptainer/salt/run.sh                                                                                       /usr/lib/tethys/run.sh
+    apptainer/salt/ensure_tethys_roles_and_dbs.sh                                                               /usr/lib/tethys/ensure_tethys_roles_and_dbs.sh
     #themes
-    custom_themes/tethysext-default_theme               /usr/lib/tethys/ext/tethysext-default_theme
-    custom_themes/react/layout/App.scss                 /usr/lib/tethys/apps/tethysdash/reactapp/App.scss
-    custom_themes/react/layout/content-extra.css        /usr/lib/tethys/apps/tethysdash/reactapp/components/layout/content-extra.css
-    custom_themes/react/layout/cw3e-twentysixteen.css   /usr/lib/tethys/apps/tethysdash/reactapp/components/layout/cw3e-twentysixteen.css
-    custom_themes/react/layout/cw3eFooter.js            /usr/lib/tethys/apps/tethysdash/reactapp/components/layout/cw3eFooter.js
-    custom_themes/react/layout/cw3eHeader.js            /usr/lib/tethys/apps/tethysdash/reactapp/components/layout/cw3eHeader.js
-    custom_themes/react/layout/footer-extra.css         /usr/lib/tethys/apps/tethysdash/reactapp/components/layout/footer-extra.css
-    custom_themes/react/layout/Header.js                /usr/lib/tethys/apps/tethysdash/reactapp/components/layout/Header.js
-    custom_themes/react/layout/LandingPage.js           /usr/lib/tethys/apps/tethysdash/reactapp/views/LandingPage.js
-    custom_themes/react/layout/styles.css               /usr/lib/tethys/apps/tethysdash/reactapp/components/layout/styles.css
-    custom_themes/react/layout/TooltipButton.js         /usr/lib/tethys/apps/tethysdash/reactapp/components/buttons/TooltipButton.js
+    custom_themes/tethysext-default_theme                                                                       /usr/lib/tethys/ext/tethysext-default_theme
+    custom_themes/tethysext-default_theme/tethysext/default_theme/templates/default_theme/base.html             /usr/lib/tethys/tethys/tethys_portal/templates/base.html
+    custom_themes/tethysext-default_theme/tethysext/default_theme/templates/default_theme/footer.html           /usr/lib/tethys/tethys/tethys_portal/templates/footer.html
+    custom_themes/tethysext-default_theme/tethysext/default_theme/templates/default_theme/header_gen.html       /usr/lib/tethys/tethys/tethys_portal/templates/header.html
+    
+    custom_themes/react/layout/App.scss                                                                         /usr/lib/tethys/apps/tethysdash/reactapp/App.scss
+    custom_themes/react/layout/content-extra.css                                                                /usr/lib/tethys/apps/tethysdash/reactapp/components/layout/content-extra.css
+    custom_themes/react/layout/cw3e-twentysixteen.css                                                           /usr/lib/tethys/apps/tethysdash/reactapp/components/layout/cw3e-twentysixteen.css
+    custom_themes/react/layout/cw3eFooter.js                                                                    /usr/lib/tethys/apps/tethysdash/reactapp/components/layout/cw3eFooter.js
+    custom_themes/react/layout/cw3eHeader.js                                                                    /usr/lib/tethys/apps/tethysdash/reactapp/components/layout/cw3eHeader.js
+    custom_themes/react/layout/footer-extra.css                                                                 /usr/lib/tethys/apps/tethysdash/reactapp/components/layout/footer-extra.css
+    custom_themes/react/layout/Header.js                                                                        /usr/lib/tethys/apps/tethysdash/reactapp/components/layout/Header.js
+    custom_themes/react/layout/LandingPage.js                                                                   /usr/lib/tethys/apps/tethysdash/reactapp/views/LandingPage.js
+    custom_themes/react/layout/styles.css                                                                       /usr/lib/tethys/apps/tethysdash/reactapp/components/layout/styles.css
+    custom_themes/react/layout/TooltipButton.js                                                                 /usr/lib/tethys/apps/tethysdash/reactapp/components/buttons/TooltipButton.js
     
     #scripts
-    apptainer/scripts/udpate_db.sh        /var/lib/tethys_persist/scripts/update_db.sh
-
 
 
 %post

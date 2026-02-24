@@ -1,0 +1,337 @@
+{% load static tethys %}
+<!DOCTYPE html>
+
+{# Allows custom attributes to be added to the html tag #}
+{% block htmltag %}
+<!--[if IE 7]> <html lang="en" class="ie ie7 h-100"> <![endif]-->
+<!--[if IE 8]> <html lang="en"  class="ie ie8 h-100"> <![endif]-->
+<!--[if IE 9]> <html lang="en"  class="ie9 h-100"> <![endif]-->
+<!--[if gt IE 8]><!--> <html lang="en" class="h-100"> <!--<![endif]-->
+{% endblock %}
+
+  {# Allows custom attributes to be added to the head tag #}
+  <head {% block headtag %}{% endblock %}>
+    {% if has_analytical %}
+    {% include "analytical_head_top.html" %}
+    {% endif %}
+
+    {% comment "meta explanation" %}
+      Add custom meta tags to the page. Call block.super to get the default tags
+      such as charset, viewport and generator.
+
+      Example:
+
+      {% block meta %}
+        {{ block.super }}
+        <meta name="description" value="My website description" />
+      {% endblock %}
+    {% endcomment %}
+
+    {% block meta %}
+      <meta charset="utf-8" />
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="generator" content="Django" />
+    {% endblock %}
+
+    {% comment "title explanation" %}
+      Add a custom title to the page by extending the title block. Call block.super
+      to get the default page title.
+
+      Example:
+
+        {% block title %}My Subtitle - {{ block.super }}{% endblock %}
+    {% endcomment %}
+
+    <title>
+      {% block title %}
+      {% if site_globals.site_title %}
+        {{ site_globals.site_title }}
+      {% elif site_globals.brand_text %}
+        {{ site_globals.brand_text }}
+      {% else %}
+        Tethys Portal
+      {% endif %}
+      {% endblock %}
+    </title>
+
+    {% comment "links explanation" %}
+      The links block allows you to add additional content before the stylesheets
+      such as rss feeds and favicons in the same way as the meta block.
+    {% endcomment %}
+
+    {% block links %}
+      <link rel="shortcut icon" href="{% if site_globals.favicon and 'http' in site_globals.favicon %}{{ site_globals.favicon }}{% elif site_globals.favicon %}{% static site_globals.favicon %}{% else %}{% static 'tethys_portal/images/default_favicon.png' %}{% endif %}" />
+    {% endblock %}
+
+    {% comment "import_gizmos explanation" %}
+      The import_gizmos block allows you register gizmos to be added to your
+      page so that the dependencies load properly.
+
+      Example:
+
+        {% block import_gizmos %}
+          {% import_gizmo_dependency map_view %}
+        {% endblock %}
+
+    {% endcomment %}
+
+    {% block import_gizmos %}
+    {% endblock %}
+
+    {% comment "styles explanation" %}
+      The styles block allows you to add additional stylesheets to the page in
+      the same way as the meta block. Use block.super to include the default
+      stylesheets before or after your own.
+
+      Example:
+
+        {% block styles %}
+          {{ block.super }}
+          <link href="{% static 'custom/css/foo.css' %}" rel="stylesheet" />
+        {% endblock %}
+    {% endcomment %}
+
+    {% block styles %}
+      {{ tethys.bootstrap.link_tag|safe }}
+      {{ tethys.bootstrap_icons.link_tag|safe }}
+      <link href="{% static 'tethys_portal/css/tethys_main.min.css' %}"  rel="stylesheet" />
+      <link href="{% static 'tethys_portal/css/termsandconditions.min.css' %}"  rel="stylesheet" />
+      <style id="global-styles">
+        body {
+          background: {{ site_globals.background_color }};
+        }
+      </style>
+      <style id="header-styles">
+        /* Header Styles */
+        #header-brand {
+          color: {{ site_globals.primary_text_color }};
+        }
+
+        #header-brand:hover {
+          color: {{ site_globals.primary_text_hover_color }};
+        }
+        .site-header .navbar {
+          border-radius: 40px;
+          transition: all .2s ease-in-out;
+        }
+
+        .site-header .navbar-nav .nav-link {
+          color: {{ site_globals.primary_text_color }};
+        }
+
+        .site-header .navbar-nav .nav-link:hover {
+          color: {{ site_globals.primary_text_hover_color }};
+        }
+
+        .site-header .navbar-brand img {
+          height: 26px;
+          {% if site_globals.brand_image_height %}
+          height: {{ site_globals.brand_image_height }};
+          {% endif %}
+          {% if site_globals.brand_image_width %}
+            width: {{ site_globals.brand_image_width }};
+          {% endif %}
+          {% if site_globals.brand_image_padding %}
+            margin-top: {{ site_globals.brand_image_padding }};
+          {% endif %}
+        }
+
+        .site-header .btn-user-profile {
+          background-color: rgba(255, 255, 255, 0.08);
+          border: none;
+          color: {{ site_globals.primary_text_color }};
+        }
+
+        .site-header .btn-user-profile:hover {
+          background-color: rgba(255, 255, 255, 0.30);
+        }
+
+        .site-header .btn-group .dropdown-menu .dropdown-item {
+          color:#3f3f3f;
+        }
+
+        .site-header .btn-group .dropdown-menu .dropdown-item:active {
+          background-color: {{ site_globals.primary_color }};
+          color: #dddddd;
+        }
+
+        .site-header .navbar {
+          background-color: {{ site_globals.primary_color }};
+        }
+
+        .site-header .navbar.fixed-top {
+          border-radius: 0;
+          margin: 0 !important;
+        }
+
+        .site-header .navbar-toggler {
+          border: none;
+        }
+      </style>
+      <style id="footer-styles">
+        /* Footer Styles */
+        .site-footer {
+          background-color: {{ site_globals.primary_color }};
+          z-index: 100;
+        }
+        .site-footer a {
+          font-size: 20px;
+          color: {{ site_globals.primary_text_color }};
+          text-decoration: none;
+          white-space: nowrap;
+        }
+        .site-footer a:hover {
+          color: {{ site_globals.primary_text_color }};
+          text-decoration: underline;
+        }
+        .site-footer .copyright {
+          display: block;
+          font-size: 16px;
+          white-space: nowrap;
+          color: {{ site_globals.primary_text_color }};
+        }
+        .site-footer .tethys-attribution {
+          color: {{ site_globals.primary_text_color }};
+        }
+        .site-footer .documents-wrapper .document-link {
+          display: inline-block;
+          font-size: 16px;
+          white-space: nowrap;
+          color: {{ site_globals.primary_text_color }};
+        }
+        .site-footer .documents-wrapper .document-link:hover {
+          color: {{ site_globals.primary_text_color }};
+        }
+      </style>
+    {% endblock %}
+
+    {% block custom_styles %}
+      {{ site_globals.portal_base_css|load_custom_css|safe }}
+    {% endblock %}
+
+    {% block global_scripts %}
+      {{ tethys.jquery.script_tag|safe }}
+      {{ tethys.bootstrap.script_tag|safe }}
+    {% endblock %}
+
+    {% if has_session_security %}
+    {% block session_timeout_modal %}
+      {% include 'session_security/all.html' %}
+      <link href="{% static 'tethys_portal/css/session_security_override.min.css' %}"  rel="stylesheet" />
+    {% endblock %}
+    {% endif %}
+
+    {% block head %}{% endblock %}
+    {% block extrahead %}{% endblock %}
+    {% block blockbots %}{% endblock %}
+
+    {% if has_analytical %}
+    {% include "analytical_head_bottom.html" %}
+    {% endif %}
+  </head>
+
+  {# Allows custom attributes to be added to the body tag #}
+  <body class="d-flex flex-column h-100" {% block bodytag %}{% endblock %}>
+    {% if has_analytical %}
+    {% include "analytical_body_top.html" %}
+    {% endif %}
+
+    {% comment "page explanation" %}
+      The page block allows you to add content to the page.
+
+      Example:
+
+        {% block page %}
+          <div>Some other page content</div>
+        {% endblock %}
+    {% endcomment %}
+
+    {% block page %}
+      {%  comment "header explanation"  %}
+        Override the header on a page by page basis by extending this block. If
+        making sitewide header changes it is preferable to override the header.html
+        file.
+      {% endcomment %}
+
+      {% block header %}
+      <div class="cw3e-scope">
+        {% include "header.html" %}
+      </div>
+        <div class="clear-header"></div>
+      {% endblock %}
+
+      {% block site_wrapper_override %}
+        {# Use wrapper class to add classes to the content wrapper element #}
+        <div id="site-wrapper" class="my-auto wrapper{% block wrapper_class %}{% endblock %}">
+          {% block flash %}
+            {% if messages %}
+              <div class="flash-messages position-absolute w-100">
+                {% comment "flash_messages explanation" %}
+                  Use the flash messages block to display temporary feedback to the user. Pass
+                  a list of dictionaries called "flash_messages". Each dictionary should have the
+                  keys "category" and "text". The category can be any of: "success", "info",
+                  "warning", and "danger". The category is used to style the message. The text is
+                  the text of the message to be displayed. The alerts that will be displayed are
+                  dismissible. To create custom alerts, override the "flash" block.
+                {% endcomment %}
+
+                {% for message in messages %}
+                  <div class="alert {% if message.tags %}{{ message.tags }}{% endif %} alert-dismissible fade show mx-auto w-50" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                  </div>
+                {% endfor %}
+              </div>
+            {% endif %}
+          {% endblock %}
+          {# The admin pages must override all of these to work properly #}
+          {% block admin_content %}
+            {% block content %}
+              <div id="content">
+                {% block primary_content %}{% endblock %}
+              </div>
+            {% endblock %}
+          {% endblock %}
+        </div>
+      {% endblock %}
+
+      {% comment "footer explanation"  %}
+        Override the footer on a page by page basis by extending this block. If
+        making sitewide header changes it is preferable to override the footer.html-u
+        file.
+      {% endcomment %}
+
+      {% block footer %}
+        <div class="cw3e-scope" style="max-width: 1320px;">
+          {% include "footer.html" %}
+        </div>
+      {% endblock %}
+    {% endblock %}
+
+    {% block tos_override %}
+      {% if has_terms %}
+      {% include "terms.html" %}
+      {% endif %}
+    {% endblock %}
+
+    {% comment "scripts explanation" %}
+      Use this block for adding scripts. Call with block.super to include the default
+      scripts.
+
+      Example:
+        {% block scripts %}
+          {{ block.super }}
+          <script type="text/javascript" src="{% static 'custom/js/bar.css' %}"></script>
+        {% endblock %}
+    {% endcomment %}
+
+    {% block scripts %}
+      <script type="text/javascript" src="{% static 'tethys_portal/js/header.js' %}"></script>
+    {% endblock %}
+
+    {% if has_analytical %}
+    {% include "analytical_body_bottom.html" %}
+    {% endif %}
+  </body>
+</html>
