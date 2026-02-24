@@ -731,6 +731,9 @@ const Cw3eHeader = () => {
                                                 <a href={tethysApp?.settingsUrl}>Settings</a>
                                             </li>
                                         )}
+                                        <li className="menu-item menu-item-type-custom menu-item-object-custom">
+                                            <a href={TETHYS_PORTAL_BASE}>About</a>
+                                        </li>
                                         {!user?.username && (
                                             <li className="menu-item menu-item-type-custom menu-item-object-custom">
                                                 <a href={loginUrl}>Login</a>
