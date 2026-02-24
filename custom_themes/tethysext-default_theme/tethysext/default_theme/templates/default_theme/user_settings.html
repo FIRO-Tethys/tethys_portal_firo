@@ -335,6 +335,7 @@
 		#masthead .dropdown-toggle::after{
 			margin-left: 0 !important;
 		}
+		
 	</style>
 	<link rel="stylesheet" id="twentysixteen-block-style-css" href="https://cw3e.ucsd.edu/wp-content/themes/twentysixteen/css/blocks.css?ver=20230206" media="all">
 	<link rel="stylesheet" id="wp-add-custom-css-css" href="https://cw3e.ucsd.edu?display_custom_css=css&amp;ver=6.8.1" media="all">
@@ -470,10 +471,8 @@
 {% block footer %}
 	<div class="site-inner" style="max-width: 1320px;">
 
-		{% block footer_content %}
-			{% include "default_theme/footer.html" %}
+		{% include "default_theme/footer.html" %}
 
-		{% endblock %}
 	</div>
 {% endblock %}
 

@@ -17,6 +17,7 @@ const Cw3eHeader = () => {
   const loginUrl = `${TETHYS_PORTAL_BASE}/accounts/login?next=${window.location.pathname}`;
   const appUrl = `${TETHYS_PORTAL_BASE}/apps/tethysdash/`;
   const appsUrl = `${TETHYS_PORTAL_BASE}/apps/`;
+  const profileUrl = `${TETHYS_PORTAL_BASE}/user/`;
   const handleDropdownToggle = (event) => {
     event.preventDefault();
     const button = event.currentTarget;
@@ -735,9 +736,17 @@ const Cw3eHeader = () => {
                                                 <a href={loginUrl}>Login</a>
                                             </li>
                                         )}
-                                        <li className="menu-item menu-item-type-custom menu-item-object-custom">
-                                            <a href={tethysApp?.exitUrl}>Logout</a>
-                                        </li>
+                                        {user?.username && (
+                                            <>
+                                            <li class="menu-item menu-item-type-custom menu-item-object-custom">
+                                                <a href={profileUrl}>My Account</a>
+                                            </li>
+                                            <li className="menu-item menu-item-type-custom menu-item-object-custom">
+                                                <a href={tethysApp?.exitUrl}>Logout</a>
+                                            </li>
+                                            </>
+                                        )}
+
                                     </ul>
                                 </li>
 
