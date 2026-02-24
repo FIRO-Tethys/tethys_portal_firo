@@ -165,16 +165,13 @@ Generate_ASGI_Service_TethysCore:
     - makedirs: True
 
 {% if TETHYS_DB_ENGINE == 'django.db.backends.postgresql' %}
-Create_Database_User_and_SuperUser_TethysCore:
+
+Ensure_Tethys_DB_Roles_And_Databases_Run:
   cmd.run:
-    - name: >
-        PGPASSWORD="{{ POSTGRES_PASSWORD }}" tethys db create
-        -n "{{ TETHYS_DB_USERNAME }}"
-        -p "{{ TETHYS_DB_PASSWORD }}"
-        -N "{{ TETHYS_DB_SUPERUSER }}"
-        -P "{{ TETHYS_DB_SUPERUSER_PASS }}"
+    - name: /bin/bash {{ TETHYS_HOME }}/ensure_tethys_roles_and_dbs.sh
     - shell: /bin/bash
     - unless: /bin/bash -c "[ -f '{{ TETHYS_PERSIST }}/setup_complete' ] || {{ SKIP_DB_SETUP | lower }};"
+    
 {% endif %}
 
 Migrate_Database_TethysCore:
