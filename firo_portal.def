@@ -76,11 +76,9 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     custom_themes/react/layout/footer-extra.css                                                                 /usr/lib/tethys/apps/tethysdash/reactapp/components/layout/footer-extra.css
     custom_themes/react/layout/Header.js                                                                        /usr/lib/tethys/apps/tethysdash/reactapp/components/layout/Header.js
     custom_themes/react/layout/LandingPage.js                                                                   /usr/lib/tethys/apps/tethysdash/reactapp/views/LandingPage.js
+    custom_themes/react/layout/ContextMenu.js                                                                   /usr/lib/tethys/apps/tethysdash/reactapp/components/landingPage/ContextMenu.js
     custom_themes/react/layout/styles.css                                                                       /usr/lib/tethys/apps/tethysdash/reactapp/components/layout/styles.css
     custom_themes/react/layout/TooltipButton.js                                                                 /usr/lib/tethys/apps/tethysdash/reactapp/components/buttons/TooltipButton.js
-    
-    #scripts
-
 
 %post
     export CONDA_HOME="/opt/conda"
