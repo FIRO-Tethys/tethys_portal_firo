@@ -342,3 +342,37 @@ a:active,
 		display: block;
 	}
 }
+
+/* --- Header Compaction --- */
+
+/* Collapse Twenty Sixteen header padding at all breakpoints */
+.site-header,
+#masthead.site-header {
+  padding: 0 4% !important;
+}
+
+.header-image,
+.site-header-menu,
+.site-header-main {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* Cap the banner image height */
+.header-image img {
+  max-height: 80px;
+  width: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+/* Prevent header from shrinking under flex pressure */
+#masthead.site-header {
+  flex-shrink: 0;
+}
+
+/* Tighten nav bar spacing */
+.main-navigation {
+  margin-top: 0;
+  margin-bottom: 0;
+}
