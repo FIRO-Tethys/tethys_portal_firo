@@ -25,3 +25,29 @@
     padding: 0;
     height: 100%;
 }
+
+/* --- Header Compaction --- */
+
+.site-header,
+#masthead.site-header {
+  padding: 0 4% !important;
+}
+
+.header-image,
+.site-header-menu,
+.site-header-main {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+.header-image img {
+  max-height: 80px;
+  width: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+.main-navigation {
+  margin-top: 0;
+  margin-bottom: 0;
+}
