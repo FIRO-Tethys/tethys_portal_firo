@@ -26,7 +26,3 @@
   .footer-table p,
   .footer-table a { font-size: 0.8125rem; } /* ≈13 px on small screens */
 }
-
-.site-inner {
-    overflow: unset !important;
-}
