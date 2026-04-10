@@ -23,6 +23,13 @@
     .wrapper{
         padding: 30px;
     }
+    #site-wrapper.flex-grow-1 {
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+    body {
+      align-items: stretch !important;
+    }
     .app-libary-wrapper {
       padding-top: 2.5rem;
       padding-bottom: 4.5rem;
@@ -192,6 +199,8 @@
 {% block app_header_override %}
 {% endblock %}
 
+{% block wrapper_class %} flex-grow-1{% endblock %}
+
 {% block custom_styles %}
 	<link rel="stylesheet" id="child-style-css" href="https://cw3e.ucsd.edu/wp-content/themes/twentysixteen-child/style.css?ver=1.0.0" media="all">
 	<link rel="stylesheet" id="twentysixteen-fonts-css" href="https://cw3e.ucsd.edu/wp-content/themes/twentysixteen/fonts/merriweather-plus-montserrat-plus-inconsolata.css?ver=20230328" media="all">
@@ -269,7 +278,7 @@
 {% endblock %}
 
 {% block footer %}
-	<div class="site-inner" style="max-width: 1320px;">
+	<div class="site-inner flex-shrink-0" style="max-width: 1320px;">
 			{% include "default_theme/footer.html" %}
 	</div>
 {% endblock %}
