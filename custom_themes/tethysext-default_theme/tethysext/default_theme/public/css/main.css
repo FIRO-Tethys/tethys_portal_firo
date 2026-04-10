@@ -358,12 +358,9 @@ a:active,
   margin-bottom: 0 !important;
 }
 
-/* Cap the banner image height */
-.header-image img {
-  max-height: 80px;
-  width: 100%;
-  object-fit: cover;
-  object-position: center top;
+/* Shrink the banner via horizontal padding (no cropping) */
+.header-image {
+  padding: 0 12% !important;
 }
 
 /* Prevent header from shrinking under flex pressure */

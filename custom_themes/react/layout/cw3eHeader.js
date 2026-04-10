@@ -40,7 +40,7 @@ const Cw3eHeader = () => {
                 >
                     <img
                         src="https://cw3e.ucsd.edu/wp-content/uploads/2024/08/header_finalv2.png"
-                        style={{ width: "100%", maxHeight: "80px", objectFit: "cover", objectPosition: "center top" }}
+                        style={{ width: "100%" }}
                         srcSet="https://cw3e.ucsd.edu/wp-content/uploads/2024/08/header_finalv2-300x32.png 300w, https://cw3e.ucsd.edu/wp-content/uploads/2024/08/header_finalv2-1024x110.png 1024w, https://cw3e.ucsd.edu/wp-content/uploads/2024/08/header_finalv2-768x83.png 768w, https://cw3e.ucsd.edu/wp-content/uploads/2024/08/header_finalv2.png 1200w"
                         height="129"
                         alt="CW3E Header Logo"

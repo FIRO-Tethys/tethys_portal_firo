@@ -35,29 +35,31 @@ const LandingPage = () => {
 
   return (
     <LayoutAlertContextProvider>
-      <LandingPageHeader />
-      <DashboardLayoutAlerts />
-      <StyledContainer fluid className="landing-page">
-        <StyledRow>
-          {user?.username && (
-            <StyledCol>
-              <NewDashboardCard />
-            </StyledCol>
-          )}
-          {availableDashboards.length > 0 &&
-            availableDashboards.map((dashboardMetadata) => (
-              <StyledCol key={dashboardMetadata.id}>
-                <DashboardCard {...dashboardMetadata} />
+      <div className="d-flex flex-column" style={{ minHeight: "100vh" }}>
+        <LandingPageHeader />
+        <DashboardLayoutAlerts />
+        <StyledContainer fluid className="landing-page flex-grow-1">
+          <StyledRow>
+            {user?.username && (
+              <StyledCol>
+                <NewDashboardCard />
               </StyledCol>
-            ))}
-          {!user?.username && availableDashboards.length === 0 && (
-            <StyledCol key="no-content">
-              <NoDashboardCard />
-            </StyledCol>
-          )}
-        </StyledRow>
-      </StyledContainer>
-      <CW3EFooter />
+            )}
+            {availableDashboards.length > 0 &&
+              availableDashboards.map((dashboardMetadata) => (
+                <StyledCol key={dashboardMetadata.id}>
+                  <DashboardCard {...dashboardMetadata} />
+                </StyledCol>
+              ))}
+            {!user?.username && availableDashboards.length === 0 && (
+              <StyledCol key="no-content">
+                <NoDashboardCard />
+              </StyledCol>
+            )}
+          </StyledRow>
+        </StyledContainer>
+        <CW3EFooter />
+      </div>
     </LayoutAlertContextProvider>
   );
 };
