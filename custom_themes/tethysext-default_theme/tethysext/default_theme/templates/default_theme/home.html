@@ -24,6 +24,13 @@
 			background: {{ site_globals.background_color }};
 			color: var(--portal-text);
 			font-family: Merriweather, Georgia, serif !important;
+			align-items: stretch !important;
+			min-height: 100vh !important;
+			height: auto !important;
+		}
+		#site-wrapper.flex-grow-1 {
+			margin-top: 0;
+			margin-bottom: 0;
 		}
 
 		.hero-container {
@@ -159,6 +166,8 @@
 {% block app_header_override %}
 {% endblock %}
 
+{% block wrapper_class %} flex-grow-1{% endblock %}
+
 
 {% block custom_styles %}
 	<link rel="stylesheet" id="child-style-css" href="https://cw3e.ucsd.edu/wp-content/themes/twentysixteen-child/style.css?ver=1.0.0" media="all">
@@ -228,7 +237,7 @@
 
 
 {% block footer %}	
-	<div class="site-inner" style="max-width: 1320px;">
+	<div class="site-inner flex-shrink-0" style="max-width: 1320px;">
 		{% include "default_theme/footer.html" %}
 	</div>
 {% endblock %}
