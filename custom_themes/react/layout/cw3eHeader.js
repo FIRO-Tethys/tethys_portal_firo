@@ -31,7 +31,7 @@ const Cw3eHeader = () => {
   };
 
   return (
-        <Container fluid className="px-5">
+        <Container fluid className="px-5" style={{ maxWidth: "1320px", margin: "0 auto" }}>
             <div className="header-image" style={{ position: "relative"}}>
                 <a
                     href="https://cw3e.ucsd.edu/"
