@@ -156,7 +156,8 @@
 {% endblock %}
 
 {% block footer %}
-	<div class="site-inner" style="max-width: 1320px;">
+	<div class="site-inner" style="max-width: 1320px; overflow: visible !important;">
+      {% include "default_theme/footer.html" %}
 
 		{% include "default_theme/footer.html" %}
 
