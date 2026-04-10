@@ -6,7 +6,7 @@ import Container from "react-bootstrap/Container";
 
 export default function CW3EFooter() {
   return (
-    <Container fluid className="position-absolute bottom-0 px-5">
+    <Container fluid className="px-5 flex-shrink-0 mt-auto">
       <CW3EFooterRaw />
     </Container>
   );

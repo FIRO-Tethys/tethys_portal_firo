@@ -163,7 +163,7 @@ export const LandingPageHeader = () => {
     <>
       <Cw3eHeader />
       <CustomDiv className="d-flex flex-column position-absolute">
-        <Container fluid className="px-2 d-flex justify-content-end">
+        <Container fluid className="px-2 d-flex justify-content-end z-3">
           <div className="d-flex flex-column align-items-center gap-2">
             {user?.username ? (
               <>
