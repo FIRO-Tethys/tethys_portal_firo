@@ -25,6 +25,7 @@ COPY tethysdash ${TETHYS_HOME}/apps/tethysdash
 COPY tethysdash_plugin_cnrfc ${TETHYS_HOME}/apps/tethysdash_plugin_cnrfc
 COPY tethysdash_plugin_cw3e ${TETHYS_HOME}/apps/tethysdash_plugin_cw3e
 COPY tethysdash_plugin_usace ${TETHYS_HOME}/apps/tethysdash_plugin_usace
+COPY tethysdash_examples ${TETHYS_HOME}/apps/tethysdash_examples
 COPY ciroh_plugins ${TETHYS_HOME}/apps/ciroh_plugins
 COPY Custom_CW3E_Visualizations ${TETHYS_HOME}/apps/custom_cw3e_plugins
 COPY requirements.txt .
@@ -80,6 +81,8 @@ RUN mv ${DEV_REACT_CONFIG} ${PROD_REACT_CONFIG} \
   && pip install --no-cache-dir --quiet . \
   && cd ${TETHYS_HOME}/apps/custom_cw3e_plugins \
   && pip install --no-cache-dir --quiet . 
+  && cd ${TETHYS_HOME}/apps/tethysdash_examples \
+  && pip install --no-cache-dir --quiet . \
     
 
 FROM tethysplatform/tethys-core:dev-py3.12-dj5.0 as build

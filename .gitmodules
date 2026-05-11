@@ -20,3 +20,6 @@
 [submodule "Custom_CW3E_Visualizations"]
 	path = Custom_CW3E_Visualizations
 	url = https://github.com/FIRO-Tethys/Custom_CW3E_Visualizations.git
+[submodule "tethysdash_examples"]
+	path = tethysdash_examples
+	url = https://github.com/FIRO-Tethys/tethysdash_examples.git
