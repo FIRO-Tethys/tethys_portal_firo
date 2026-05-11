@@ -80,9 +80,9 @@ RUN mv ${DEV_REACT_CONFIG} ${PROD_REACT_CONFIG} \
   && cd ${TETHYS_HOME}/apps/ciroh_plugins \
   && pip install --no-cache-dir --quiet . \
   && cd ${TETHYS_HOME}/apps/custom_cw3e_plugins \
-  && pip install --no-cache-dir --quiet . 
+  && pip install --no-cache-dir --quiet . \ 
   && cd ${TETHYS_HOME}/apps/tethysdash_examples \
-  && pip install --no-cache-dir --quiet . \
+  && pip install --no-cache-dir --quiet .
     
 
 FROM tethysplatform/tethys-core:dev-py3.12-dj5.0 as build
