@@ -34,7 +34,13 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     export USER_PAGE_TEMPLATE="/default_theme/profile.html"
     export USER_SETTINGS_PAGE_TEMPLATE='default_theme/user_settings.html'
     export PREFIX_URL="/firo_apps"
-    export MEDIA_URL="/firo_apps/media/"
+    # Bare /media/ (NOT /firo_apps/media/): Tethys does not prefix MEDIA_URL, and
+    # tethysdash get_dashboards() (model.py) prepends PREFIX_URL itself when building
+    # dashboard thumbnail URLs. A pre-prefixed value double-prefixes them
+    # (/firo_apps/firo_apps/media/... -> 404). nginx serves media at /firo_apps/media
+    # (derived from PREFIX_URL in post_nginx.sls), which the app's prepend then matches.
+    # Consumed by salt (tethyscore.sls / tethys_services.sls) via `tethys settings --set`.
+    export MEDIA_URL="/media/"
 
 %files
     tethysdash                                                                                                  /usr/lib/tethys/apps/tethysdash
