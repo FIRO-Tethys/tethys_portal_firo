@@ -21,6 +21,24 @@
    styling lives in cw3e_scoped.css under .cw3e-scope. #}
 {% block extrastyle %}{{ block.super }}
   <link rel="stylesheet" href="{% static 'default_theme/css/cw3e_scoped.css' %}">
+  <style>
+    /* a11y: the default Tethys admin breadcrumb/model-link colors are light blue
+       (~2.5:1) and fail WCAG AA contrast on white. Darken to ~7.4:1, and underline
+       the breadcrumb link so it's distinguishable from surrounding text. */
+    .breadcrumbs { color: #333 !important; }
+    .breadcrumbs a { color: #15598a !important; text-decoration: underline !important; }
+    #content th a, .module th a, #changelist th a { color: #15598a !important; }
+    /* Sidebar module headings: white-on-#7ec1f7 (1.93:1) → darker blue (7.4:1). */
+    #content-related .module h2, #recent-actions-module h2 { background-color: #15598a !important; }
+  </style>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      // Decorative "Powered by Tethys" icon lacks alt (WCAG image-alt).
+      document.querySelectorAll(".powered-by-tethys img:not([alt])").forEach(function (i) {
+        i.setAttribute("alt", "");
+      });
+    });
+  </script>
 {% endblock %}
 
 {# Only the CW3E header/footer - omit block.super so the default Tethys admin

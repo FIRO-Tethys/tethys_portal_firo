@@ -79,6 +79,8 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     custom_themes/react/layout/ContextMenu.js                                                                   /usr/lib/tethys/apps/tethysdash/reactapp/components/landingPage/ContextMenu.js
     custom_themes/react/layout/styles.css                                                                       /usr/lib/tethys/apps/tethysdash/reactapp/components/layout/styles.css
     custom_themes/react/layout/TooltipButton.js                                                                 /usr/lib/tethys/apps/tethysdash/reactapp/components/buttons/TooltipButton.js
+    # tethysdash React shell: add lang="en" on <html> (WCAG html-has-lang)
+    custom_themes/react/layout/index.html                                                                       /usr/lib/tethys/apps/tethysdash/tethysapp/tethysdash/templates/tethysdash/index.html
 
 %post
     export CONDA_HOME="/opt/conda"
