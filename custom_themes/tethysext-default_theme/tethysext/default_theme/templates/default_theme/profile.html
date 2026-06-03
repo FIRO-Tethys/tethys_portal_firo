@@ -44,6 +44,15 @@
 {% block secondary_content %}
     {% block profile_sections %}
     <div id="profile-sections" class="container">
+      <style>
+        /* Harmonize profile typography: the portal body font is ~13px, which made
+           the default 28px section headings (h3) feel oversized. Bring the section
+           content to a readable size and scale the headings proportionally. */
+        #profile-sections { font-size: 1rem; }
+        #profile-sections h3 { font-size: 1.25rem; }
+        #profile-sections dt,
+        #profile-sections dd { font-size: 1rem; }
+      </style>
       {% block name_override %}
       <div class="profile-section row mx-2 my-3">
         <hr>
