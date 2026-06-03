@@ -1,4 +1,24 @@
 
+<a href="#site-wrapper" class="skip-link">Skip to main content</a>
+<style>
+  .skip-link {
+    position: absolute; left: -9999em; top: -9999em; z-index: 100000;
+    display: block; padding: 14px 23px;
+    background-color: #f1f1f1; color: #1e6b8b;
+    font-weight: 700; font-size: 14px; text-decoration: none;
+    box-shadow: 0 0 2px 2px rgba(0, 0, 0, 0.2);
+  }
+  .skip-link:focus {
+    left: 6px; top: 7px; width: auto; height: auto;
+    outline: 2px solid #1e6b8b; outline-offset: 2px;
+  }
+  @media screen and (min-width: 56.875em) {
+    #masthead .main-navigation li:focus-within > .sub-menu {
+      display: block;
+    }
+  }
+</style>
+
 <header id="masthead" class="site-header" role="banner">
   <div class="header-image" style="position: relative; max-width: 1320px;">
     <a href="https://cw3e.ucsd.edu/" rel="home" style="width: 100%; justify-content: center;">
@@ -42,11 +62,11 @@
             </li>
 
             <li id="menu-item-25347" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-25347" aria-haspopup="true">
-              <a href="#">Observations</a>
+              <a role="button" tabindex="0" class="menu-parent-toggle" aria-haspopup="true" aria-expanded="false">Observations</a>
               <button class="dropdown-toggle" aria-expanded="false"><span class="screen-reader-text">expand child menu</span></button>
               <ul class="sub-menu">
                 <li id="menu-item-25356" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-25356" aria-haspopup="true">
-                  <a href="#">CW3E Observations</a>
+                  <a role="button" tabindex="0" class="menu-parent-toggle" aria-haspopup="true" aria-expanded="false">CW3E Observations</a>
                   <button class="dropdown-toggle" aria-expanded="false"><span class="screen-reader-text">expand child menu</span></button>
                   <ul class="sub-menu">
                     <li id="menu-item-25410" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-25410"><a href="https://cw3e.ucsd.edu/cw3e_observations_surfacemet/">Surface Meteorology</a></li>
@@ -78,7 +98,7 @@
             <ul class="sub-menu">
               <li id="menu-item-25368" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-25368"><a href="https://cw3e.ucsd.edu/iwv-and-ivt-forecasts/">AR, IWV, and IVT Forecasts</a></li>
               <li id="menu-item-25398" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-25398"><a href="https://cw3e.ucsd.edu/arscale/">AR Scale Forecasts</a></li>
-              <li id="menu-item-25353" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-25353" aria-haspopup="true"><a href="#">Deterministic Models</a><button class="dropdown-toggle" aria-expanded="false"><span class="screen-reader-text">expand child menu</span></button>
+              <li id="menu-item-25353" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-25353" aria-haspopup="true"><a role="button" tabindex="0" class="menu-parent-toggle" aria-haspopup="true" aria-expanded="false">Deterministic Models</a><button class="dropdown-toggle" aria-expanded="false"><span class="screen-reader-text">expand child menu</span></button>
               <ul class="sub-menu">
                 <li id="menu-item-25397" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-25397"><a href="https://cw3e.ucsd.edu/ivt_iwv_nepacific/">IVT and IWV</a></li>
                 <li id="menu-item-25396" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-25396"><a href="https://cw3e.ucsd.edu/250winds_nepac/">250-hPa Winds</a></li>
@@ -86,7 +106,7 @@
                 <li id="menu-item-25394" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-25394"><a href="https://cw3e.ucsd.edu/850temp_nepac/">850-hPa Temperature</a></li>
               </ul>
             </li>
-              <li id="menu-item-25351" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-25351" aria-haspopup="true"><a href="#">Interactive Maps</a><button class="dropdown-toggle" aria-expanded="false"><span class="screen-reader-text">expand child menu</span></button>
+              <li id="menu-item-25351" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-25351" aria-haspopup="true"><a role="button" tabindex="0" class="menu-parent-toggle" aria-haspopup="true" aria-expanded="false">Interactive Maps</a><button class="dropdown-toggle" aria-expanded="false"><span class="screen-reader-text">expand child menu</span></button>
               <ul class="sub-menu">
                 <li id="menu-item-29310" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-29310"><a href="https://cw3e.ucsd.edu/Projects/QPF/QPF.html">Watershed Precipitation</a></li>
                 <li id="menu-item-29311" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-29311"><a href="https://cw3e.ucsd.edu/DSMaps/DS_freezing.html">Watershed Freezing Level</a></li>
@@ -101,7 +121,7 @@
               </ul>
             </li>
               <li id="menu-item-26535" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-26535"><a href="https://cw3e.ucsd.edu/ml_forecasts/">Machine Learning</a></li>
-              <li id="menu-item-26184" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-26184" aria-haspopup="true"><a href="#">Forecast Verification</a><button class="dropdown-toggle" aria-expanded="false"><span class="screen-reader-text">expand child menu</span></button>
+              <li id="menu-item-26184" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-26184" aria-haspopup="true"><a role="button" tabindex="0" class="menu-parent-toggle" aria-haspopup="true" aria-expanded="false">Forecast Verification</a><button class="dropdown-toggle" aria-expanded="false"><span class="screen-reader-text">expand child menu</span></button>
               <ul class="sub-menu">
                 <li id="menu-item-26183" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-26183"><a href="https://cw3e.ucsd.edu/cw3e-atmospheric-river-landfall-met-mode-verification-tool/">AR Landfall Verification</a></li>
               </ul>
@@ -130,7 +150,7 @@
                 <li id="menu-item-27218" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-27218"><a href="https://cw3e.ucsd.edu/firo_workshop_2025/">FIRO Workshop</a></li>
               </ul>
             </li>
-            <li id="menu-item-25350" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-25350" aria-haspopup="true"><a href="#">News &amp; Publications</a><button class="dropdown-toggle" aria-expanded="false"><span class="screen-reader-text">expand child menu</span></button>
+            <li id="menu-item-25350" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-25350" aria-haspopup="true"><a role="button" tabindex="0" class="menu-parent-toggle" aria-haspopup="true" aria-expanded="false">News &amp; Publications</a><button class="dropdown-toggle" aria-expanded="false"><span class="screen-reader-text">expand child menu</span></button>
             <ul class="sub-menu">
               <li id="menu-item-25378" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-25378"><a href="https://cw3e.ucsd.edu/news/">News</a></li>
               <li id="menu-item-25375" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-25375" aria-haspopup="true"><a href="https://cw3e.ucsd.edu/publications/">Publications</a><button class="dropdown-toggle" aria-expanded="false"><span class="screen-reader-text">expand child menu</span></button>
@@ -161,7 +181,7 @@
                   <a href="{% url 'user:profile' %}">My Account</a>
                 </li>
                 <li class="menu-item menu-item-type-custom menu-item-object-custom">
-                  <a href="{% url 'accounts:logout' %}">Logout</a>
+                  <a href="https://cw3e.ucsd.edu">Logout</a>
                 </li>
               {% endif %}
                 <li class="menu-item menu-item-type-custom menu-item-object-custom"><a href="{% url 'home' %}">About</a></li>
@@ -169,18 +189,6 @@
                 <li class="menu-item menu-item-type-custom menu-item-object-custom">
                   <a href="{% url 'admin:index' %}">Settings</a>
                 </li>
-                {% if debug_mode %}
-                <li class="menu-item menu-item-type-custom menu-item-object-custom">
-                  <a class="dropdown-item" href="{% url 'admin:create_app' %}" title="Create App">
-                    Create App
-                  </a>
-                </li>
-                <li class="menu-item menu-item-type-custom menu-item-object-custom">
-                  <a class="dropdown-item" href="{% url 'admin:import_app' %}" title="Import App">
-                    Import App
-                  </a>
-                </li>
-                {% endif %}
               {% endif %}
               </ul>
             </li>
@@ -191,3 +199,42 @@
     </div>
   </div>
 </header>
+
+<script>
+  // Make the former href="#" parent labels keyboard/touch operable. (main.js
+  // already handles #menu-toggle and button.dropdown-toggle, so only the
+  // menu-parent-toggle anchors are wired here to avoid double-binding.)
+  (function () {
+    var masthead = document.getElementById("masthead");
+    if (masthead) {
+      masthead.addEventListener("click", function (e) {
+        var parent = e.target.closest("a.menu-parent-toggle");
+        if (!parent) return;
+        e.preventDefault();
+        var li = parent.closest("li");
+        if (!li) return;
+        var open = li.classList.toggle("toggled-on");
+        parent.setAttribute("aria-expanded", open ? "true" : "false");
+        var tbtn = li.querySelector(":scope > button.dropdown-toggle");
+        if (tbtn) {
+          tbtn.classList.toggle("toggled-on", open);
+          tbtn.setAttribute("aria-expanded", open ? "true" : "false");
+        }
+      });
+      masthead.addEventListener("keydown", function (e) {
+        var parent = e.target.closest("a.menu-parent-toggle");
+        if (!parent) return;
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          parent.click();
+        }
+      });
+    }
+    // Skip-link target: make the content wrapper a focusable main landmark.
+    var main = document.getElementById("site-wrapper");
+    if (main) {
+      main.setAttribute("role", "main");
+      main.setAttribute("tabindex", "-1");
+    }
+  })();
+</script>

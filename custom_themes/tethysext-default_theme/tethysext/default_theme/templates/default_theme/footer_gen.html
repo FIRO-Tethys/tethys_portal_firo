@@ -319,6 +319,28 @@
 		.cw3e-scope #site-header-menu { display: block; }
 		.cw3e-scope #menu-toggle { display: none; }
 		}
+
+		/* Footer: semantic flex layout (replaces legacy layout tables) */
+		#colophon .footer-columns {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 1.5rem 3rem;
+			align-items: flex-start;
+			justify-content: space-between;
+			padding: 25px 20px 0;
+		}
+		#colophon .footer-col { flex: 0 1 auto; min-width: 180px; max-width: 360px; }
+		#colophon .footer-col--logo { flex: 0 0 auto; text-align: center; }
+		#colophon .footer-logo { width: 100%; max-width: 90px; }
+		#colophon .footer-logo--sio { max-width: 150px; margin-top: 10px; }
+		#colophon .footer-title { margin: 0 0 .25rem; font-size: 1rem; font-weight: 700; line-height: 1.3; color: #fff; }
+		#colophon .footer-text { font-size: .875rem; line-height: 1.35; color: #fff; }
+		#colophon .twitter_logo { width: 24px; margin-right: 6px; vertical-align: middle; }
+		#colophon .footer-social a { display: inline-flex; align-items: center; }
+		@media (max-width: 640px) {
+			#colophon .footer-columns { flex-direction: column; }
+			#colophon .footer-text, #colophon .footer-col a { font-size: .8125rem; }
+		}
 	</style>
 
 	
@@ -326,9 +348,19 @@
 {% endblock %}
 
 <footer id="colophon" role="contentinfo" style="background-color:#1e6b8b; max-width: 1320px;">
-		<table width="100%" style="padding-top:0px; padding-left: 20px; padding-right:20px; padding-bottom:0px; border: 0; margin-bottom: 0px;"><tbody><tr><td width="6%" valign="top" align="center" style="border: 0; padding-top: 25px; padding-bottom:0px; margin-bottom: 0px;"><center><a href="https://cw3e.ucsd.edu/"><img src="https://cw3e.ucsd.edu/images/cw3e_logo_files/wetransfer-b4ff74/CW3E%20Final%20Logo%20Suite/5-Vertical-Acronym%20Onlhy/Digital/PNG/CW3E-Logo-Vertical-Acronym-White.png" width="75%"></a></center></td><td width="33%" valign="top" style="border: 0; padding-top: 20px; padding-bottom:0px; margin-bottom: 0px;"><p id="footer_titles"><b>F. Martin Ralph, PhD., Director</b></p><p class="nowrap" id="footer_text"><b>Center For Western Weather and Water Extremes (CW3E)</b><br>Scripps Institution of Oceanography<br>University of California, San Diego<br>9500 Gilman Drive<br>La Jolla, CA 92093<br><a href="https://cw3e.ucsd.edu/cw3e_location/" style="color:#000">Directions</a></p><br></td>
+		<div class="footer-columns">
+        <div class="footer-col footer-col--logo">
+          <a href="https://cw3e.ucsd.edu/"><img src="https://cw3e.ucsd.edu/images/cw3e_logo_files/wetransfer-b4ff74/CW3E%20Final%20Logo%20Suite/5-Vertical-Acronym%20Onlhy/Digital/PNG/CW3E-Logo-Vertical-Acronym-White.png" class="footer-logo" alt="CW3E Logo"></a>
+        </div>
 
-<td width="24%" valign="top" style="border: 0; padding-top:20px; padding-bottom:0px; margin-bottom: 0px;"><p id="footer_titles"><b>CW3E Partners</b></p><p class="nowrap" id="footer_text"><a href="http://www.water.ca.gov/" style="color:#fff" target="_blank">California Department of Water Resources</a><br><a href="http://www.noaa.gov/" style="color:#fff" target="_blank">NOAA National Weather Service</a><br><a href="https://www.jpl.nasa.gov/" style="color:#fff" target="_blank">NASA/Jet Propulsion Laboratory</a><br><a href="http://www.ocwd.com" style="color:#fff" target="_blank">Orange County Water District</a><br><a href="http://www.scwa.ca.gov/" style="color:#fff" target="_blank">Sonoma Water</a><br><a href="http://www.usace.army.mil/" style="color:#fff" target="_blank">U.S. Army Corps of Engineers</a><br><a href="https://www.usbr.gov/" style="color:#fff" target="_blank">U.S. Bureau of Reclamation</a></p><br></td><td width="23%" valign="top" style="border: 0; padding-right: 20px; padding-top: 20px; padding-bottom:0px;"><p id="footer_titles"><b>Search CW3E</b></p>
+        <div class="footer-col">
+          <p class="footer-title"><b>F. Martin Ralph, PhD., Director</b></p>
+          <p class="footer-text nowrap"><b>Center For Western Weather and Water Extremes (CW3E)</b><br>Scripps Institution of Oceanography<br>University of California, San Diego<br>9500 Gilman Drive<br>La Jolla, CA 92093<br><a href="https://cw3e.ucsd.edu/cw3e_location/" style="color:#fff">Directions</a></p>
+        </div>
+
+        <div class="footer-col">
+
+<h2 class="footer-title">Search CW3E</h2>
 <form role="search" method="get" class="search-form" action="https://cw3e.ucsd.edu/">
 	<label style="width:100%;">
 		<span class="screen-reader-text">
@@ -339,7 +371,15 @@
 		Search	</span></button>
 </form>
 
-<table style="padding-bottom: 0px; border: 0"><tbody><tr><td style="border: 0; padding-bottom: 0px;"><p class="nowrap" id="footer_text" align="left"><a href="https://cw3e.ucsd.edu/disclaimer/" style="color:#fff">Disclaimer</a></p></td><td style="border: 0; padding-bottom: 0px; margin-bottom: 0px;"><p class="nowrap" id="footer_text" align="right"><a href="mailto:cw3e-website-g@ucsd.edu" style="color:#fff">Contact Webmaster</a></p></td></tr><tr><td colspan="2" style="border: 0; padding-bottom: 0px;"><a href="https://twitter.com/CW3E_Scripps" style="color:#fff" target="_blank"><img id="twitter_logo" class="twitter_logo" src="https://cw3e.ucsd.edu/images/other/twitter-icon.png" align="left"></a><p class="nowrap" id="footer_titles" align="left" style="padding-top:15px;"><a href="https://twitter.com/CW3E_Scripps" style="color:#fff" target="_blank">Follow CW3E on Twitter</a></p></td></tr></tbody></table><center> <img src="https://cw3e.ucsd.edu/images/logos/UCSD_SIO.png" style="margin-top: -20px; margin-bottom: 10px;" width="80%"></center>  </td></tr></tbody></table></footer>
+<div class="footer-links">
+            <p class="footer-text"><a href="https://cw3e.ucsd.edu/disclaimer/" style="color:#fff">Disclaimer</a></p>
+            <p class="footer-text"><a href="mailto:cw3e-website-g@ucsd.edu" style="color:#fff">Contact Webmaster</a></p>
+          </div>
+          <p class="footer-text footer-social"><a href="https://twitter.com/CW3E_Scripps" style="color:#fff" target="_blank" rel="noreferrer"><img class="twitter_logo" src="https://cw3e.ucsd.edu/images/other/twitter-icon.png" alt="">Follow CW3E on Twitter</a></p>
+          <img src="https://cw3e.ucsd.edu/images/logos/UCSD_SIO.png" class="footer-logo footer-logo--sio" alt="UCSD SIO">
+        </div>
+      </div>
+    </footer>
 
 {% block scripts %}
    <script src="https://cw3e.ucsd.edu/wp-content/themes/twentysixteen/js/skip-link-focus-fix.js?ver=20170530" id="twentysixteen-skip-link-focus-fix-js"></script>

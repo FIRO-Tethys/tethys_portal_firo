@@ -233,6 +233,21 @@
 
   {# Allows custom attributes to be added to the body tag #}
   <body class="d-flex flex-column h-100 align-items-center" {% block bodytag %}{% endblock %}>
+    <a href="#site-wrapper" class="skip-link">Skip to main content</a>
+    <style>
+      /* Skip link (WCAG 2.4.1 Bypass Blocks) — off-screen until focused. */
+      .skip-link {
+        position: absolute; left: -9999em; top: -9999em; z-index: 100000;
+        display: block; padding: 14px 23px;
+        background-color: #f1f1f1; color: #1e6b8b;
+        font-weight: 700; font-size: 14px; text-decoration: none;
+        box-shadow: 0 0 2px 2px rgba(0, 0, 0, 0.2);
+      }
+      .skip-link:focus {
+        left: 6px; top: 7px; width: auto; height: auto;
+        outline: 2px solid #1e6b8b; outline-offset: 2px;
+      }
+    </style>
     {% if has_analytical %}
     {% include "analytical_body_top.html" %}
     {% endif %}
@@ -263,7 +278,7 @@
 
       {% block site_wrapper_override %}
         {# Use wrapper class to add classes to the content wrapper element #}
-        <div id="site-wrapper" class="my-auto wrapper{% block wrapper_class %}{% endblock %}">
+        <div id="site-wrapper" role="main" tabindex="-1" class="my-auto wrapper{% block wrapper_class %}{% endblock %}">
           {% block flash %}
             {% if messages %}
               <div class="flash-messages position-absolute w-100">

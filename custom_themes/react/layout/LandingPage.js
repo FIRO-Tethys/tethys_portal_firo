@@ -31,14 +31,25 @@ const StyledCol = styled(Col)`
 
 const LandingPage = () => {
   const { availableDashboards } = useContext(AvailableDashboardsContext);
-  const { user } = useContext(AppContext);
+  const { user, tethysApp } = useContext(AppContext);
 
   return (
     <LayoutAlertContextProvider>
       <div className="d-flex flex-column" style={{ minHeight: "100vh" }}>
+        <a href="#main-content" className="skip-link">
+          Skip to main content
+        </a>
         <LandingPageHeader />
         <DashboardLayoutAlerts />
-        <StyledContainer fluid className="landing-page flex-grow-1">
+        <StyledContainer
+          forwardedAs="main"
+          id="main-content"
+          fluid
+          className="landing-page flex-grow-1"
+        >
+          <h1 className="screen-reader-text">
+            {tethysApp?.title || "Dashboards"}
+          </h1>
           <StyledRow>
             {user?.username && (
               <StyledCol>

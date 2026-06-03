@@ -22,7 +22,6 @@
 	<!--[if lt IE 8]>
 		<link rel='stylesheet' id='twentysixteen-ie7-css' href='https://cw3e.ucsd.edu/wp-content/themes/twentysixteen/css/ie7.css?ver=20170530' media='all' />
 	<![endif]-->
-	<link href="{% static 'default_theme/css/footer-extra.css' %}"  rel="stylesheet" />
 	<link href="{% static 'default_theme/css/home-extra.css' %}"  rel="stylesheet" />
 	<link href="{% static 'default_theme/css/content-extra.css' %}"  rel="stylesheet" />
 	<link href="{% static 'default_theme/css/main.css' %}"  rel="stylesheet" />
@@ -191,17 +190,6 @@
       {% endblock %}
       {% block oauth2_provider_override %}
       {% if has_oauth2_provider %}
-      <div class="profile-section row mx-2">
-        <div class="col-xl-4">
-          <h3>OAuth2 Provider</h3>
-        </div>
-        <div class="profile-parameters col-xl-8">
-          <dl class="row">
-            <dd class="col-sm-8"><a class="btn btn-success" href="{% url 'oauth2_provider:list' %}">My Applications</a></dd>
-          </dl>
-        </div>
-        <hr>
-      </div>
       {% endif %}
       {% endblock %}
       {% block custom_sections %}

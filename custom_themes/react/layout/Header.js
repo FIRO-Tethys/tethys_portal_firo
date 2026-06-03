@@ -410,7 +410,7 @@ export const DashboardHeader = () => {
 
     const response = await saveLayoutContext({ tabs });
     if (response.success) {
-      setSuccessMessage("Change have been saved.");
+      setSuccessMessage("Changes have been saved.");
       setShowSuccessMessage(true);
       setIsEditing(false);
     } else {

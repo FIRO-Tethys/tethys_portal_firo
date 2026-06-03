@@ -1,5 +1,7 @@
 
 
+@import url("https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap");
+
 .img-logo {
 	width: 15%;
 	padding: 1rem
@@ -50,4 +52,184 @@
 .main-navigation {
   margin-top: 0;
   margin-bottom: 0;
+}
+
+/* --- Skip link (WCAG 2.4.1 Bypass Blocks) --- */
+/* Unscoped (not under .site) so it works without the legacy theme wrapper.
+   Off-screen until focused, then revealed top-left. #1e6b8b on #f1f1f1 ~4.7:1. */
+.skip-link {
+  position: absolute;
+  left: -9999em;
+  top: -9999em;
+  z-index: 100000;
+  display: block;
+  padding: 14px 23px;
+  background-color: #f1f1f1;
+  color: #1e6b8b;
+  font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+  box-shadow: 0 0 2px 2px rgba(0, 0, 0, 0.2);
+}
+
+.skip-link:focus {
+  left: 6px;
+  top: 7px;
+  width: auto;
+  height: auto;
+  outline: 2px solid #1e6b8b;
+  outline-offset: 2px;
+}
+
+/* --- Button contrast (WCAG 1.4.11 Non-text Contrast / 1.4.3) --- */
+/* TooltipButton forces `.text-white`; Bootstrap "info" (#0dcaf0) gives white
+   glyphs only ~2:1. Repaint info buttons with brand blue (#1e6b8b ~5.4:1).
+   Scoped to `.text-white` so only TooltipButton-rendered info buttons change.
+   The `btn-info` class is preserved, so TooltipButton.test.js stays green. */
+.btn-info.text-white,
+.btn-info.text-white:disabled {
+  background-color: #1e6b8b;
+  border-color: #1e6b8b;
+}
+
+.btn-info.text-white:hover,
+.btn-info.text-white:focus,
+.btn-info.text-white:active {
+  background-color: #185873;
+  border-color: #185873;
+}
+
+/* Variants where the forced `.text-white` (color:#fff !important) produces
+   white-on-light. Restore readable foregrounds (Bootstrap's own defaults). */
+.btn-warning.text-white {
+  color: #212529 !important;
+}
+
+.btn-outline-secondary.text-white {
+  color: #6c757d !important;
+}
+
+/* --- Footer — matches https://cw3e.ucsd.edu/ (semantic, no layout tables) --- */
+/* Mirrors the portal footer template: Merriweather serif, clustered layout,
+   wide search, one-row links, org logos. Scoped to #colophon. */
+#colophon {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 25px 0 12px;
+}
+
+#colophon,
+#colophon p,
+#colophon a,
+#colophon h2,
+#colophon label,
+#colophon input,
+#colophon button {
+  font-family: "Merriweather", Georgia, "Times New Roman", serif;
+}
+
+#colophon .footer-flex {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem 2rem;
+  padding: 0 20px;
+}
+
+#colophon .footer-left {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 1.25rem;
+  flex: 1 1 520px;
+}
+#colophon .footer-logo-col { flex: 0 0 auto; text-align: center; }
+#colophon .footer-logo { width: 90px; max-width: 90px; }
+#colophon .footer-contact { flex: 1 1 280px; max-width: 480px; }
+
+#colophon .footer-search-col { flex: 0 1 360px; min-width: 260px; }
+
+#colophon .footer-title {
+  margin: 0 0 .4rem;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 28px;
+  color: #fff;
+}
+#colophon .footer-text {
+  margin: 0;
+  font-size: 11.2px;
+  line-height: 19.6px;
+  font-weight: 400;
+  color: #fff;
+}
+#colophon .footer-directions { margin-top: .9rem; }
+#colophon .footer-link,
+#colophon .footer-meta a,
+#colophon .footer-social a {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 28px;
+  color: #fff;
+  text-decoration: none;
+}
+#colophon .footer-link:hover,
+#colophon .footer-link:focus,
+#colophon .footer-text a:hover,
+#colophon .footer-text a:focus { text-decoration: underline; }
+
+#colophon .search-form { display: flex; margin: .25rem 0 .6rem; max-width: 360px; }
+#colophon .search-field {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: .5rem .75rem;
+  border: 0;
+  font-size: 13.3px;
+  color: #686868;
+}
+#colophon .search-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  border: 0;
+  background: #111;
+  cursor: pointer;
+}
+#colophon .search-submit:before { content: none !important; }
+
+#colophon .footer-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0 0 .8rem;
+  max-width: 360px;
+}
+
+#colophon .footer-social a { display: inline-flex; align-items: center; }
+#colophon .footer-social a:hover { text-decoration: underline; }
+#colophon .twitter_logo { width: 26px; height: 26px; margin-right: .5rem; }
+
+#colophon .footer-orgs { margin-top: 1rem; }
+#colophon .footer-orgs img { width: 100%; max-width: 240px; }
+
+@media (max-width: 782px) {
+  #colophon .footer-flex,
+  #colophon .footer-left { flex-direction: column; }
+}
+
+/* --- Reduced motion (WCAG 2.3.3) --- */
+/* Scoped to shell transitions so essential feedback (e.g. loading spinners)
+   keeps animating. */
+@media (prefers-reduced-motion: reduce) {
+  .site-header-menu,
+  .main-navigation a,
+  .main-navigation .sub-menu,
+  .dropdown-toggle,
+  .menu-toggle,
+  .skip-link,
+  #colophon a {
+    transition: none !important;
+  }
 }

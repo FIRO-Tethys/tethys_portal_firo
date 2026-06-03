@@ -3122,13 +3122,15 @@ p > video {
 	}
 
 	.main-navigation li:hover > ul,
-	.main-navigation li.focus > ul {
+	.main-navigation li.focus > ul,
+	.main-navigation li:focus-within > ul {
 		left: auto;
 		right: 0;
 	}
 
 	.main-navigation ul ul li:hover > ul,
-	.main-navigation ul ul li.focus > ul {
+	.main-navigation ul ul li.focus > ul,
+	.main-navigation ul ul li:focus-within > ul {
 		left: auto;
 		right: 100%;
 	}

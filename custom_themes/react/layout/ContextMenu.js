@@ -89,6 +89,29 @@ const ContextMenu = ({
   const onMouseEnter = () => setSubmenuVisible(true);
   const onMouseLeave = () => setSubmenuVisible(false);
 
+  // Disclosure toggle so the Share submenu is reachable by keyboard and touch,
+  // not hover only (WCAG 2.1.1). Stop propagation so toggling Share does not
+  // also select/close the parent Dropdown.
+  const onShareClick = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setSubmenuVisible((visible) => !visible);
+  };
+
+  const onShareKeyDown = (event) => {
+    if (event.key === "Enter" || event.key === " " || event.key === "ArrowRight") {
+      event.preventDefault();
+      event.stopPropagation();
+      setSubmenuVisible(true);
+    } else if (event.key === "Escape" || event.key === "ArrowLeft") {
+      if (submenuVisible) {
+        event.preventDefault();
+        event.stopPropagation();
+        setSubmenuVisible(false);
+      }
+    }
+  };
+
   return (
     <Dropdown
       show={showMenu}
@@ -145,6 +168,11 @@ const ContextMenu = ({
                 alignItems: "center",
               }}
               className="card-share-option"
+              aria-haspopup="true"
+              aria-expanded={submenuVisible}
+              aria-controls="context-menu-submenu"
+              onClick={onShareClick}
+              onKeyDown={onShareKeyDown}
               onMouseEnter={onMouseEnter}
               onMouseLeave={onMouseLeave}
             >
@@ -152,6 +180,7 @@ const ContextMenu = ({
             </Dropdown.Item>
 
             <Submenu
+              id="context-menu-submenu"
               className="submenu"
               aria-label="Context Menu Submenu"
               position={submenuPosition}

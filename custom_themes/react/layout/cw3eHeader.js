@@ -30,6 +30,31 @@ const Cw3eHeader = () => {
     }
   };
 
+  // Parent menu labels that previously used href="#" (no destination) act as
+  // disclosures for their submenu. Toggle the sibling .sub-menu and keep the
+  // adjacent .dropdown-toggle button's state in sync. (WCAG 2.4.4 / 2.1.1)
+  const handleParentToggle = (event) => {
+    event.preventDefault();
+    const control = event.currentTarget;
+    const li = control.closest("li");
+    if (!li) return;
+    const submenu = li.querySelector(":scope > .sub-menu");
+    const toggleButton = li.querySelector(":scope > .dropdown-toggle");
+    const expanded = control.getAttribute("aria-expanded") === "true";
+    control.setAttribute("aria-expanded", (!expanded).toString());
+    if (submenu) submenu.classList.toggle("toggled-on");
+    if (toggleButton) {
+      toggleButton.setAttribute("aria-expanded", (!expanded).toString());
+      toggleButton.classList.toggle("toggled-on");
+    }
+  };
+
+  const onParentKeyDown = (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      handleParentToggle(event);
+    }
+  };
+
   return (
         <Container fluid className="px-5" style={{ maxWidth: "1320px", margin: "0 auto" }}>
             <div className="header-image" style={{ position: "relative"}}>
@@ -178,7 +203,16 @@ const Cw3eHeader = () => {
                                     className="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-25347"
                                     aria-haspopup="true"
                                 >
-                                    <a href="#">Observations</a>
+                                    <a
+                                        role="button"
+                                        tabIndex={0}
+                                        aria-haspopup="true"
+                                        aria-expanded="false"
+                                        onClick={handleParentToggle}
+                                        onKeyDown={onParentKeyDown}
+                                    >
+                                        Observations
+                                    </a>
                                     <button
                                         className="dropdown-toggle" onClick={handleDropdownToggle}
                                         aria-expanded="false"
@@ -192,7 +226,16 @@ const Cw3eHeader = () => {
                                             className="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-25356"
                                             aria-haspopup="true"
                                         >
-                                            <a href="#">CW3E Observations</a>
+                                            <a
+                                                role="button"
+                                                tabIndex={0}
+                                                aria-haspopup="true"
+                                                aria-expanded="false"
+                                                onClick={handleParentToggle}
+                                                onKeyDown={onParentKeyDown}
+                                            >
+                                                CW3E Observations
+                                            </a>
                                             <button
                                                 className="dropdown-toggle" onClick={handleDropdownToggle}
                                                 aria-expanded="false"
@@ -386,7 +429,16 @@ const Cw3eHeader = () => {
                                             className="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-25353"
                                             aria-haspopup="true"
                                         >
-                                            <a href="#">Deterministic Models</a>
+                                            <a
+                                                role="button"
+                                                tabIndex={0}
+                                                aria-haspopup="true"
+                                                aria-expanded="false"
+                                                onClick={handleParentToggle}
+                                                onKeyDown={onParentKeyDown}
+                                            >
+                                                Deterministic Models
+                                            </a>
                                             <button
                                                 className="dropdown-toggle" onClick={handleDropdownToggle}
                                                 aria-expanded="false"
@@ -486,7 +538,16 @@ const Cw3eHeader = () => {
                                             className="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-26184"
                                             aria-haspopup="true"
                                         >
-                                            <a href="#">Forecast Verification</a>
+                                            <a
+                                                role="button"
+                                                tabIndex={0}
+                                                aria-haspopup="true"
+                                                aria-expanded="false"
+                                                onClick={handleParentToggle}
+                                                onKeyDown={onParentKeyDown}
+                                            >
+                                                Forecast Verification
+                                            </a>
                                             <button
                                                 className="dropdown-toggle" onClick={handleDropdownToggle}
                                                 aria-expanded="false"
@@ -616,7 +677,16 @@ const Cw3eHeader = () => {
                                     className="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-25350"
                                     aria-haspopup="true"
                                 >
-                                    <a href="#">News &amp; Publications</a>
+                                    <a
+                                        role="button"
+                                        tabIndex={0}
+                                        aria-haspopup="true"
+                                        aria-expanded="false"
+                                        onClick={handleParentToggle}
+                                        onKeyDown={onParentKeyDown}
+                                    >
+                                        News &amp; Publications
+                                    </a>
                                     <button
                                         className="dropdown-toggle" onClick={handleDropdownToggle}
                                         aria-expanded="false"
@@ -741,11 +811,11 @@ const Cw3eHeader = () => {
                                         )}
                                         {user?.username && (
                                             <>
-                                            <li class="menu-item menu-item-type-custom menu-item-object-custom">
+                                            <li className="menu-item menu-item-type-custom menu-item-object-custom">
                                                 <a href={profileUrl}>My Account</a>
                                             </li>
                                             <li className="menu-item menu-item-type-custom menu-item-object-custom">
-                                                <a href={tethysApp?.exitUrl}>Logout</a>
+                                                <a href='https://cw3e.ucsd.edu'>Logout</a>
                                             </li>
                                             </>
                                         )}
