@@ -1,0 +1,34 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% comment %}
+  Brings the CW3E theme header/footer to the Django admin.
+
+  Why this is needed: the CW3E theme themes portal pages by serving the
+  extension's default_theme/{base,header,footer}.html via TethysTemplateLoader,
+  but that loader does NOT cover the Django admin, so admin otherwise renders the
+  default Tethys chrome with no CW3E header/footer.
+
+  This override is found via the filesystem template DIR
+  (.../tethys_portal/templates/admin/base_site.html) ahead of django.contrib.admin.
+  The CW3E header/footer are wrapped in .cw3e-scope and the scoped stylesheet is
+  loaded so the legacy WordPress theme CSS does not bleed into the admin tables.
+  The admin's own header (block.super) is kept for the Tools / user menu.
+{% endcomment %}
+
+{# Only the SCOPED stylesheet - cw3e-twentysixteen.css has global a/button/input
+   rules that bleed into and break the admin tables (Add/Change links). The nav
+   styling lives in cw3e_scoped.css under .cw3e-scope. #}
+{% block extrastyle %}{{ block.super }}
+  <link rel="stylesheet" href="{% static 'default_theme/css/cw3e_scoped.css' %}">
+{% endblock %}
+
+{# Only the CW3E header/footer - omit block.super so the default Tethys admin
+   header ("FIRO Tethys Portal" bar) and footer are not rendered as well. #}
+{% block header %}
+  <div class="cw3e-scope">{% include "default_theme/header.html" %}</div>
+{% endblock %}
+
+{% block footer %}
+  <div class="cw3e-scope d-flex justify-content-center">{% include "default_theme/footer.html" %}</div>
+{% endblock %}
