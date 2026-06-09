@@ -23,3 +23,6 @@
 [submodule "tethysdash_examples"]
 	path = tethysdash_examples
 	url = https://github.com/FIRO-Tethys/tethysdash_examples.git
+[submodule "tgf_tethysdash_plugins"]
+	path = tgf_tethysdash_plugins
+	url = https://github.com/ckrew/tgf_tethysdash_plugins.git

@@ -28,6 +28,7 @@ COPY tethysdash_plugin_usace ${TETHYS_HOME}/apps/tethysdash_plugin_usace
 COPY tethysdash_examples ${TETHYS_HOME}/apps/tethysdash_examples
 COPY ciroh_plugins ${TETHYS_HOME}/apps/ciroh_plugins
 COPY Custom_CW3E_Visualizations ${TETHYS_HOME}/apps/custom_cw3e_plugins
+COPY tgf_tethysdash_plugins ${TETHYS_HOME}/apps/tgf_tethysdash_plugins
 COPY requirements.txt .
 COPY images/firo_dash_default_dashboard.png ${TETHYS_HOME}/apps/tethysdash/tethysapp/tethysdash/default_dashboard.png
 COPY images/firo_dash_logo.png ${TETHYS_HOME}/apps/tethysdash/tethysapp/tethysdash/public/images/tethys_dash.png
@@ -82,6 +83,8 @@ RUN mv ${DEV_REACT_CONFIG} ${PROD_REACT_CONFIG} \
   && cd ${TETHYS_HOME}/apps/custom_cw3e_plugins \
   && pip install --no-cache-dir --quiet . \ 
   && cd ${TETHYS_HOME}/apps/tethysdash_examples \
+  && pip install --no-cache-dir --quiet . \
+  && cd ${TETHYS_HOME}/apps/tgf_tethysdash_plugins \
   && pip install --no-cache-dir --quiet .
     
 
