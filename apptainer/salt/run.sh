@@ -153,6 +153,7 @@ if [[ $test = false ]]; then
     find ${TETHYS_APPS_ROOT} ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {}
     find ${TETHYS_HOME} ! -user ${NGINX_USER} -print0 | xargs -0 -I{} chown ${NGINX_USER}: {}
   fi
+  chown -R  ${NGINX_USER}: ${TETHYS_LOG} /run /var/log/supervisor /var/log/nginx /var/lib/nginx
 
   echo_status "Starting supervisor"
 

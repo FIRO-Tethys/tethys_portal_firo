@@ -1,5 +1,5 @@
 Bootstrap: docker
-From: tethysplatform/tethys-core:dev-py3.12-dj5.0
+From: tethysplatform/tethys-core:4.5.3-py3.12-dj5.2
 %labels
     Author "aquaveollc"
     Version "1.1"
@@ -156,6 +156,10 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
 
     # Install TethysDash & its plugins
     echo "Installing TethysDash..."
+    # temporary version override
+    # set a fake version to skip an error. Coming from tethysdash changed to check for version from .git folder.
+    # but because it is a submodule .git is just a file. Setting a fake version for setuptools fixes this for now. 
+    export SETUPTOOLS_SCM_PRETEND_VERSION_FOR_TETHYSDASH="99.99.99"
     cd "${TETHYSDASH_SRC_ROOT}" && \
         tethys install -N
 
@@ -193,7 +197,7 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
 
 %startscript
     echo "Starting container... running run.sh"
-    exec /usr/lib/tethys/run.sh --debug --skip-perm 2>&1 | tee /var/log/tethys/salt.log
+    exec /usr/lib/tethys/run.sh --debug 2>&1 | tee /var/log/tethys/salt.log
 
 
 
