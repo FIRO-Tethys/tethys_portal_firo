@@ -26,3 +26,6 @@
 [submodule "tgf_tethysdash_plugins"]
 	path = tgf_tethysdash_plugins
 	url = https://github.com/ckrew/tgf_tethysdash_plugins.git
+[submodule "USACE_TethysDash_Plugins"]
+	path = USACE_TethysDash_Plugins
+	url = https://github.com/Aquaveo/USACE_TethysDash_Plugins.git
