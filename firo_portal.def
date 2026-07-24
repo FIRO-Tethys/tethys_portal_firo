@@ -47,6 +47,7 @@ From: tethysplatform/tethys-core:4.5.3-py3.12-dj5.2
     tethysdash_plugin_cnrfc                                                                                     /usr/lib/tethys/apps/tethysdash_plugin_cnrfc
     tethysdash_plugin_cw3e                                                                                      /usr/lib/tethys/apps/tethysdash_plugin_cw3e
     tethysdash_plugin_usace                                                                                     /usr/lib/tethys/apps/tethysdash_plugin_usace
+    Custom_CW3E_Visualizations                                                                                  /usr/lib/tethys/apps/Custom_CW3E_Visualizations
     images/firo_dash_logo.png                                                                                   /usr/lib/tethys/apps/tethysdash/tethysapp/tethysdash/public/images/tethys_dash.png
 
     # Requirements
@@ -169,6 +170,8 @@ From: tethysplatform/tethys-core:4.5.3-py3.12-dj5.2
     cd "${TETHYS_HOME}/apps/tethysdash_plugin_cw3e" && \
         pip install --no-cache-dir .
     cd "${TETHYS_HOME}/apps/tethysdash_plugin_usace" && \
+        pip install --no-cache-dir .
+    cd "${TETHYS_HOME}/apps/Custom_CW3E_Visualizations" && \
         pip install --no-cache-dir .
     
     echo "Installing Themes..."
