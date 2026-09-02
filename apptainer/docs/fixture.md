@@ -52,10 +52,20 @@ apptainer/fixtures/build_fixture.sh start          # instance + salt provisionin
 apptainer/fixtures/build_fixture.sh seed capture verify
 ```
 
-`teardown` stops everything and keeps the data; `clean` also deletes
-`FIXTURE_ROOT`. Neither uses `sudo` — under this layout every path is owned by
-the invoking user, so if a teardown seems to need elevation, the bind ownership
-is wrong and that is the thing to fix.
+`reset` wipes the persist tree and drops the database so salt re-provisions from
+scratch — needed whenever you change a setting, because the salt states are
+latched by marker files and will otherwise ignore you. `teardown` stops
+everything and keeps the data; `clean` also deletes `FIXTURE_ROOT`.
+
+None of them use `sudo`, but note that the persist tree is **not** plain
+user-owned under this stack: `--fakeroot` maps container uid 1011 to host 101010,
+so a host-side `rm -rf` gets EPERM. The scripts re-enter the container with
+`--fakeroot` to delete, which maps those ids back to root. The migrated stack
+runs without `--fakeroot`, its binds are plain user-owned, and this whole dance
+disappears.
+
+The portal is served at `http://localhost:$FIXTURE_NGINX_PORT/firo_apps/`
+(default port 8085).
 
 Overridable: `SIF`, `FIXTURE_ROOT`, `INSTANCE`, `PG_NAME`, `REDIS_NAME`, `SEED_ENV`.
 

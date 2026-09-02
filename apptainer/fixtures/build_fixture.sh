@@ -26,6 +26,13 @@ PG_NAME="${PG_NAME:-firo_fixture_pg}"
 REDIS_NAME="${REDIS_NAME:-firo_fixture_redis}"
 SEED_ENV="${SEED_ENV:-$REPO_ROOT/apptainer/fixtures/seed.env}"
 
+# Apptainer instances share the HOST network namespace -- there is no port
+# publishing and no isolation. If anything on the box already owns NGINX_PORT,
+# the portal's nginx simply fails to bind and crash-loops under supervisord,
+# while the DB, config and media all provision fine. The failure is silent
+# unless you check. dev.env's 8080 is a common collision (geoserver, tomcat).
+FIXTURE_NGINX_PORT="${FIXTURE_NGINX_PORT:-8085}"
+
 PERSIST="$FIXTURE_ROOT/tethys_persist"
 LOGS="$FIXTURE_ROOT/logs"
 ARTIFACTS="$FIXTURE_ROOT/artifacts"
@@ -50,6 +57,7 @@ Phases (default: all, in order):
   capture    write portal_config.yml, pg_dump and the media manifest
   verify     assert the fixture is production-shaped and correctly awkward
 
+  reset      wipe the persist tree and drop the DB, so salt re-provisions clean
   teardown   stop the instance and containers (does not delete FIXTURE_ROOT)
   clean      teardown plus delete FIXTURE_ROOT
 
@@ -116,7 +124,7 @@ phase_env() {
   # PORTAL_SUPERUSER_* are absent from dev.env, which is exactly why an
   # unmodified dev run produces an 'admin' superuser and hides the hole.
   {
-    grep -vE '^(PORTAL_SUPERUSER_|SITE_TITLE|BRAND_TEXT|PRIMARY_COLOR)' dev.env
+    grep -vE '^(PORTAL_SUPERUSER_|SITE_TITLE|BRAND_TEXT|PRIMARY_COLOR|NGINX_PORT|CSRF_TRUSTED_ORIGINS)' dev.env
     echo
     echo "# --- fixture overrides ---"
     echo "PORTAL_SUPERUSER_NAME=$FIXTURE_SUPERUSER_NAME"
@@ -125,6 +133,8 @@ phase_env() {
     echo "SITE_TITLE='$FIXTURE_SITE_TITLE'"
     echo "BRAND_TEXT='$FIXTURE_BRAND_TEXT'"
     echo "PRIMARY_COLOR='$FIXTURE_PRIMARY_COLOR'"
+    echo "NGINX_PORT=$FIXTURE_NGINX_PORT"
+    echo "CSRF_TRUSTED_ORIGINS=\"\\\"[http://localhost:$FIXTURE_NGINX_PORT, http://127.0.0.1:$FIXTURE_NGINX_PORT]\\\"\""
   } > "$RUN_ENV"
   ok "wrote $RUN_ENV (superuser: $FIXTURE_SUPERUSER_NAME)"
 }
@@ -138,9 +148,23 @@ phase_start() {
   apptainer instance list 2>/dev/null | awk '{print $1}' | grep -qx "$INSTANCE" \
     && apptainer instance stop "$INSTANCE" >/dev/null 2>&1 || true
 
+  # Fail loudly now rather than crash-looping nginx invisibly later.
+  if ss -ltn 2>/dev/null | grep -q ":${FIXTURE_NGINX_PORT} "; then
+    die "port $FIXTURE_NGINX_PORT is already in use on this host.
+       Apptainer shares the host network namespace, so nginx would fail to bind and
+       crash-loop while everything else looks healthy.
+       Re-run with: FIXTURE_NGINX_PORT=<free port> $0 env start"
+  fi
+
   # --fakeroot and --writable-tmpfs are the OLD stack's requirements, kept here
   # deliberately: the fixture must reproduce how production runs today, not how
   # the migrated portal will run. U6 is where those flags go away.
+  #
+  # /srv/salt is bound from the working tree rather than used from the image.
+  # The states are baked in by %files, so without this a one-line salt fix needs
+  # a full ~15 minute rebuild to test. Production runs the baked copy, so keep
+  # the two identical -- this bind is an iteration affordance, not a behaviour
+  # difference, and a rebuild should follow any state change kept here.
   apptainer instance start \
     --fakeroot --writable-tmpfs \
     -B "$LOGS/nginx:/var/log/nginx" \
@@ -148,6 +172,7 @@ phase_start() {
     -B "$LOGS/tethys:/var/log/tethys" \
     -B "$LOGS/supervisor:/var/log/supervisor" \
     -B "$PERSIST:/var/lib/tethys_persist" \
+    -B "$REPO_ROOT/apptainer/salt:/srv/salt" \
     --env-file "$RUN_ENV" \
     "$SIF" "$INSTANCE"
 
@@ -165,6 +190,25 @@ phase_start() {
     echo " ok"
   done
   ok "provisioning complete"
+
+  # Prove nginx actually bound. It runs under supervisord, which restarts it
+  # forever on failure, so a live instance is not evidence that HTTP works.
+  # Poll rather than one-shot: run.sh returns as soon as the salt states finish,
+  # but supervisord spawns nginx a second or two later, so a single immediate
+  # curl reports a failure that is really just impatience.
+  local url="http://localhost:${FIXTURE_NGINX_PORT}${PREFIX_URL:-/firo_apps}/"
+  local code=000
+  printf '  waiting for HTTP'
+  for _ in $(seq 1 30); do
+    code=$(curl -s -o /dev/null -w '%{http_code}' -L --max-time 5 "$url" 2>/dev/null || echo 000)
+    case "$code" in 200|302) break ;; esac
+    printf '.'; sleep 2
+  done
+  echo
+  case "$code" in
+    200|302) ok "portal serving at $url (HTTP $code)" ;;
+    *) die "portal not serving at $url (last HTTP $code) -- check $LOGS/nginx/error.log" ;;
+  esac
 }
 
 # --------------------------------------------------------------------------
@@ -291,6 +335,38 @@ import sys;sys.exit(0 if s and getattr(s[0],'persistent_store_service',None) els
 }
 
 # --------------------------------------------------------------------------
+# Remove a fakeroot-owned tree. Files the portal wrote under --fakeroot are owned
+# by mapped subuids (container 1011 -> host 101010), so a plain host-side rm gets
+# EPERM. Re-entering with --fakeroot maps them back to root, which can delete
+# them. This is the OLD stack's problem only; the migrated stack runs without
+# --fakeroot and its binds are plain user-owned, so this helper goes away with it.
+# Still no sudo -- the whole point is that fakeroot makes elevation unnecessary.
+wipe_fakeroot_tree() {
+  local target="$1"
+  [ -d "$target" ] || return 0
+  if rm -rf "${target:?}" 2>/dev/null && [ ! -d "$target" ]; then
+    return 0
+  fi
+  apptainer exec --fakeroot -B "$target:/wipe" "$SIF" \
+    bash -c 'rm -rf /wipe/* /wipe/.[!.]* 2>/dev/null; true'
+  rmdir "$target" 2>/dev/null || true
+}
+
+# --------------------------------------------------------------------------
+phase_reset() {
+  log "Resetting fixture state (keeps the SIF and containers)"
+  apptainer instance stop "$INSTANCE" >/dev/null 2>&1 || true
+  wipe_fakeroot_tree "$PERSIST"
+  mkdir -p "$PERSIST"
+  # Drop the portal database so salt re-provisions from scratch. The marker files
+  # alone are not enough: the salt states are gated on the markers, but the DB
+  # objects they created outlive a marker wipe.
+  docker exec -e PGPASSWORD=pass "$PG_NAME" psql -U postgres -d postgres -q \
+    -c "DROP DATABASE IF EXISTS tethys_platform WITH (FORCE);" >/dev/null 2>&1 || true
+  ok "persist wiped and tethys_platform dropped"
+}
+
+# --------------------------------------------------------------------------
 phase_teardown() {
   log "Tearing down"
   apptainer instance stop "$INSTANCE" >/dev/null 2>&1 || true
@@ -300,8 +376,7 @@ phase_teardown() {
 
 phase_clean() {
   phase_teardown
-  # No sudo. Under the fixture layout every path is owned by the invoking user;
-  # if this needs elevation something else is wrong -- fix that, do not sudo.
+  wipe_fakeroot_tree "$PERSIST"
   rm -rf "${FIXTURE_ROOT:?}"
   ok "removed $FIXTURE_ROOT"
 }
@@ -311,7 +386,7 @@ PHASES=("$@")
 [ ${#PHASES[@]} -eq 0 ] && PHASES=(services env start seed capture verify)
 for p in "${PHASES[@]}"; do
   case "$p" in
-    services|env|start|seed|capture|verify|teardown|clean) "phase_$p" ;;
+    services|env|start|seed|capture|verify|reset|teardown|clean) "phase_$p" ;;
     -h|--help) usage ;;
     *) echo "unknown phase: $p"; usage ;;
   esac
