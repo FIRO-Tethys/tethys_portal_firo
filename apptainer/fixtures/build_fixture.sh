@@ -31,6 +31,9 @@ LOGS="$FIXTURE_ROOT/logs"
 ARTIFACTS="$FIXTURE_ROOT/artifacts"
 RUN_ENV="$FIXTURE_ROOT/fixture.env"
 
+# Paths as seen INSIDE the container (the persist bind target).
+MEDIA_IN="/var/lib/tethys_persist/media"
+
 log()  { printf '\n\033[1;34m==> %s\033[0m\n' "$*"; }
 ok()   { printf '\033[1;32m  ok  %s\033[0m\n' "$*"; }
 die()  { printf '\033[1;31mFATAL: %s\033[0m\n' "$*" >&2; exit 1; }
@@ -165,7 +168,10 @@ phase_start() {
 }
 
 # --------------------------------------------------------------------------
-in_instance() { apptainer exec "instance://$INSTANCE" bash -lc "$1"; }
+# NOT `bash -lc`. A login shell re-reads /etc/profile inside the container, which
+# resets PATH and drops /opt/conda/envs/tethys/bin -- so `python` and `tethys`
+# vanish even though the image sets PATH correctly in %environment.
+in_instance() { apptainer exec "instance://$INSTANCE" bash -c "$1"; }
 
 phase_seed() {
   log "Seeding accounts, branding and media"
@@ -196,12 +202,20 @@ print('created' if created else 'exists')\""
   # Fixed-content media alongside whatever tethysdash writes, so checksums are
   # stable across rebuilds. A real thumbnail still has to come from creating a
   # dashboard -- see fixture.md; synthetic files alone do not prove R29.
-  local media="$PERSIST/media"
-  mkdir -p "$media/fixture"
-  for i in $(seq 1 "${FIXTURE_MEDIA_FILLER_COUNT:-5}"); do
-    printf 'firo fixture media file %s\n' "$i" > "$media/fixture/file_${i}.txt"
-  done
-  ok "media filler: ${FIXTURE_MEDIA_FILLER_COUNT:-5} files under media/fixture/"
+  #
+  # Written from INSIDE the instance, not from the host. Under --fakeroot the
+  # container's www (uid 1011) maps to host uid 101010 via the caller's subuid
+  # range, so everything the portal writes to the persist bind is owned by an id
+  # the invoking user cannot write to. A host-side mkdir here fails with EPERM.
+  # This is the same mechanism behind the `sudo rm -rf` fallbacks in
+  # dev_run.sh/demolish.sh, and it is one of the concrete costs the migration
+  # removes: without --fakeroot the bind is plain user-owned.
+  in_instance "set -e
+    mkdir -p '$MEDIA_IN'/fixture
+    for i in \$(seq 1 ${FIXTURE_MEDIA_FILLER_COUNT:-5}); do
+      printf 'firo fixture media file %s\\n' \"\$i\" > '$MEDIA_IN'/fixture/file_\${i}.txt
+    done"
+  ok "media filler: ${FIXTURE_MEDIA_FILLER_COUNT:-5} files under media/fixture/ (written in-container)"
 }
 
 # --------------------------------------------------------------------------
@@ -218,7 +232,9 @@ phase_capture() {
     pg_dump -U postgres -Fc tethys_platform > "$ARTIFACTS/tethys_platform.dump"
   ok "pg_dump ($(du -h "$ARTIFACTS/tethys_platform.dump" | cut -f1))"
 
-  ( cd "$PERSIST/media" && find . -type f -exec sha256sum {} + | sort -k2 ) \
+  # Computed in-container: the media tree is owned by a mapped subuid under
+  # --fakeroot and is not readable by the invoking user on the host.
+  in_instance "cd '$MEDIA_IN' && find . -type f -exec sha256sum {} + | sort -k2" \
     > "$ARTIFACTS/media.manifest"
   ok "media manifest ($(wc -l < "$ARTIFACTS/media.manifest") files)"
 

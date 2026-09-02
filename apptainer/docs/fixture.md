@@ -88,6 +88,48 @@ superuser and create one dashboard so a genuine thumbnail is written under
 values are what make the "`tethys site -f` leaves undeclared settings alone"
 check meaningful. Against default values the check passes vacuously.
 
+## What building it already found
+
+These were not visible by reading the repository. Each came out of running the
+thing.
+
+**`firo_portal.def` did not build.** `a205c00` pinned the base to
+`tethys-core:4.5.3-py3.12-dj5.2`, which already ships `www` at uid 1011; the
+older rolling tag did not. The unconditional `groupadd {{ PROXY_USER }}` exits 9
+and aborts `%post` under `set -e`, and because the block was a `;`-chained
+continuation, the `nginx.conf` and `supervisord.conf` edits after it never ran
+either. Fixed by checking `getent` first. A base tag can add accounts -- never
+create a user unconditionally in a `.def`.
+
+**The build needs ~15G of scratch, not on `/tmp`.** Apptainer defaults
+`APPTAINER_TMPDIR` to `/tmp`, which is a small tmpfs on many hosts and in WSL.
+`mksquashfs` then fails with "No space left on device" at the very end of a
+~15 minute build, after `%post` has already succeeded. `build_image.sh` now
+stages next to the output SIF and warns when space is short.
+
+**Under `--fakeroot`, the persist bind is not writable by you.** The container's
+`www` (uid 1011) maps through the caller's `/etc/subuid` range to host uid
+101010, so every file the portal writes to `tethys_persist` is owned by an id the
+invoking user cannot write. This is why `dev_run.sh` and `demolish.sh` carry
+`sudo rm -rf` fallbacks. The fixture writes media from inside the instance for
+the same reason. Dropping `--fakeroot` in the migrated stack removes this whole
+class of problem -- it is one of the concrete wins, not just a tidier flag list.
+
+**`MEDIA_URL` is set in two places that disagree, and the wrong one wins.**
+`firo_portal.def` sets the bare `/media/` with a comment explaining that
+tethysdash prepends `PREFIX_URL` itself and a pre-prefixed value double-prefixes
+thumbnails into a 404. `dev.env` line 21 sets `/firo_apps/media/` -- the
+forbidden value -- and `--env-file` overrides `%environment`, so that is what
+lands in `portal_config.yml`. Commit `c58efed` fixed the def and missed the env
+file. The fixture is left carrying the bug on purpose: it reproduces production,
+and production is presumably started from an env file too.
+
+**Measured, for the migration record:** Tethys `4.5.4.dev0` (not the `4.5.3` the
+image tag implies) on Django `5.2.15`, 103 migrations applied. Neither
+`MULTIPLE_APP_MODE` nor `STANDALONE_APP` reaches `portal_config.yml` at all --
+`tethys_services.sls` only writes them when the env value is falsy -- so the
+running portal is on the Tethys default for both.
+
 ## Artifacts
 
 `capture` writes to `$FIXTURE_ROOT/artifacts/`:
