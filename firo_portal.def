@@ -47,6 +47,7 @@ From: tethysplatform/tethys-core:4.5.3-py3.12-dj5.2
     tethysdash_plugin_cnrfc                                                                                     /usr/lib/tethys/apps/tethysdash_plugin_cnrfc
     tethysdash_plugin_cw3e                                                                                      /usr/lib/tethys/apps/tethysdash_plugin_cw3e
     tethysdash_plugin_usace                                                                                     /usr/lib/tethys/apps/tethysdash_plugin_usace
+    Custom_CW3E_Visualizations                                                                                  /usr/lib/tethys/apps/Custom_CW3E_Visualizations
     images/firo_dash_logo.png                                                                                   /usr/lib/tethys/apps/tethysdash/tethysapp/tethysdash/public/images/tethys_dash.png
 
     # Requirements
@@ -162,8 +163,8 @@ From: tethysplatform/tethys-core:4.5.3-py3.12-dj5.2
     # `tethys install` aborts -> tethysapp.tethysdash never installs -> `import
     # tethysapp.tethysdash` fails (Collect_Plugin_Metadata / collect-static).
     # Pin the version explicitly. Bump this when the tethysdash submodule tag advances
-    # (current: git describe 0.10.9-131-g59685ae -> nearest tag 0.10.9).
-    export SETUPTOOLS_SCM_PRETEND_VERSION_FOR_TETHYSDASH="0.10.9"
+    # (current: git describe v0.19.26-11-g13257bf -> nearest tag 0.19.26).
+    export SETUPTOOLS_SCM_PRETEND_VERSION_FOR_TETHYSDASH="0.19.26"
     echo "Installing TethysDash..."
     cd "${TETHYSDASH_SRC_ROOT}" && \
         tethys install -N
@@ -174,6 +175,8 @@ From: tethysplatform/tethys-core:4.5.3-py3.12-dj5.2
     cd "${TETHYS_HOME}/apps/tethysdash_plugin_cw3e" && \
         pip install --no-cache-dir .
     cd "${TETHYS_HOME}/apps/tethysdash_plugin_usace" && \
+        pip install --no-cache-dir .
+    cd "${TETHYS_HOME}/apps/Custom_CW3E_Visualizations" && \
         pip install --no-cache-dir .
     
     echo "Installing Themes..."
@@ -202,7 +205,7 @@ From: tethysplatform/tethys-core:4.5.3-py3.12-dj5.2
 
 %startscript
     echo "Starting container... running run.sh"
-    exec /usr/lib/tethys/run.sh --debug --skip-perm 2>&1 | tee /var/log/tethys/salt.log
+    exec /usr/lib/tethys/run.sh --debug 2>&1 | tee /var/log/tethys/salt.log
 
 
 
