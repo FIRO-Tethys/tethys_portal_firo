@@ -26,6 +26,11 @@ Link_PostGIS_To_Dashboard_App:
   cmd.run:
     - name: "tethys link persistent:{{ POSTGIS_SERVICE_NAME }} tethysdash:ps_database:primary_db"
     - shell: /bin/bash
+    # Without this guard the link is re-attempted on every container start and
+    # fails once it exists, which fails the salt run, which aborts run.sh under
+    # set -e, so supervisord never starts and the portal does not come back up.
+    # Dropped by ae72709 on main; docker/salt/tethys_services.sls still has it.
+    - unless: /bin/bash -c "[ -f '{{ TETHYS_PERSIST }}/tethys_services_complete' ]"
 
 #Set single mode app
 {% if not MULTIPLE_APP_MODE %}
