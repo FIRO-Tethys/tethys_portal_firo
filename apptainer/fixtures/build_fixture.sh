@@ -145,8 +145,20 @@ phase_start() {
   [ -f "$SIF" ] || die "SIF not found: $SIF  (build it with apptainer/scripts/build_image.sh)"
   [ -f "$RUN_ENV" ] || die "no fixture env; run the 'env' phase first"
 
-  apptainer instance list 2>/dev/null | awk '{print $1}' | grep -qx "$INSTANCE" \
-    && apptainer instance stop "$INSTANCE" >/dev/null 2>&1 || true
+  if apptainer instance list 2>/dev/null | awk '{print $1}' | grep -qx "$INSTANCE"; then
+    apptainer instance stop "$INSTANCE" >/dev/null 2>&1 || true
+    # Wait for the old daphne to release TETHYS_PORT before starting again.
+    # Apptainer shares the host network namespace, so a stop-then-immediately-start
+    # leaves the previous process still holding 127.0.0.1:8000; the new supervisord
+    # then cannot bind, exits without spawning anything, and the portal silently
+    # never comes up while every other step reports success.
+    printf '  waiting for ports to clear'
+    for _ in $(seq 1 30); do
+      ss -ltn 2>/dev/null | grep -qE ":${FIXTURE_NGINX_PORT} |:${TETHYS_PORT:-8000} " || break
+      printf '.'; sleep 2
+    done
+    echo
+  fi
 
   # Fail loudly now rather than crash-looping nginx invisibly later.
   if ss -ltn 2>/dev/null | grep -q ":${FIXTURE_NGINX_PORT} "; then
