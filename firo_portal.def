@@ -187,13 +187,21 @@ From: tethysplatform/tethys-core:4.5.3-py3.12-dj5.2
     mkdir -p $TETHYS_PERSIST/data/tethysdash
     touch /var/log/tethys/salt.log /var/log/supervisor/supervisord.log
     
-    # we are using 1012 for the proxy user to avoid conflict with the existing www user.
-    groupadd {{ PROXY_USER }} \
-      ; useradd -r -u 1012 -g {{ PROXY_USER }} {{ PROXY_USER }} \
-      ; sed -i 's/^user.*/user {{ PROXY_USER }} {{ PROXY_USER }};/' /etc/nginx/nginx.conf \
-      ; sed -i "/^\[supervisord\]$/a user={{ PROXY_USER }}" /etc/supervisor/supervisord.conf \
-      ; sed -i '/^\s*user\s*=\s*www\s*$/d' /etc/supervisor/supervisord.conf \
-      ; chown -R {{ PROXY_USER }}: ${TETHYS_LOG} /run /var/log/supervisor /var/log/nginx /var/lib/nginx
+    # Create the proxy user only if the base image does not already provide it.
+    # The pinned 4.5.3 base ships www at uid 1011/gid 57440; the previous rolling
+    # dev tag did not. An unconditional `groupadd www` therefore exits 9 on this
+    # base and aborts %post under set -e. Reuse when present, create at 1012
+    # (clear of the base's 1011) when the build arg names a different user.
+    if ! getent group "{{ PROXY_USER }}" >/dev/null; then
+        groupadd "{{ PROXY_USER }}"
+    fi
+    if ! getent passwd "{{ PROXY_USER }}" >/dev/null; then
+        useradd -r -u 1012 -g "{{ PROXY_USER }}" "{{ PROXY_USER }}"
+    fi
+    sed -i 's/^user.*/user {{ PROXY_USER }} {{ PROXY_USER }};/' /etc/nginx/nginx.conf
+    sed -i "/^\[supervisord\]$/a user={{ PROXY_USER }}" /etc/supervisor/supervisord.conf
+    sed -i '/^\s*user\s*=\s*www\s*$/d' /etc/supervisor/supervisord.conf
+    chown -R {{ PROXY_USER }}: ${TETHYS_LOG} /run /var/log/supervisor /var/log/nginx /var/lib/nginx
 
     # Need to have proper permissions on conda home for the proxy user    
     chown -R {{ PROXY_USER }}: ${CONDA_HOME}
