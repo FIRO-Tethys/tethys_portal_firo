@@ -1,5 +1,5 @@
 Bootstrap: docker
-From: tethysplatform/tethys-core:dev-py3.12-dj5.0
+From: tethysplatform/tethys-core:4.5.3-py3.12-dj5.2
 %labels
     Author "aquaveollc"
     Version "1.1"
@@ -155,6 +155,15 @@ From: tethysplatform/tethys-core:dev-py3.12-dj5.0
     pip install --no-cache-dir -r ${TETHYS_HOME}/requirements.txt
 
     # Install TethysDash & its plugins
+    # tethysdash versions itself via setuptools_scm (git-derived; _version.py is
+    # gitignored and there is no fallback_version). The %files copy carries NO usable
+    # git metadata (tethysdash is a git submodule: its .git is a gitlink file and
+    # .git/modules/... is not copied), so setuptools_scm cannot detect a version and
+    # `tethys install` aborts -> tethysapp.tethysdash never installs -> `import
+    # tethysapp.tethysdash` fails (Collect_Plugin_Metadata / collect-static).
+    # Pin the version explicitly. Bump this when the tethysdash submodule tag advances
+    # (current: git describe 0.10.9-131-g59685ae -> nearest tag 0.10.9).
+    export SETUPTOOLS_SCM_PRETEND_VERSION_FOR_TETHYSDASH="0.10.9"
     echo "Installing TethysDash..."
     cd "${TETHYSDASH_SRC_ROOT}" && \
         tethys install -N

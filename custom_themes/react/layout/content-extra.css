@@ -109,6 +109,15 @@
   color: #6c757d !important;
 }
 
+/* Nav disclosure parents (role="button", no href) fall back to the dark default
+   text color and fail contrast on the teal nav bar (#1e6b8b). Match the white
+   nav links (WCAG 1.4.3). */
+.main-navigation a[role="button"],
+.main-navigation a[role="button"]:hover,
+.main-navigation a[role="button"]:focus {
+  color: #fff;
+}
+
 /* --- Footer — matches https://cw3e.ucsd.edu/ (semantic, no layout tables) --- */
 /* Mirrors the portal footer template: Merriweather serif, clustered layout,
    wide search, one-row links, org logos. Scoped to #colophon. */
