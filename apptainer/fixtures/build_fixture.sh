@@ -41,6 +41,13 @@ RUN_ENV="$FIXTURE_ROOT/fixture.env"
 # Paths as seen INSIDE the container (the persist bind target).
 MEDIA_IN="/var/lib/tethys_persist/media"
 
+# The Apache proxy from dev/ that mimics the production front end. The fixture
+# derives its own copy rather than editing dev/, so dev/ stays the source of
+# truth: dev/proxy-vhost.conf hardcodes backend port 8080, and the fixture may
+# be on another port because Apptainer shares the host network namespace.
+PROXY_DIR="$FIXTURE_ROOT/proxy"
+PROXY_PORT="${FIXTURE_PROXY_PORT:-80}"
+
 log()  { printf '\n\033[1;34m==> %s\033[0m\n' "$*"; }
 ok()   { printf '\033[1;32m  ok  %s\033[0m\n' "$*"; }
 die()  { printf '\033[1;31mFATAL: %s\033[0m\n' "$*" >&2; exit 1; }
@@ -53,6 +60,7 @@ Phases (default: all, in order):
   services   start Postgres + Redis and seed the DB roles
   env        render the fixture env file from seed.env
   start      start the Apptainer instance and wait for salt provisioning
+  proxy      start the Apache proxy from dev/ that mimics the production front end
   seed       create the superuser, second user, branding and media
   capture    write portal_config.yml, pg_dump and the media manifest
   verify     assert the fixture is production-shaped and correctly awkward
@@ -229,6 +237,59 @@ phase_start() {
 # vanish even though the image sets PATH correctly in %environment.
 in_instance() { apptainer exec "instance://$INSTANCE" bash -c "$1"; }
 
+# --------------------------------------------------------------------------
+phase_proxy() {
+  log "Starting the Apache proxy (mimics the production front end)"
+  command -v docker >/dev/null || die "docker not found"
+  mkdir -p "$PROXY_DIR/logs"
+
+  # Derive from dev/, retargeting the backend port. Everything else -- the
+  # double-slash RewriteRule, ProxyPreserveHost, the cookie path rewrite, the
+  # SSI partial injection -- is copied verbatim, because those are the
+  # behaviours production depends on and the fixture exists to exercise them.
+  sed "s|host\\.docker\\.internal:8080|host.docker.internal:${FIXTURE_NGINX_PORT}|g" \
+    "$REPO_ROOT/dev/proxy-vhost.conf" > "$PROXY_DIR/proxy-vhost.conf"
+  cp "$REPO_ROOT/dev/load-mods.conf" "$PROXY_DIR/load-mods.conf"
+
+  cat > "$PROXY_DIR/docker-compose.yml" <<EOF
+services:
+  proxy:
+    image: httpd:2.4
+    container_name: firo_fixture_proxy
+    ports:
+      - "${PROXY_PORT}:80"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ${PROXY_DIR}/proxy-vhost.conf:/usr/local/apache2/conf/extra/proxy-vhost.conf:ro
+      - ${PROXY_DIR}/load-mods.conf:/usr/local/apache2/conf/extra/load-mods.conf:ro
+      - ${REPO_ROOT}/dev/partials/:/var/www/partials/:ro
+      - ${PROXY_DIR}/logs/:/usr/local/apache2/logs
+    environment:
+      APACHE_LOG_DIR: /usr/local/apache2/logs
+    command: >
+      sh -c 'echo "Include conf/extra/load-mods.conf"   >> conf/httpd.conf &&
+             echo "Include conf/extra/proxy-vhost.conf" >> conf/httpd.conf &&
+             httpd-foreground'
+EOF
+  docker compose -f "$PROXY_DIR/docker-compose.yml" up -d >/dev/null 2>&1 \
+    || die "proxy failed to start -- check $PROXY_DIR/logs/error.log"
+
+  local url="http://localhost:${PROXY_PORT}${PREFIX_URL:-/firo_apps}/"
+  local code=000
+  printf '  waiting for proxy'
+  for _ in $(seq 1 20); do
+    code=$(curl -s -o /dev/null -w '%{http_code}' -L --max-time 5 "$url" 2>/dev/null || echo 000)
+    case "$code" in 200|302) break ;; esac
+    printf '.'; sleep 2
+  done
+  echo
+  case "$code" in
+    200|302) ok "proxy serving at $url (HTTP $code) -> portal on ${FIXTURE_NGINX_PORT}" ;;
+    *) die "proxy not serving at $url (last HTTP $code) -- check $PROXY_DIR/logs/error.log" ;;
+  esac
+}
+
 phase_seed() {
   log "Seeding accounts, branding and media"
 
@@ -383,6 +444,7 @@ phase_teardown() {
   log "Tearing down"
   apptainer instance stop "$INSTANCE" >/dev/null 2>&1 || true
   docker rm -f "$PG_NAME" "$REDIS_NAME" >/dev/null 2>&1 || true
+  [ -f "$PROXY_DIR/docker-compose.yml" ] && docker compose -f "$PROXY_DIR/docker-compose.yml" down >/dev/null 2>&1 || true
   ok "instance and containers stopped (FIXTURE_ROOT kept at $FIXTURE_ROOT)"
 }
 
@@ -395,10 +457,10 @@ phase_clean() {
 
 # --------------------------------------------------------------------------
 PHASES=("$@")
-[ ${#PHASES[@]} -eq 0 ] && PHASES=(services env start seed capture verify)
+[ ${#PHASES[@]} -eq 0 ] && PHASES=(services env start proxy seed capture verify)
 for p in "${PHASES[@]}"; do
   case "$p" in
-    services|env|start|seed|capture|verify|reset|teardown|clean) "phase_$p" ;;
+    services|env|start|proxy|seed|capture|verify|reset|teardown|clean) "phase_$p" ;;
     -h|--help) usage ;;
     *) echo "unknown phase: $p"; usage ;;
   esac

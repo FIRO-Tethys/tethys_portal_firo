@@ -39,10 +39,26 @@ surfaces to the operator before they commit to the switch.
 
 ## Running it
 
+The fixture mirrors the real dev process, which is two steps:
+
+1. bring up the Apache proxy that mimics the production front end (`dev/docker-compose.yml`)
+2. build the Apptainer image and run it with an env file
+
 ```bash
 apptainer/scripts/build_image.sh firo_portal.def ../firo-portal-fixture.sif
 apptainer/fixtures/build_fixture.sh
 ```
+
+That runs both: `proxy` starts the Apache front end, `start` runs the image.
+Testing the portal only on its own port skips the path production traffic
+actually takes, which is where the prefix rewriting, cookie path rewriting and
+SSI injection live.
+
+The proxy config is **derived** from `dev/` into `$FIXTURE_ROOT/proxy/`, not
+edited in place: `dev/proxy-vhost.conf` hardcodes backend port 8080, and the
+fixture is often on another port because Apptainer shares the host network
+namespace. Everything else is copied verbatim. Override the front-end port with
+`FIXTURE_PROXY_PORT`.
 
 Phases run individually so a late failure does not cost the whole build:
 
@@ -52,7 +68,7 @@ apptainer/fixtures/build_fixture.sh start          # instance + salt provisionin
 apptainer/fixtures/build_fixture.sh seed capture verify
 ```
 
-`reset` wipes the persist tree and drops the database so salt re-provisions from
+`proxy` starts the front end alone; `reset` wipes the persist tree and drops the database so salt re-provisions from
 scratch — needed whenever you change a setting, because the salt states are
 latched by marker files and will otherwise ignore you. `teardown` stops
 everything and keeps the data; `clean` also deletes `FIXTURE_ROOT`.
