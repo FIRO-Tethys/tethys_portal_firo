@@ -13,6 +13,7 @@ services:
       - ./proxy-vhost.conf:/usr/local/apache2/conf/extra/proxy-vhost.conf:ro
       - ./load-mods.conf:/usr/local/apache2/conf/extra/load-mods.conf:ro   # ← NEW
       - ./partials/:/var/www/partials/:ro
+      - ${TETHYS_PERSIST:-../firo-uvx-run/persist}/:/srv/tethys_persist/:ro
       - ./logs/:/usr/local/apache2/logs
 
     environment:
