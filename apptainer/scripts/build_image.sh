@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# build_image.sh – helper for building the FIRO Portal Apptainer image
+# build_image.sh - helper for building the FIRO Portal Apptainer image
 # Usage: ./build_image.sh [DEF_FILE] [OUTPUT_SIF] [PROXY_USER]
 #   or: PROXY_USER=myuser ./build_image.sh
 
