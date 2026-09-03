@@ -30,5 +30,5 @@ if grep -q '{{ *PROXY_USER *}}' "${DEF_FILE}"; then
   echo "  proxy user: ${PROXY_USER}"
 fi
 
-apptainer build "${build_args[@]}" --fakeroot --fix-perms "${OUT_SIF}" "${DEF_FILE}"
+apptainer build "${build_args[@]}" --force --fakeroot --fix-perms "${OUT_SIF}" "${DEF_FILE}"
 echo "✔ Done: ${OUT_SIF}"
