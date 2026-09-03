@@ -11,6 +11,8 @@ ENV_FILE="${ENV_FILE:-$RUN_ROOT/portal.env}"
 TETHYS_HOME_HOST="$RUN_ROOT/portal"
 PERSIST_HOST="$RUN_ROOT/persist"
 LOG_HOST="$RUN_ROOT/log"
+PROXY_DIR="$RUN_ROOT/proxy"
+PROXY_PORT="${PROXY_PORT:-8081}"
 
 log() { printf '\n\033[1;34m==> %s\033[0m\n' "$*"; }
 ok()  { printf '\033[1;32m  ok  %s\033[0m\n' "$*"; }
@@ -23,6 +25,7 @@ Usage: $0 <command>
   dirs        create the host directories the container binds
   provision   portal-config, db migrate, publish-static, portal init.d hooks
   serve       start the instance
+  proxy       start the Apache front end that serves static and media
   stop        stop the instance
   status      show what is listening and whether the portal answers
 
@@ -132,6 +135,55 @@ cmd_serve() {
   esac
 }
 
+cmd_proxy() {
+  load_env
+  log "Starting the Apache proxy on ${PROXY_PORT}"
+  mkdir -p "$PROXY_DIR/logs"
+
+  sed "s|host\\.docker\\.internal:8080|host.docker.internal:${TETHYS_PORT}|g" \
+    "$REPO_ROOT/dev/proxy-vhost.conf" > "$PROXY_DIR/proxy-vhost.conf"
+  cp "$REPO_ROOT/dev/load-mods.conf" "$PROXY_DIR/load-mods.conf"
+
+  cat > "$PROXY_DIR/docker-compose.yml" <<EOF
+services:
+  proxy:
+    image: httpd:2.4
+    container_name: firo_uvx_proxy
+    ports:
+      - "${PROXY_PORT}:80"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ${PROXY_DIR}/proxy-vhost.conf:/usr/local/apache2/conf/extra/proxy-vhost.conf:ro
+      - ${PROXY_DIR}/load-mods.conf:/usr/local/apache2/conf/extra/load-mods.conf:ro
+      - ${REPO_ROOT}/dev/partials/:/var/www/partials/:ro
+      - ${PERSIST_HOST}/:/srv/tethys_persist/:ro
+      - ${PROXY_DIR}/logs/:/usr/local/apache2/logs
+    environment:
+      APACHE_LOG_DIR: /usr/local/apache2/logs
+    command: >
+      sh -c 'echo "Include conf/extra/load-mods.conf"   >> conf/httpd.conf &&
+             echo "Include conf/extra/proxy-vhost.conf" >> conf/httpd.conf &&
+             httpd-foreground'
+EOF
+  docker compose -f "$PROXY_DIR/docker-compose.yml" up -d >/dev/null 2>&1 \
+    || die "proxy failed to start -- check $PROXY_DIR/logs/error.log"
+
+  local url="http://localhost:${PROXY_PORT}${PREFIX_URL:-}/"
+  local code=000
+  printf '  waiting for proxy'
+  for _ in $(seq 1 20); do
+    code=$(curl -s -o /dev/null -w '%{http_code}' -L --max-time 5 "$url" 2>/dev/null || echo 000)
+    case "$code" in 200|302) break ;; esac
+    printf '.'; sleep 2
+  done
+  echo
+  case "$code" in
+    200|302) ok "proxy serving at $url -> portal on ${TETHYS_PORT}" ;;
+    *) die "proxy not serving at $url (last HTTP $code)" ;;
+  esac
+}
+
 cmd_stop() {
   apptainer instance stop "$INSTANCE" >/dev/null 2>&1 || true
   ok "stopped $INSTANCE"
@@ -147,6 +199,7 @@ cmd_status() {
 
 case "${1:-}" in
   dirs) cmd_dirs ;;
+  proxy) cmd_proxy ;;
   provision) cmd_provision ;;
   serve) cmd_serve ;;
   stop) cmd_stop ;;
