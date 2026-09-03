@@ -1,18 +1,4 @@
 #!/usr/bin/env bash
-#
-# Build a production-shaped fixture for the tethys-uvx migration.
-#
-# There is no access to the FIRO VM. This reproduces the *shape* of that
-# deployment locally by running the CURRENT (salt/conda) image against a local
-# Postgres, so the schema, app registrations, persistent-store service and link,
-# and the marker files are real rather than hand-constructed.
-#
-# It reproduces shape, NOT content: real user accounts, real dashboards, and the
-# operators' actual settings values are not here and cannot be. The fixture
-# proves the migration procedure; it does not author the production config.
-#
-# Phases are individually runnable so a failure late on does not cost the whole
-# build. See apptainer/docs/fixture.md.
 
 set -euo pipefail
 
@@ -26,11 +12,6 @@ PG_NAME="${PG_NAME:-firo_fixture_pg}"
 REDIS_NAME="${REDIS_NAME:-firo_fixture_redis}"
 SEED_ENV="${SEED_ENV:-$REPO_ROOT/apptainer/fixtures/seed.env}"
 
-# Apptainer instances share the HOST network namespace -- there is no port
-# publishing and no isolation. If anything on the box already owns NGINX_PORT,
-# the portal's nginx simply fails to bind and crash-loops under supervisord,
-# while the DB, config and media all provision fine. The failure is silent
-# unless you check. dev.env's 8080 is a common collision (geoserver, tomcat).
 FIXTURE_NGINX_PORT="${FIXTURE_NGINX_PORT:-8085}"
 
 PERSIST="$FIXTURE_ROOT/tethys_persist"
@@ -38,13 +19,8 @@ LOGS="$FIXTURE_ROOT/logs"
 ARTIFACTS="$FIXTURE_ROOT/artifacts"
 RUN_ENV="$FIXTURE_ROOT/fixture.env"
 
-# Paths as seen INSIDE the container (the persist bind target).
 MEDIA_IN="/var/lib/tethys_persist/media"
 
-# The Apache proxy from dev/ that mimics the production front end. The fixture
-# derives its own copy rather than editing dev/, so dev/ stays the source of
-# truth: dev/proxy-vhost.conf hardcodes backend port 8080, and the fixture may
-# be on another port because Apptainer shares the host network namespace.
 PROXY_DIR="$FIXTURE_ROOT/proxy"
 PROXY_PORT="${FIXTURE_PROXY_PORT:-80}"
 
@@ -74,14 +50,12 @@ EOF
   exit 1
 }
 
-# shellcheck disable=SC1090
 [ -f "$SEED_ENV" ] || die "seed file not found: $SEED_ENV"
 set -a; . "$SEED_ENV"; set +a
 
 [ "${FIXTURE_SUPERUSER_NAME:-admin}" != "admin" ] || die \
   "FIXTURE_SUPERUSER_NAME must not be 'admin' -- that hides the CREATE_SUPERUSER hole the fixture exists to expose (see seed.env)"
 
-# --------------------------------------------------------------------------
 phase_services() {
   log "Starting Postgres and Redis"
   command -v docker >/dev/null || die "docker not found"
@@ -105,8 +79,6 @@ phase_services() {
   docker exec "$PG_NAME" pg_isready -U postgres -d postgres >/dev/null \
     || die "postgres did not become ready"
 
-  # The portal's salt states expect the tethys DB superuser role to exist
-  # already; that is what apptainer/scripts/existing_users.sh does on a dev box.
   psql_admin() {
     docker exec -e PGPASSWORD=pass "$PG_NAME" \
       psql -U postgres -d postgres -v ON_ERROR_STOP=1 -tAq -c "$1"
@@ -123,14 +95,10 @@ phase_services() {
   ok "postgres on 5437, redis on 6379, role 'chapunato' seeded"
 }
 
-# --------------------------------------------------------------------------
 phase_env() {
   log "Rendering fixture env"
   mkdir -p "$FIXTURE_ROOT" "$PERSIST" "$LOGS"/{nginx,salt,tethys,supervisor} "$ARTIFACTS"
 
-  # Start from dev.env, then override what the fixture needs to be different.
-  # PORTAL_SUPERUSER_* are absent from dev.env, which is exactly why an
-  # unmodified dev run produces an 'admin' superuser and hides the hole.
   {
     grep -vE '^(PORTAL_SUPERUSER_|SITE_TITLE|BRAND_TEXT|PRIMARY_COLOR|NGINX_PORT|CSRF_TRUSTED_ORIGINS)' dev.env
     echo
@@ -147,7 +115,6 @@ phase_env() {
   ok "wrote $RUN_ENV (superuser: $FIXTURE_SUPERUSER_NAME)"
 }
 
-# --------------------------------------------------------------------------
 phase_start() {
   log "Starting the current-image instance"
   [ -f "$SIF" ] || die "SIF not found: $SIF  (build it with apptainer/scripts/build_image.sh)"
@@ -155,11 +122,6 @@ phase_start() {
 
   if apptainer instance list 2>/dev/null | awk '{print $1}' | grep -qx "$INSTANCE"; then
     apptainer instance stop "$INSTANCE" >/dev/null 2>&1 || true
-    # Wait for the old daphne to release TETHYS_PORT before starting again.
-    # Apptainer shares the host network namespace, so a stop-then-immediately-start
-    # leaves the previous process still holding 127.0.0.1:8000; the new supervisord
-    # then cannot bind, exits without spawning anything, and the portal silently
-    # never comes up while every other step reports success.
     printf '  waiting for ports to clear'
     for _ in $(seq 1 30); do
       ss -ltn 2>/dev/null | grep -qE ":${FIXTURE_NGINX_PORT} |:${TETHYS_PORT:-8000} " || break
@@ -168,7 +130,6 @@ phase_start() {
     echo
   fi
 
-  # Fail loudly now rather than crash-looping nginx invisibly later.
   if ss -ltn 2>/dev/null | grep -q ":${FIXTURE_NGINX_PORT} "; then
     die "port $FIXTURE_NGINX_PORT is already in use on this host.
        Apptainer shares the host network namespace, so nginx would fail to bind and
@@ -176,15 +137,6 @@ phase_start() {
        Re-run with: FIXTURE_NGINX_PORT=<free port> $0 env start"
   fi
 
-  # --fakeroot and --writable-tmpfs are the OLD stack's requirements, kept here
-  # deliberately: the fixture must reproduce how production runs today, not how
-  # the migrated portal will run. U6 is where those flags go away.
-  #
-  # /srv/salt is bound from the working tree rather than used from the image.
-  # The states are baked in by %files, so without this a one-line salt fix needs
-  # a full ~15 minute rebuild to test. Production runs the baked copy, so keep
-  # the two identical -- this bind is an iteration affordance, not a behaviour
-  # difference, and a rebuild should follow any state change kept here.
   apptainer instance start \
     --fakeroot --writable-tmpfs \
     -B "$LOGS/nginx:/var/log/nginx" \
@@ -197,8 +149,6 @@ phase_start() {
     "$SIF" "$INSTANCE"
 
   log "Waiting for salt provisioning to finish"
-  # The salt states write these markers as each completes. Waiting on the last
-  # one is more reliable than sleeping, and names which stage stalled.
   local markers=(setup_complete tethys_services_complete init_apps_setup_complete)
   for m in "${markers[@]}"; do
     printf '  %s' "$m"
@@ -211,11 +161,6 @@ phase_start() {
   done
   ok "provisioning complete"
 
-  # Prove nginx actually bound. It runs under supervisord, which restarts it
-  # forever on failure, so a live instance is not evidence that HTTP works.
-  # Poll rather than one-shot: run.sh returns as soon as the salt states finish,
-  # but supervisord spawns nginx a second or two later, so a single immediate
-  # curl reports a failure that is really just impatience.
   local url="http://localhost:${FIXTURE_NGINX_PORT}${PREFIX_URL:-/firo_apps}/"
   local code=000
   printf '  waiting for HTTP'
@@ -231,22 +176,13 @@ phase_start() {
   esac
 }
 
-# --------------------------------------------------------------------------
-# NOT `bash -lc`. A login shell re-reads /etc/profile inside the container, which
-# resets PATH and drops /opt/conda/envs/tethys/bin -- so `python` and `tethys`
-# vanish even though the image sets PATH correctly in %environment.
 in_instance() { apptainer exec "instance://$INSTANCE" bash -c "$1"; }
 
-# --------------------------------------------------------------------------
 phase_proxy() {
   log "Starting the Apache proxy (mimics the production front end)"
   command -v docker >/dev/null || die "docker not found"
   mkdir -p "$PROXY_DIR/logs"
 
-  # Derive from dev/, retargeting the backend port. Everything else -- the
-  # double-slash RewriteRule, ProxyPreserveHost, the cookie path rewrite, the
-  # SSI partial injection -- is copied verbatim, because those are the
-  # behaviours production depends on and the fixture exists to exercise them.
   sed "s|host\\.docker\\.internal:8080|host.docker.internal:${FIXTURE_NGINX_PORT}|g" \
     "$REPO_ROOT/dev/proxy-vhost.conf" > "$PROXY_DIR/proxy-vhost.conf"
   cp "$REPO_ROOT/dev/load-mods.conf" "$PROXY_DIR/load-mods.conf"
@@ -293,9 +229,6 @@ EOF
 phase_seed() {
   log "Seeding accounts, branding and media"
 
-  # The superuser is created by salt from PORTAL_SUPERUSER_* in the env file.
-  # Verify rather than assume, because a silently-'admin' fixture is the one
-  # failure mode that makes every later check meaningless.
   local su
   su=$(in_instance "python -c \"
 import django,os;os.environ.setdefault('DJANGO_SETTINGS_MODULE','tethys_portal.settings');django.setup()
@@ -316,17 +249,6 @@ if created:
 print('created' if created else 'exists')\""
   ok "non-privileged user: $FIXTURE_USER_NAME"
 
-  # Fixed-content media alongside whatever tethysdash writes, so checksums are
-  # stable across rebuilds. A real thumbnail still has to come from creating a
-  # dashboard -- see fixture.md; synthetic files alone do not prove R29.
-  #
-  # Written from INSIDE the instance, not from the host. Under --fakeroot the
-  # container's www (uid 1011) maps to host uid 101010 via the caller's subuid
-  # range, so everything the portal writes to the persist bind is owned by an id
-  # the invoking user cannot write to. A host-side mkdir here fails with EPERM.
-  # This is the same mechanism behind the `sudo rm -rf` fallbacks in
-  # dev_run.sh/demolish.sh, and it is one of the concrete costs the migration
-  # removes: without --fakeroot the bind is plain user-owned.
   in_instance "set -e
     mkdir -p '$MEDIA_IN'/fixture
     for i in \$(seq 1 ${FIXTURE_MEDIA_FILLER_COUNT:-5}); do
@@ -335,7 +257,6 @@ print('created' if created else 'exists')\""
   ok "media filler: ${FIXTURE_MEDIA_FILLER_COUNT:-5} files under media/fixture/ (written in-container)"
 }
 
-# --------------------------------------------------------------------------
 phase_capture() {
   log "Capturing artifacts"
   mkdir -p "$ARTIFACTS"
@@ -349,8 +270,6 @@ phase_capture() {
     pg_dump -U postgres -Fc tethys_platform > "$ARTIFACTS/tethys_platform.dump"
   ok "pg_dump ($(du -h "$ARTIFACTS/tethys_platform.dump" | cut -f1))"
 
-  # Computed in-container: the media tree is owned by a mapped subuid under
-  # --fakeroot and is not readable by the invoking user on the host.
   in_instance "cd '$MEDIA_IN' && find . -type f -exec sha256sum {} + | sort -k2" \
     > "$ARTIFACTS/media.manifest"
   ok "media manifest ($(wc -l < "$ARTIFACTS/media.manifest") files)"
@@ -370,7 +289,6 @@ import django as d;print('django',d.__version__)\"" > "$ARTIFACTS/versions.txt"
   ok "versions + migration state"
 }
 
-# --------------------------------------------------------------------------
 phase_verify() {
   log "Verifying the fixture is production-shaped"
   local fail=0
@@ -407,13 +325,6 @@ import sys;sys.exit(0 if s and getattr(s[0],'persistent_store_service',None) els
   [ "$fail" -eq 0 ] && ok "fixture is production-shaped" || die "fixture verification failed"
 }
 
-# --------------------------------------------------------------------------
-# Remove a fakeroot-owned tree. Files the portal wrote under --fakeroot are owned
-# by mapped subuids (container 1011 -> host 101010), so a plain host-side rm gets
-# EPERM. Re-entering with --fakeroot maps them back to root, which can delete
-# them. This is the OLD stack's problem only; the migrated stack runs without
-# --fakeroot and its binds are plain user-owned, so this helper goes away with it.
-# Still no sudo -- the whole point is that fakeroot makes elevation unnecessary.
 wipe_fakeroot_tree() {
   local target="$1"
   [ -d "$target" ] || return 0
@@ -425,21 +336,16 @@ wipe_fakeroot_tree() {
   rmdir "$target" 2>/dev/null || true
 }
 
-# --------------------------------------------------------------------------
 phase_reset() {
   log "Resetting fixture state (keeps the SIF and containers)"
   apptainer instance stop "$INSTANCE" >/dev/null 2>&1 || true
   wipe_fakeroot_tree "$PERSIST"
   mkdir -p "$PERSIST"
-  # Drop the portal database so salt re-provisions from scratch. The marker files
-  # alone are not enough: the salt states are gated on the markers, but the DB
-  # objects they created outlive a marker wipe.
   docker exec -e PGPASSWORD=pass "$PG_NAME" psql -U postgres -d postgres -q \
     -c "DROP DATABASE IF EXISTS tethys_platform WITH (FORCE);" >/dev/null 2>&1 || true
   ok "persist wiped and tethys_platform dropped"
 }
 
-# --------------------------------------------------------------------------
 phase_teardown() {
   log "Tearing down"
   apptainer instance stop "$INSTANCE" >/dev/null 2>&1 || true
@@ -455,7 +361,6 @@ phase_clean() {
   ok "removed $FIXTURE_ROOT"
 }
 
-# --------------------------------------------------------------------------
 PHASES=("$@")
 [ ${#PHASES[@]} -eq 0 ] && PHASES=(services env start proxy seed capture verify)
 for p in "${PHASES[@]}"; do

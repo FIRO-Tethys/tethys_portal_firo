@@ -187,11 +187,6 @@ From: tethysplatform/tethys-core:4.5.3-py3.12-dj5.2
     mkdir -p $TETHYS_PERSIST/data/tethysdash
     touch /var/log/tethys/salt.log /var/log/supervisor/supervisord.log
     
-    # Create the proxy user only if the base image does not already provide it.
-    # The pinned 4.5.3 base ships www at uid 1011/gid 57440; the previous rolling
-    # dev tag did not. An unconditional `groupadd www` therefore exits 9 on this
-    # base and aborts %post under set -e. Reuse when present, create at 1012
-    # (clear of the base's 1011) when the build arg names a different user.
     if ! getent group "{{ PROXY_USER }}" >/dev/null; then
         groupadd "{{ PROXY_USER }}"
     fi
