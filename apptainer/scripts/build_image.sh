@@ -21,8 +21,14 @@ if [ "$avail_gb" -lt 15 ]; then
   echo "         to a larger filesystem to avoid failing at the squashfs step." >&2
 fi
 
-echo "▶ Building image: ${OUT_SIF} from ${DEF_FILE} with user: ${PROXY_USER}..."
+echo "▶ Building image: ${OUT_SIF} from ${DEF_FILE}..."
 echo "  scratch: ${APPTAINER_TMPDIR} (${avail_gb}G free)"
 
-apptainer build --build-arg PROXY_USER="${PROXY_USER}" --fakeroot --fix-perms "${OUT_SIF}" "${DEF_FILE}"
+build_args=()
+if grep -q '{{ *PROXY_USER *}}' "${DEF_FILE}"; then
+  build_args+=(--build-arg "PROXY_USER=${PROXY_USER}")
+  echo "  proxy user: ${PROXY_USER}"
+fi
+
+apptainer build "${build_args[@]}" --fakeroot --fix-perms "${OUT_SIF}" "${DEF_FILE}"
 echo "✔ Done: ${OUT_SIF}"
