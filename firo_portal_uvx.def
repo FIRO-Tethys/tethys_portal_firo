@@ -94,6 +94,8 @@ Stage: final
     install -D -m 0644 /portal-overlays/admin_base_site.html "${TPL}/admin/base_site.html"
     rm -rf /portal-overlays
 
+    mkdir -p "${SP}/tethysapp/tethysdash/resources" "${SP}/tethysapp/tethysdash/workspaces"
+
     chmod -R a+rX /opt/python /opt/conda /config /opt/portal
 
 %environment
