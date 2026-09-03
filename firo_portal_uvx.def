@@ -57,6 +57,8 @@ Stage: build
     uv pip install --no-cache /build/Custom_CW3E_Visualizations
     uv pip install --no-cache /build/tethysext-default_theme
 
+    uv pip install --no-cache "social-auth-app-django>=5.9"
+
     python -c "import tethysapp.tethysdash"
     python -c "import tethysdash_plugin_cnrfc, tethysdash_plugin_cw3e, tethysdash_plugin_usace"
     python -c "import tethysext.default_theme"
