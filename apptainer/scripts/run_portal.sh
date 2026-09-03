@@ -40,6 +40,10 @@ load_env() {
   : "${TETHYS_PORT:=8000}"
 }
 
+forced_env() {
+  printf '%s' "--env SERVER=${SERVER:-gunicorn} --env CREATE_SUPERUSER=false"
+}
+
 binds() {
   printf '%s' \
     "-B $TETHYS_HOME_HOST:/home/tethys/portal " \
@@ -50,13 +54,13 @@ binds() {
 in_image() {
   load_env
   # shellcheck disable=SC2046
-  apptainer exec $(binds) --env-file "$ENV_FILE" "$SIF" bash -c "$1"
+  apptainer exec $(binds) $(forced_env) --env-file "$ENV_FILE" "$SIF" bash -c "$1"
 }
 
 in_image_writable() {
   load_env
   # shellcheck disable=SC2046
-  apptainer exec --writable-tmpfs $(binds) --env-file "$ENV_FILE" "$SIF" bash -c "$1"
+  apptainer exec --writable-tmpfs $(binds) $(forced_env) --env-file "$ENV_FILE" "$SIF" bash -c "$1"
 }
 
 cmd_dirs() {
@@ -88,7 +92,13 @@ cmd_provision() {
 
 cmd_serve() {
   load_env
-  log "Starting $INSTANCE"
+  log "Starting $INSTANCE (server: ${SERVER:-gunicorn})"
+
+  if [ "${SERVER:-gunicorn}" = "uvicorn" ]; then
+    echo "  WARNING: plain uvicorn fails at startup for this portal with" >&2
+    echo "           SynchronousOnlyOperation; Tethys queries the database in" >&2
+    echo "           AppConfig.ready(). Use gunicorn unless that is fixed upstream." >&2
+  fi
 
   if apptainer instance list 2>/dev/null | awk '{print $1}' | grep -qx "$INSTANCE"; then
     apptainer instance stop "$INSTANCE" >/dev/null 2>&1 || true
@@ -105,7 +115,7 @@ cmd_serve() {
   fi
 
   # shellcheck disable=SC2046
-  apptainer instance start $(binds) --env-file "$ENV_FILE" "$SIF" "$INSTANCE"
+  apptainer instance start $(binds) $(forced_env) --env-file "$ENV_FILE" "$SIF" "$INSTANCE"
 
   local url="http://localhost:${TETHYS_PORT}${PREFIX_URL:-}/"
   local code=000
