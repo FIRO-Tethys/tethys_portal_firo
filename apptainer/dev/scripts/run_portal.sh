@@ -47,33 +47,41 @@ load_env() {
   : "${TETHYS_PORT:=8000}"
 }
 
-forced_env() {
-  printf '%s' "--env SERVER=${SERVER:-gunicorn} --env CREATE_SUPERUSER=false"
-}
-
-binds() {
-  printf '%s' \
-    "-B $TETHYS_HOME_HOST:/home/tethys/portal " \
-    "-B $PERSIST_HOST:/home/tethys/persist " \
-    "-B $LOG_HOST:/home/tethys/log"
+apptainer_args() {
+  APPTAINER_ARGS=(
+    -B "$TETHYS_HOME_HOST:/home/tethys/portal"
+    -B "$PERSIST_HOST:/home/tethys/persist"
+    -B "$LOG_HOST:/home/tethys/log"
+    --env "SERVER=${SERVER:-gunicorn}"
+    --env CREATE_SUPERUSER=false
+    --env-file "$ENV_FILE"
+  )
 }
 
 in_image() {
-  load_env
-  # shellcheck disable=SC2046
+  local writable=()
+  [ "${1:-}" = "--writable-tmpfs" ] && { writable=(--writable-tmpfs); shift; }
   umask "$PORTAL_UMASK"
-  apptainer exec $(binds) $(forced_env) --env-file "$ENV_FILE" "$SIF" bash -c "$1"
+  apptainer_args
+  apptainer exec "${writable[@]}" "${APPTAINER_ARGS[@]}" "$SIF" bash -c "$1"
 }
 
-in_image_writable() {
-  load_env
-  # shellcheck disable=SC2046
-  umask "$PORTAL_UMASK"
-  apptainer exec --writable-tmpfs $(binds) $(forced_env) --env-file "$ENV_FILE" "$SIF" bash -c "$1"
+wait_http() {
+  local url="$1" label="$2" code=000
+  printf '  waiting for %s' "$label"
+  for _ in $(seq 1 30); do
+    code=$(curl -s -o /dev/null -w '%{http_code}' -L --max-time 5 "$url" 2>/dev/null || echo 000)
+    case "$code" in 200|302) break ;; esac
+    printf '.'; sleep 2
+  done
+  echo
+  case "$code" in
+    200|302) return 0 ;;
+    *) return 1 ;;
+  esac
 }
 
 check_db() {
-  load_env
   local host="${TETHYS_DB_HOST:-localhost}" port="${TETHYS_DB_PORT:-5432}" name="${TETHYS_DB_NAME:-tethys_platform}"
   if ! apptainer exec "$SIF" pg_isready -h "$host" -p "$port" >/dev/null 2>&1; then
     die "no database at ${host}:${port}.
@@ -112,13 +120,13 @@ cmd_provision() {
   in_image 'tethys db migrate'
   ok "migrations applied"
 
-  in_image_writable '/usr/local/bin/publish-static.sh'
+  in_image --writable-tmpfs '/usr/local/bin/publish-static.sh'
   ok "static published"
 
   if [ -d "$REPO_ROOT/conf/init.d" ]; then
     for hook in "$REPO_ROOT"/conf/init.d/*.sh; do
       [ -e "$hook" ] || continue
-      in_image_writable "bash /opt/portal/init.d/$(basename "$hook")"
+      in_image --writable-tmpfs "bash /opt/portal/init.d/$(basename "$hook")"
       ok "hook $(basename "$hook")"
     done
   fi
@@ -149,23 +157,14 @@ cmd_serve() {
     die "port $TETHYS_PORT already in use; Apptainer shares the host network namespace so the server would not bind"
   fi
 
-  # shellcheck disable=SC2046
   umask "$PORTAL_UMASK"
-  apptainer instance start $(binds) $(forced_env) --env-file "$ENV_FILE" "$SIF" "$INSTANCE"
+  apptainer_args
+  apptainer instance start "${APPTAINER_ARGS[@]}" "$SIF" "$INSTANCE"
 
   local url="http://localhost:${TETHYS_PORT}${PREFIX_URL:-}/"
-  local code=000
-  printf '  waiting for HTTP'
-  for _ in $(seq 1 30); do
-    code=$(curl -s -o /dev/null -w '%{http_code}' -L --max-time 5 "$url" 2>/dev/null || echo 000)
-    case "$code" in 200|302) break ;; esac
-    printf '.'; sleep 2
-  done
-  echo
-  case "$code" in
-    200|302) ok "portal serving at $url (HTTP $code)" ;;
-    *) die "portal not serving at $url (last HTTP $code) -- check $LOG_HOST and apptainer instance list" ;;
-  esac
+  wait_http "$url" "HTTP" \
+    && ok "portal serving at $url" \
+    || die "portal not serving at $url -- check $LOG_HOST and apptainer instance list"
 }
 
 cmd_proxy() {
@@ -175,18 +174,10 @@ cmd_proxy() {
     docker compose -f "$REPO_ROOT/apptainer/dev/docker-compose.yml" up -d >/dev/null 2>&1 \
     || die "proxy failed to start; check apptainer/dev/logs/error.log"
 
-  local url="http://localhost:${PROXY_PORT}${PREFIX_URL:-}/" code=000
-  printf '  waiting for proxy'
-  for _ in $(seq 1 20); do
-    code=$(curl -s -o /dev/null -w '%{http_code}' -L --max-time 5 "$url" 2>/dev/null || echo 000)
-    case "$code" in 200|302) break ;; esac
-    printf '.'; sleep 2
-  done
-  echo
-  case "$code" in
-    200|302) ok "proxy serving at $url -> portal on ${TETHYS_PORT}" ;;
-    *) die "proxy not serving at $url (last HTTP $code)" ;;
-  esac
+  local url="http://localhost:${PROXY_PORT}${PREFIX_URL:-}/"
+  wait_http "$url" "proxy" \
+    && ok "proxy serving at $url -> portal on ${TETHYS_PORT}" \
+    || die "proxy not serving at $url"
 }
 
 cmd_destroy() {
