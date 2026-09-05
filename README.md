@@ -211,7 +211,7 @@ apptainer instance start -B /srv/firo/config:/hostconfig \
 ```
 
 **Permanently** — edit `conf/portal_config.yml` and rebuild with
-`apptainer/scripts/build_image.sh`.
+`apptainer/dev/scripts/build_image.sh`.
 
 Static and media paths (`STATIC_ROOT`, `MEDIA_ROOT`, `TETHYS_WORKSPACES_ROOT`) are set
 under `settings.TETHYS_PORTAL_CONFIG`. Serve those directories from the web server;

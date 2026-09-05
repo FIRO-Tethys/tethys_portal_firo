@@ -1,4 +1,4 @@
-// apptainer/scripts/make_cw3e_scoped_css.mjs
+// apptainer/dev/scripts/make_cw3e_scoped_css.mjs
 import fs from "fs/promises";
 import path from "path";
 import postcss from "postcss";
