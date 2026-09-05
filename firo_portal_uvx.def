@@ -75,6 +75,7 @@ Stage: final
 %files
     conf/portal_config.yml                                                                              /config/portal_config.yml
     conf/init.d                                                                                         /opt/portal/init.d
+    conf/portal-config.d                                                                                /opt/portal/portal-config.d
 
     custom_themes/tethysext-default_theme/tethysext/default_theme/templates/default_theme/base.html      /portal-overlays/base.html
     custom_themes/tethysext-default_theme/tethysext/default_theme/templates/default_theme/header_gen.html /portal-overlays/header.html
