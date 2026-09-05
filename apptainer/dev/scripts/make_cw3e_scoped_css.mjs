@@ -1,4 +1,6 @@
 // apptainer/dev/scripts/make_cw3e_scoped_css.mjs
+// Regenerates the vendored CW3E theme CSS scoped under .cw3e-scope.
+// Usage: npm install && node make_cw3e_scoped_css.mjs [--out PATH]
 import fs from "fs/promises";
 import path from "path";
 import postcss from "postcss";
@@ -94,7 +96,22 @@ async function main() {
     map: false,
   });
 
-  const outPath = path.resolve("static/default_theme/css/cw3e_scoped2.css");
+  const repoRoot = path.resolve(import.meta.dirname, "../../..");
+  const defaultOut = path.join(
+    repoRoot,
+    "custom_themes/tethysext-default_theme/tethysext/default_theme/public/css/cw3e_scoped.css",
+  );
+  const argOut = process.argv.indexOf("--out");
+  const outPath = argOut === -1 ? defaultOut : path.resolve(process.argv[argOut + 1]);
+
+  const MIN_BYTES = 50_000;
+  if (Buffer.byteLength(result.css, "utf8") < MIN_BYTES) {
+    throw new Error(
+      `refusing to write ${Buffer.byteLength(result.css, "utf8")} bytes to ${outPath}; ` +
+        `expected at least ${MIN_BYTES}. A source URL probably failed to fetch.`,
+    );
+  }
+
   await fs.mkdir(path.dirname(outPath), { recursive: true });
   await fs.writeFile(outPath, result.css, "utf8");
 
