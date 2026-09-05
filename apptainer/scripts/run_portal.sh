@@ -13,6 +13,8 @@ PERSIST_HOST="$RUN_ROOT/persist"
 LOG_HOST="$RUN_ROOT/log"
 PROXY_DIR="$RUN_ROOT/proxy"
 PROXY_PORT="${PROXY_PORT:-8081}"
+PORTAL_GROUP="${PORTAL_GROUP:-}"
+PORTAL_UMASK="${PORTAL_UMASK:-0022}"
 
 log() { printf '\n\033[1;34m==> %s\033[0m\n' "$*"; }
 ok()  { printf '\033[1;32m  ok  %s\033[0m\n' "$*"; }
@@ -29,7 +31,9 @@ Usage: $0 <command>
   stop        stop the instance
   status      show what is listening and whether the portal answers
 
-Env: SIF, RUN_ROOT, INSTANCE, ENV_FILE
+Env: SIF, RUN_ROOT, INSTANCE, ENV_FILE, PROXY_PORT,
+     PORTAL_GROUP  group owning the bind tree (setgid; new files inherit it)
+     PORTAL_UMASK  0022 world-readable (default), 0027 group-only
 EOF
   exit 1
 }
@@ -57,19 +61,33 @@ binds() {
 in_image() {
   load_env
   # shellcheck disable=SC2046
+  umask "$PORTAL_UMASK"
   apptainer exec $(binds) $(forced_env) --env-file "$ENV_FILE" "$SIF" bash -c "$1"
 }
 
 in_image_writable() {
   load_env
   # shellcheck disable=SC2046
+  umask "$PORTAL_UMASK"
   apptainer exec --writable-tmpfs $(binds) $(forced_env) --env-file "$ENV_FILE" "$SIF" bash -c "$1"
 }
 
 cmd_dirs() {
   log "Creating host directories"
+  umask "$PORTAL_UMASK"
   mkdir -p "$TETHYS_HOME_HOST/keys" "$PERSIST_HOST"/{static,media,workspaces} "$LOG_HOST"
-  ok "$RUN_ROOT"
+
+  if [ -n "$PORTAL_GROUP" ]; then
+    getent group "$PORTAL_GROUP" >/dev/null \
+      || die "group '$PORTAL_GROUP' does not exist on this host"
+    id -nG | tr ' ' '\n' | grep -qx "$PORTAL_GROUP" \
+      || die "$(id -un) is not a member of '$PORTAL_GROUP'; chgrp would fail"
+    chgrp -R "$PORTAL_GROUP" "$RUN_ROOT"
+    find "$RUN_ROOT" -type d -exec chmod g+s {} +
+    ok "group $PORTAL_GROUP, setgid on directories so new files inherit it"
+  fi
+
+  ok "$RUN_ROOT (owner $(id -un), umask $PORTAL_UMASK)"
 }
 
 cmd_provision() {
@@ -118,6 +136,7 @@ cmd_serve() {
   fi
 
   # shellcheck disable=SC2046
+  umask "$PORTAL_UMASK"
   apptainer instance start $(binds) $(forced_env) --env-file "$ENV_FILE" "$SIF" "$INSTANCE"
 
   local url="http://localhost:${TETHYS_PORT}${PREFIX_URL:-}/"
