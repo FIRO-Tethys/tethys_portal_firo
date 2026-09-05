@@ -11,7 +11,6 @@ ENV_FILE="${ENV_FILE:-$RUN_ROOT/portal.env}"
 TETHYS_HOME_HOST="$RUN_ROOT/portal"
 PERSIST_HOST="$RUN_ROOT/persist"
 LOG_HOST="$RUN_ROOT/log"
-PROXY_DIR="$RUN_ROOT/proxy"
 PROXY_PORT="${PROXY_PORT:-8081}"
 PORTAL_GROUP="${PORTAL_GROUP:-}"
 PORTAL_UMASK="${PORTAL_UMASK:-0022}"
@@ -29,6 +28,7 @@ Usage: $0 <command>
   serve       start the instance
   proxy       start the Apache front end that serves static and media
   stop        stop the instance
+  destroy     stop everything and delete the run root (--yes to skip the prompt)
   status      show what is listening and whether the portal answers
 
 Env: SIF, RUN_ROOT, INSTANCE, ENV_FILE, PROXY_PORT,
@@ -170,40 +170,12 @@ cmd_serve() {
 
 cmd_proxy() {
   load_env
-  log "Starting the Apache proxy on ${PROXY_PORT}"
-  mkdir -p "$PROXY_DIR/logs"
+  log "Starting the Apache front end on ${PROXY_PORT}"
+  PROXY_PORT="$PROXY_PORT" PORTAL_PORT="$TETHYS_PORT" TETHYS_PERSIST="$PERSIST_HOST" \
+    docker compose -f "$REPO_ROOT/apptainer/dev/docker-compose.yml" up -d >/dev/null 2>&1 \
+    || die "proxy failed to start; check apptainer/dev/logs/error.log"
 
-  sed "s|host\\.docker\\.internal:8080|host.docker.internal:${TETHYS_PORT}|g" \
-    "$REPO_ROOT/dev/proxy-vhost.conf" > "$PROXY_DIR/proxy-vhost.conf"
-  cp "$REPO_ROOT/dev/load-mods.conf" "$PROXY_DIR/load-mods.conf"
-
-  cat > "$PROXY_DIR/docker-compose.yml" <<EOF
-services:
-  proxy:
-    image: httpd:2.4
-    container_name: firo_uvx_proxy
-    ports:
-      - "${PROXY_PORT}:80"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    volumes:
-      - ${PROXY_DIR}/proxy-vhost.conf:/usr/local/apache2/conf/extra/proxy-vhost.conf:ro
-      - ${PROXY_DIR}/load-mods.conf:/usr/local/apache2/conf/extra/load-mods.conf:ro
-      - ${REPO_ROOT}/dev/partials/:/var/www/partials/:ro
-      - ${PERSIST_HOST}/:/srv/tethys_persist/:ro
-      - ${PROXY_DIR}/logs/:/usr/local/apache2/logs
-    environment:
-      APACHE_LOG_DIR: /usr/local/apache2/logs
-    command: >
-      sh -c 'echo "Include conf/extra/load-mods.conf"   >> conf/httpd.conf &&
-             echo "Include conf/extra/proxy-vhost.conf" >> conf/httpd.conf &&
-             httpd-foreground'
-EOF
-  docker compose -f "$PROXY_DIR/docker-compose.yml" up -d >/dev/null 2>&1 \
-    || die "proxy failed to start -- check $PROXY_DIR/logs/error.log"
-
-  local url="http://localhost:${PROXY_PORT}${PREFIX_URL:-}/"
-  local code=000
+  local url="http://localhost:${PROXY_PORT}${PREFIX_URL:-}/" code=000
   printf '  waiting for proxy'
   for _ in $(seq 1 20); do
     code=$(curl -s -o /dev/null -w '%{http_code}' -L --max-time 5 "$url" 2>/dev/null || echo 000)
@@ -215,6 +187,32 @@ EOF
     200|302) ok "proxy serving at $url -> portal on ${TETHYS_PORT}" ;;
     *) die "proxy not serving at $url (last HTTP $code)" ;;
   esac
+}
+
+cmd_destroy() {
+  local confirm=false
+  [ "${1:-}" = "--yes" ] && confirm=true
+
+  echo "This will stop and delete:"
+  echo "  instance:  $INSTANCE"
+  echo "  proxy:     compose project in apptainer/dev"
+  echo "  run root:  $RUN_ROOT"
+  if [ -d "$RUN_ROOT" ]; then
+    echo "  media:     $(find "$PERSIST_HOST/media" -type f 2>/dev/null | wc -l) files (not regenerable)"
+    echo "  static:    $(find "$PERSIST_HOST/static" -type f 2>/dev/null | wc -l) files"
+  else
+    echo "  (run root does not exist)"
+  fi
+
+  if ! $confirm; then
+    read -r -p "Type the run root name to confirm: " reply
+    [ "$reply" = "$(basename "$RUN_ROOT")" ] || { echo "aborted; nothing was stopped or deleted"; exit 1; }
+  fi
+
+  apptainer instance stop "$INSTANCE" >/dev/null 2>&1 || true
+  docker compose -f "$REPO_ROOT/apptainer/dev/docker-compose.yml" down >/dev/null 2>&1 || true
+  rm -rf "${RUN_ROOT:?}"
+  ok "stopped $INSTANCE and the proxy; deleted $RUN_ROOT"
 }
 
 cmd_stop() {
@@ -236,6 +234,7 @@ case "${1:-}" in
   provision) cmd_provision ;;
   serve) cmd_serve ;;
   stop) cmd_stop ;;
+  destroy) shift; cmd_destroy "$@" ;;
   status) cmd_status ;;
   *) usage ;;
 esac

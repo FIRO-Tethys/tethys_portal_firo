@@ -128,6 +128,68 @@ e.g.
 tail -f -n 100 /tmp/logs/tethys/salt.log
 ```
 
+## Deploying (production)
+
+The scripts under `apptainer/` are development tooling. Production is four steps.
+
+**1. Build**
+
+```bash
+apptainer build --fakeroot --fix-perms firo-portal.sif firo_portal.def
+```
+
+Apptainer stages the build in `APPTAINER_TMPDIR`, which defaults to `/tmp`. This
+image needs roughly 15G of scratch, so set it to a filesystem with room or the
+build fails at the squashfs step after everything else has succeeded.
+
+**2. Provision** (once per release; the portal need not be running)
+
+```bash
+apptainer exec -B <run>/portal:/home/tethys/portal -B <run>/persist:/home/tethys/persist \
+  --env-file portal.env --env CREATE_SUPERUSER=false firo-portal.sif \
+  bash -c 'portal-config.sh && tethys db migrate'
+
+apptainer exec --writable-tmpfs -B <run>/portal:/home/tethys/portal \
+  -B <run>/persist:/home/tethys/persist --env-file portal.env firo-portal.sif \
+  bash -c 'publish-static.sh && tethys db sync && tethys syncstores tethysdash'
+```
+
+`--writable-tmpfs` is required for the static step only: it writes into the
+package directory, which a SIF makes read-only. `CREATE_SUPERUSER=false` keeps
+provisioning from adding an `admin` account to an existing portal.
+
+**3. Serve**
+
+```bash
+apptainer instance start -B <run>/portal:/home/tethys/portal \
+  -B <run>/persist:/home/tethys/persist -B <run>/log:/home/tethys/log \
+  --env-file portal.env --env SERVER=gunicorn firo-portal.sif firo_portal
+```
+
+`SERVER=gunicorn` is required. Plain uvicorn cannot start this portal: Tethys
+queries the database in `AppConfig.ready()`, which raises `SynchronousOnlyOperation`
+in an async worker.
+
+No `--fakeroot` and no `--writable-tmpfs`. The container runs as the invoking
+user, so a role account can own and run it with no image change.
+
+**4. Serve static and media from the web server**
+
+The portal does not serve them. Point the web server at the directories from
+step 2 and exclude them from the proxy pass, or every asset is forwarded to the
+application and 404s.
+
+### File ownership
+
+Files are created by the invoking user with its primary group. To let the web
+server read them via a shared group, set the group on the run root and the
+setgid bit on its directories, so files written by later `collectstatic` runs
+inherit it:
+
+```bash
+chgrp -R <group> <run> && find <run> -type d -exec chmod g+s {} +
+```
+
 ## Portal configuration
 
 Settings live in `conf/portal_config.yml`, which is baked to `/config/portal_config.yml`

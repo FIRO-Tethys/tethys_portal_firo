@@ -60,7 +60,7 @@ function scopeSelector(sel) {
   // Collapse ".cw3e-scope body ..." or ".cw3e-scope html ..." → ".cw3e-scope ..."
   out = out.replace(new RegExp(`^${SCOPE}\\s+(html|body)\\b\\s*`), `${SCOPE} `);
 
-  // If we didn’t rewrite a leading html/body/:root, prefix the whole selector
+  // If we didn't rewrite a leading html/body/:root, prefix the whole selector
   if (!out.startsWith(SCOPE)) {
     out = `${SCOPE} ${s}`;
   }
