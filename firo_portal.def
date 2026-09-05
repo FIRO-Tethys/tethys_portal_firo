@@ -58,7 +58,7 @@ Stage: build
     uv pip install --no-cache /build/tethysext-default_theme
 
     uv pip install --no-cache "social-auth-app-django>=5.9"
-    uv pip install --no-cache plotly pytz
+    uv pip install --no-cache plotly pytz numpy
 
     python -c "import tethysapp.tethysdash"
     python -c "import tethysdash_plugin_cnrfc, tethysdash_plugin_cw3e, tethysdash_plugin_usace"
