@@ -72,6 +72,18 @@ in_image_writable() {
   apptainer exec --writable-tmpfs $(binds) $(forced_env) --env-file "$ENV_FILE" "$SIF" bash -c "$1"
 }
 
+check_db() {
+  load_env
+  local host="${TETHYS_DB_HOST:-localhost}" port="${TETHYS_DB_PORT:-5432}" name="${TETHYS_DB_NAME:-tethys_platform}"
+  if ! apptainer exec "$SIF" pg_isready -h "$host" -p "$port" >/dev/null 2>&1; then
+    die "no database at ${host}:${port}.
+       Start it before serving. Without it the portal's workers fail to boot in
+       AppConfig.ready(), and Django reports SynchronousOnlyOperation from the
+       async worker context rather than the connection error."
+  fi
+  ok "database reachable at ${host}:${port} (${name})"
+}
+
 cmd_dirs() {
   log "Creating host directories"
   umask "$PORTAL_UMASK"
@@ -92,6 +104,7 @@ cmd_dirs() {
 
 cmd_provision() {
   load_env
+  check_db
   log "Provisioning"
   in_image '/usr/local/bin/portal-config.sh'
   ok "config rendered"
@@ -113,6 +126,7 @@ cmd_provision() {
 
 cmd_serve() {
   load_env
+  check_db
   log "Starting $INSTANCE (server: ${SERVER:-gunicorn})"
 
   if [ "${SERVER:-gunicorn}" = "uvicorn" ]; then
