@@ -92,6 +92,12 @@ phase_services() {
   if [ "$(psql_admin "SELECT 1 FROM pg_database WHERE datname='chapunato';")" != "1" ]; then
     docker exec -e PGPASSWORD=pass "$PG_NAME" createdb -U postgres -O chapunato chapunato
   fi
+
+  psql_admin "DO \$\$ BEGIN
+      IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='normal_chapunato') THEN
+        CREATE ROLE normal_chapunato LOGIN PASSWORD 'pass';
+      END IF;
+    END \$\$;" >/dev/null
   ok "postgres on 5437, redis on 6379, role 'chapunato' seeded"
 }
 
