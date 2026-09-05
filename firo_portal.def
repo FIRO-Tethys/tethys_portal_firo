@@ -58,10 +58,25 @@ Stage: build
     uv pip install --no-cache /build/tethysext-default_theme
 
     uv pip install --no-cache "social-auth-app-django>=5.9"
+    uv pip install --no-cache plotly pytz
 
     python -c "import tethysapp.tethysdash"
     python -c "import tethysdash_plugin_cnrfc, tethysdash_plugin_cw3e, tethysdash_plugin_usace"
     python -c "import tethysext.default_theme"
+
+    python - <<'SMOKE'
+import importlib.metadata as md, sys
+missing = {}
+for ep in md.entry_points(group="intake.drivers"):
+    try:
+        ep.load()
+    except Exception as e:
+        missing[ep.name] = f"{type(e).__name__}: {e}"
+if missing:
+    for name, err in sorted(missing.items()):
+        print(f"intake driver {name}: {err}", file=sys.stderr)
+    sys.exit(1)
+SMOKE
 
 
 Bootstrap: docker
