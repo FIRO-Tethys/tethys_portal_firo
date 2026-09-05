@@ -28,6 +28,7 @@ Usage: $0 <command>
   serve       start the instance
   proxy       start the Apache front end that serves static and media
   stop        stop the instance
+  reload      apply portal_config.yml changes with no downtime (SIGHUP)
   destroy     stop everything and delete the run root (--yes to skip the prompt)
   status      show what is listening and whether the portal answers
 
@@ -206,6 +207,39 @@ cmd_destroy() {
   ok "stopped $INSTANCE and the proxy; deleted $RUN_ROOT"
 }
 
+cmd_reload() {
+  load_env
+  local ipid mpid before after i
+  ipid=$(apptainer instance list 2>/dev/null | awk -v n="$INSTANCE" '$1==n{print $2; exit}')
+  [ -n "$ipid" ] || die "instance $INSTANCE is not running"
+  mpid=$(pgrep -P "$ipid" -f gunicorn 2>/dev/null | head -1 || true)
+  [ -n "$mpid" ] || die "no gunicorn master under $INSTANCE; DEBUG serves with runserver, which cannot reload"
+
+  apptainer exec "instance://$INSTANCE" /opt/conda/envs/tethys/bin/python -c \
+    'import yaml; yaml.safe_load(open("/home/tethys/portal/portal_config.yml"))' 2>/dev/null \
+    || die "portal_config.yml is not valid YAML; refusing to reload"
+
+  before=" $(pgrep -P "$mpid" 2>/dev/null | tr '\n' ' ' || true)"
+  kill -HUP "$mpid" || die "could not signal gunicorn master $mpid"
+
+  for i in $(seq 1 30); do
+    after=" $(pgrep -P "$mpid" 2>/dev/null | tr '\n' ' ' || true)"
+    [ "$after" = " " ] && { sleep 1; continue; }
+    local overlap=0 w
+    for w in $after; do case "$before" in *" $w "*) overlap=1 ;; esac; done
+    [ "$overlap" = 0 ] && break
+    sleep 1
+  done
+
+  kill -0 "$mpid" 2>/dev/null \
+    || die "gunicorn master died on reload; portal is DOWN. Restore portal_config.yml, then: $0 stop && $0 serve"
+
+  local url="http://localhost:${TETHYS_PORT}${PREFIX_URL:-}/"
+  wait_http "$url" "portal" \
+    && ok "reloaded $INSTANCE (master $mpid kept, workers${after:-} )" \
+    || die "new worker is not serving; portal is DOWN. Restore portal_config.yml, then: $0 stop && $0 serve"
+}
+
 cmd_stop() {
   apptainer instance stop "$INSTANCE" >/dev/null 2>&1 || true
   ok "stopped $INSTANCE"
@@ -225,6 +259,7 @@ case "${1:-}" in
   provision) cmd_provision ;;
   serve) cmd_serve ;;
   stop) cmd_stop ;;
+  reload) cmd_reload ;;
   destroy) shift; cmd_destroy "$@" ;;
   status) cmd_status ;;
   *) usage ;;
