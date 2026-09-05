@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 
 SIF="${SIF:-$REPO_ROOT/../firo-portal-uvx.sif}"
 RUN_ROOT="${RUN_ROOT:-$REPO_ROOT/../firo-uvx-run}"
