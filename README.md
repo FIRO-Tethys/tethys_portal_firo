@@ -128,3 +128,29 @@ e.g.
 tail -f -n 100 /tmp/logs/tethys/salt.log
 ```
 
+## Portal configuration
+
+Settings live in `conf/portal_config.yml`, which is baked to `/config/portal_config.yml`
+in the image. Three ways to change one, in increasing order of permanence:
+
+**While the container runs** — takes effect on the next restart:
+
+```bash
+apptainer exec instance://firo_portal tethys settings \
+  --set TETHYS_PORTAL_CONFIG.STATIC_ROOT /srv/firo/static
+```
+
+**Without rebuilding** — bind a config file from the host and point the portal at it.
+Edit the host file and restart; no image change:
+
+```bash
+apptainer instance start -B /srv/firo/config:/hostconfig \
+  --env PORTAL_CONFIG_SRC=/hostconfig/portal_config.yml ... firo-portal.sif firo_portal
+```
+
+**Permanently** — edit `conf/portal_config.yml` and rebuild with
+`apptainer/scripts/build_image.sh`.
+
+Static and media paths (`STATIC_ROOT`, `MEDIA_ROOT`, `TETHYS_WORKSPACES_ROOT`) are set
+under `settings.TETHYS_PORTAL_CONFIG`. Serve those directories from the web server;
+the portal does not serve them itself.
