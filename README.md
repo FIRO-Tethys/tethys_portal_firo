@@ -217,7 +217,7 @@ re-reads the *rendered* config in `TETHYS_HOME`; nothing re-copies the source ov
 it, because `portal-config.sh` runs only at startup. Editing the source alone and
 reloading leaves the portal on the old settings with no error.
 
-To apply a change with no downtime, edit **both** files and reload — the rendered
+To apply a change with no downtime, edit **both** files and reload - the rendered
 one for immediate effect, the source so it survives the next restart:
 
 ```bash
@@ -269,9 +269,19 @@ There is no supervisord in this image. Gunicorn's own control interface replaces
 `gunicornc` talks to the running master over a unix socket, so a config change is applied
 by reloading the workers rather than restarting the container.
 
+A reload re-reads the **rendered** config in `TETHYS_HOME`, so that is the file to edit
+for the change to take effect. Startup overwrites that file from `PORTAL_CONFIG_SRC`,
+so make the same edit there as well or the change lasts only until the next restart —
+step 1b below. If `PORTAL_CONFIG_SRC` is still the baked `/config/portal_config.yml`
+inside the image there is nothing to edit for durability: bind a host file first (see
+*Portal configuration* above), or treat the change as temporary until the next rebuild.
+
 ```bash
-# 1. edit the live config (the host directory bound to /home/tethys/portal)
-vi /srv/firo/portal/portal_config.yml
+# 1a. edit the rendered config, which is what a reload re-reads
+vi <run>/portal/portal_config.yml
+
+# 1b. make the same edit in PORTAL_CONFIG_SRC, or the next restart reverts it
+vi /srv/firo/config/portal_config.yml
 
 # 2. check it parses before signalling anything
 apptainer exec instance://firo_portal /opt/conda/envs/tethys/bin/python \
@@ -323,9 +333,7 @@ between `runserver` and gunicorn, so changing it needs a full restart - under `r
 there is no gunicorn master to reload at all. The same applies to anything in the env file
 (`SERVER`, ports) and to any change in bind mounts.
 
-**Two caveats.** Edits to the live file are overwritten on every start, because
-`portal-config.sh` copies `$PORTAL_CONFIG_SRC` over it; point `PORTAL_CONFIG_SRC` at a
-file on a host bind (above) to make them durable. And the control socket must be pinned per
+**One caveat beyond the two files above.** The control socket must be pinned per
 instance. Gunicorn's default is `$XDG_RUNTIME_DIR/gunicorn.ctl` when that variable is set
 and is a directory, otherwise `$HOME/.gunicorn/gunicorn.ctl` - either way it is **per user,
 not per instance**, so a second portal started by the same account overwrites the first
