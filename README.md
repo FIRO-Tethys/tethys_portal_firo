@@ -195,7 +195,8 @@ chgrp -R <group> <run> && find <run> -type d -exec chmod g+s {} +
 Settings live in `conf/portal_config.yml`, which is baked to `/config/portal_config.yml`
 in the image. Three ways to change one, in increasing order of permanence:
 
-**While the container runs** — takes effect on the next restart:
+**While the container runs** — takes effect on the next reload (see *Applying a config
+change without downtime* below):
 
 ```bash
 apptainer exec instance://firo_portal tethys settings \
@@ -212,6 +213,64 @@ apptainer instance start -B /srv/firo/config:/hostconfig \
 
 **Permanently** — edit `conf/portal_config.yml` and rebuild with
 `apptainer/dev/scripts/build_image.sh`.
+
+### Applying a config change without downtime
+
+There is no supervisord in this image. Gunicorn's own control interface replaces it:
+`gunicornc` talks to the running master over a unix socket, so a config change is applied
+by reloading the workers rather than restarting the container.
+
+```bash
+# 1. edit the live config (the host directory bound to /home/tethys/portal)
+vi /srv/firo/portal/portal_config.yml
+
+# 2. check it parses before signalling anything
+apptainer exec instance://firo_portal /opt/conda/envs/tethys/bin/python \
+  -c 'import yaml; yaml.safe_load(open("/home/tethys/portal/portal_config.yml"))'
+
+# 3. reload
+apptainer exec instance://firo_portal /opt/conda/envs/tethys/bin/gunicornc -c "reload"
+
+# 4. verify the portal is actually answering
+curl -so /dev/null -w '%{http_code}\n' http://localhost/firo_apps/
+```
+
+**Step 4 is required.** `gunicornc -c "reload"` returns `{"status": "reloading"}` and
+returns immediately; it does not wait and does not report whether the new workers came
+up. Gunicorn also keeps the old worker serving until the new one is ready, so a check run
+too early reads the *old* worker and returns 200 for a portal that is about to be down.
+Confirm the new workers replaced the old ones before trusting the result:
+
+```bash
+apptainer exec instance://firo_portal /opt/conda/envs/tethys/bin/gunicornc -c "show workers"
+```
+
+Note that a worker's `BOOTED` column reads `no` on a healthy, serving worker, so it is not
+a health signal. Use the HTTP check.
+
+If the reload leaves the portal down, restore the config and restart the instance —
+a failed reload has no automatic rollback, and the master may be gone:
+
+```bash
+apptainer instance stop firo_portal
+apptainer instance start ... firo-portal.sif firo_portal
+```
+
+Other `gunicornc` commands: `show workers`, `show stats`, `show config`, `show listeners`,
+`worker add N`, `worker remove N`, `reopen` (reopen log files), `shutdown graceful`.
+Add `-j` for JSON.
+
+**What a reload cannot do.** `DEBUG` is read by `serve.sh` before it execs, to choose
+between `runserver` and gunicorn, so changing it needs a full restart — under `runserver`
+there is no gunicorn master to reload at all. The same applies to anything in the env file
+(`SERVER`, ports) and to any change in bind mounts.
+
+**Two caveats.** Edits to the live file are overwritten on every start, because
+`portal-config.sh` copies `$PORTAL_CONFIG_SRC` over it; point `PORTAL_CONFIG_SRC` at a
+file on a host bind (above) to make them durable. And the control socket defaults to
+`$HOME/.gunicorn/gunicorn.ctl`, so it depends on the home directory of the account running
+the container; pin it with `GUNICORN_CMD_ARGS="--control-socket /path/to/gunicorn.ctl"` if
+that account's home is not stable.
 
 Static and media paths (`STATIC_ROOT`, `MEDIA_ROOT`, `TETHYS_WORKSPACES_ROOT`) are set
 under `settings.TETHYS_PORTAL_CONFIG`. Serve those directories from the web server;

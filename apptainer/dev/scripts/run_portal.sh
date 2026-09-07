@@ -14,6 +14,8 @@ LOG_HOST="$RUN_ROOT/log"
 PROXY_PORT="${PROXY_PORT:-80}"
 PORTAL_GROUP="${PORTAL_GROUP:-}"
 PORTAL_UMASK="${PORTAL_UMASK:-0022}"
+PY=/opt/conda/envs/tethys/bin/python
+GUNICORNC=/opt/conda/envs/tethys/bin/gunicornc
 
 log() { printf '\n\033[1;34m==> %s\033[0m\n' "$*"; }
 ok()  { printf '\033[1;32m  ok  %s\033[0m\n' "$*"; }
@@ -207,37 +209,42 @@ cmd_destroy() {
   ok "stopped $INSTANCE and the proxy; deleted $RUN_ROOT"
 }
 
+portal_workers() {
+  apptainer exec "instance://$INSTANCE" "$GUNICORNC" -c "show workers" -j 2>/dev/null \
+    | grep -o '"pid":[[:space:]]*[0-9]*' | grep -oE '[0-9]+$' | sort -n | tr '\n' ' ' || true
+}
+
 cmd_reload() {
   load_env
-  local ipid mpid before after i
-  ipid=$(apptainer instance list 2>/dev/null | awk -v n="$INSTANCE" '$1==n{print $2; exit}')
-  [ -n "$ipid" ] || die "instance $INSTANCE is not running"
-  mpid=$(pgrep -P "$ipid" -f gunicorn 2>/dev/null | head -1 || true)
-  [ -n "$mpid" ] || die "no gunicorn master under $INSTANCE; DEBUG serves with runserver, which cannot reload"
+  apptainer instance list 2>/dev/null | awk -v n="$INSTANCE" '$1==n{found=1} END{exit !found}' \
+    || die "instance $INSTANCE is not running"
 
-  apptainer exec "instance://$INSTANCE" /opt/conda/envs/tethys/bin/python -c \
+  apptainer exec "instance://$INSTANCE" "$PY" -c \
     'import yaml; yaml.safe_load(open("/home/tethys/portal/portal_config.yml"))' 2>/dev/null \
     || die "portal_config.yml is not valid YAML; refusing to reload"
 
-  before=" $(pgrep -P "$mpid" 2>/dev/null | tr '\n' ' ' || true)"
-  kill -HUP "$mpid" || die "could not signal gunicorn master $mpid"
+  local before after i overlap w
+  before=" $(portal_workers)"
+  [ "$before" = " " ] \
+    && die "no gunicorn workers under $INSTANCE; DEBUG serves with runserver, which cannot reload"
+
+  apptainer exec "instance://$INSTANCE" "$GUNICORNC" -c "reload" >/dev/null 2>&1 \
+    || die "gunicornc did not accept reload; check the control socket under \$HOME/.gunicorn"
 
   for i in $(seq 1 30); do
-    after=" $(pgrep -P "$mpid" 2>/dev/null | tr '\n' ' ' || true)"
-    [ "$after" = " " ] && { sleep 1; continue; }
-    local overlap=0 w
-    for w in $after; do case "$before" in *" $w "*) overlap=1 ;; esac; done
-    [ "$overlap" = 0 ] && break
+    after=" $(portal_workers)"
+    if [ "$after" != " " ]; then
+      overlap=0
+      for w in $after; do case "$before" in *" $w "*) overlap=1 ;; esac; done
+      [ "$overlap" = 0 ] && break
+    fi
     sleep 1
   done
 
-  kill -0 "$mpid" 2>/dev/null \
-    || die "gunicorn master died on reload; portal is DOWN. Restore portal_config.yml, then: $0 stop && $0 serve"
-
   local url="http://localhost:${TETHYS_PORT}${PREFIX_URL:-}/"
   wait_http "$url" "portal" \
-    && ok "reloaded $INSTANCE (master $mpid kept, workers${after:-} )" \
-    || die "new worker is not serving; portal is DOWN. Restore portal_config.yml, then: $0 stop && $0 serve"
+    && ok "reloaded $INSTANCE (workers${after:-} )" \
+    || die "portal is DOWN after reload. Restore portal_config.yml, then: $0 stop && $0 serve"
 }
 
 cmd_stop() {
