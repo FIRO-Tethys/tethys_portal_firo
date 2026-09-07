@@ -27,7 +27,7 @@ settings:
 
   CHANNEL_LAYERS:
     default:
-      BACKEND: channels.layers.InMemoryChannelLayer
+      BACKEND: channels_redis.core.RedisChannelLayer
       CONFIG:
         hosts:
           - host: 127.0.0.1

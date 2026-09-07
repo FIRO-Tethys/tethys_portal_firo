@@ -5,7 +5,7 @@
 set -euo pipefail
 
 DEF_FILE="${1:-firo_portal.def}"
-OUT_SIF="${2:-../firo-portal.sif}"
+OUT_SIF="${2:-../firo-portal-uvx.sif}"
 
 [ -f "$DEF_FILE" ] || { echo "definition file not found: $DEF_FILE" >&2; exit 1; }
 

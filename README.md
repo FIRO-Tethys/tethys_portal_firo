@@ -38,7 +38,14 @@ mkdir -p logs/tethys
 docker compose up -d
 ```
 
-## Apptainer
+## Apptainer (legacy salt stack)
+
+> **Superseded.** This section documents the pre-migration salt/conda image and is kept
+> only while rollback to it is still possible. The paths it references (`/usr/lib/tethys`,
+> `/var/log/tethys/salt.log`, `/srv/salt`) do not exist in the current image, and it
+> provisions no database. For the current stack see **Deploying (production)** and
+> **Portal configuration** below.
+
 
 ### Build
 
@@ -241,15 +248,15 @@ apptainer exec instance://firo_portal /opt/conda/envs/tethys/bin/python \
 
 # 3. record the current worker PIDs
 apptainer exec instance://firo_portal /opt/conda/envs/tethys/bin/gunicornc \
-  -s $TETHYS_HOME/gunicorn.ctl -c "show workers"
+  -s /home/tethys/portal/gunicorn.ctl -c "show workers"
 
 # 4. reload
 apptainer exec instance://firo_portal /opt/conda/envs/tethys/bin/gunicornc \
-  -s $TETHYS_HOME/gunicorn.ctl -c "reload"
+  -s /home/tethys/portal/gunicorn.ctl -c "reload"
 
 # 5. wait until no PID from step 3 remains, then verify HTTP
 apptainer exec instance://firo_portal /opt/conda/envs/tethys/bin/gunicornc \
-  -s $TETHYS_HOME/gunicorn.ctl -c "show workers"
+  -s /home/tethys/portal/gunicorn.ctl -c "show workers"
 curl -so /dev/null -w '%{http_code}\n' http://localhost/firo_apps/
 ```
 
@@ -292,7 +299,7 @@ instance. Gunicorn's default is `$XDG_RUNTIME_DIR/gunicorn.ctl` when that variab
 and is a directory, otherwise `$HOME/.gunicorn/gunicorn.ctl` — either way it is **per user,
 not per instance**, so a second portal started by the same account overwrites the first
 one's socket and deletes it on exit, leaving the first portal serving but permanently
-unable to reload. Pass `GUNICORN_CMD_ARGS="--control-socket $TETHYS_HOME/gunicorn.ctl"` at
+unable to reload. Pass `GUNICORN_CMD_ARGS="--control-socket /home/tethys/portal/gunicorn.ctl"` at
 start and `gunicornc -s` that same path; `run_portal.sh` does this for you.
 
 Static and media paths (`STATIC_ROOT`, `MEDIA_ROOT`, `TETHYS_WORKSPACES_ROOT`) are set

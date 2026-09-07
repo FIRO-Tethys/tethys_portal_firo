@@ -18,7 +18,7 @@ services:
 
     environment:
       APACHE_LOG_DIR: /usr/local/apache2/logs
-      PORTAL_PORT: ${PORTAL_PORT:-8080}
+      PORTAL_PORT: ${PORTAL_PORT:-8000}
 
     command: >
       sh -c 'echo "Include conf/extra/load-mods.conf"   >> conf/httpd.conf &&

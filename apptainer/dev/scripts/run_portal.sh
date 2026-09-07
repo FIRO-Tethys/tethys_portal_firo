@@ -50,6 +50,7 @@ load_env() {
   set -a; . "$ENV_FILE"; set +a
   : "${TETHYS_SECRET_KEY:?TETHYS_SECRET_KEY is required}"
   : "${TETHYS_PORT:=8000}"
+  : "${PREFIX_URL:=$(apptainer exec "$SIF" printenv PREFIX_URL 2>/dev/null || true)}"
 }
 
 apptainer_args() {
@@ -101,7 +102,7 @@ check_db() {
 cmd_dirs() {
   log "Creating host directories"
   umask "$PORTAL_UMASK"
-  mkdir -p "$TETHYS_HOME_HOST/keys" "$PERSIST_HOST"/{static,media,workspaces} "$LOG_HOST"
+  mkdir -p "$TETHYS_HOME_HOST/keys" "$PERSIST_HOST"/{static,media,workspaces/tethysdash} "$LOG_HOST"
 
   if [ -n "$PORTAL_GROUP" ]; then
     getent group "$PORTAL_GROUP" >/dev/null \
@@ -129,13 +130,11 @@ cmd_provision() {
   in_image --writable-tmpfs '/usr/local/bin/publish-static.sh'
   ok "static published"
 
-  if [ -d "$REPO_ROOT/conf/init.d" ]; then
-    for hook in "$REPO_ROOT"/conf/init.d/*.sh; do
-      [ -e "$hook" ] || continue
-      in_image --writable-tmpfs "bash /opt/portal/init.d/$(basename "$hook")"
-      ok "hook $(basename "$hook")"
-    done
-  fi
+  local hook
+  for hook in $(apptainer exec "$SIF" bash -lc 'ls /opt/portal/init.d/*.sh 2>/dev/null' || true); do
+    in_image --writable-tmpfs "bash $hook"
+    ok "hook $(basename "$hook")"
+  done
 }
 
 cmd_serve() {
