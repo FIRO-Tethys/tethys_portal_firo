@@ -40,7 +40,7 @@ docker compose up -d
 
 ## Deploying (production)
 
-The scripts under `apptainer/` are development tooling. Production is four steps.
+The scripts under `apptainer/` are development tooling. Production is five steps.
 
 **1. Build**
 
@@ -52,7 +52,23 @@ Apptainer stages the build in `APPTAINER_TMPDIR`, which defaults to `/tmp`. This
 image needs roughly 15G of scratch, so set it to a filesystem with room or the
 build fails at the squashfs step after everything else has succeeded.
 
-**2. Provision** (once per release; the portal need not be running)
+**2. Create the bind directories**
+
+```bash
+mkdir -p <run>/portal/keys <run>/persist/{static,media,workspaces/tethysdash} <run>/log
+```
+
+Three binds: `<run>/portal` is `TETHYS_HOME` (the rendered config), `<run>/persist`
+is `TETHYS_PERSIST` (static, media, workspaces), `<run>/log` is the portal log.
+
+If you are replacing an existing deployment, this is the only step that carries
+anything over. **Move the existing media directory in as `<run>/persist/media`**
+and it is reused as it is — media is the one thing here that cannot be
+regenerated. Everything else takes care of itself: the databases are reused
+untouched and nothing migrates them, static is rebuilt by step 3, and the portal
+config is authored once in `conf/portal_config.yml` and baked into the image.
+
+**3. Provision** (once per release; the portal need not be running)
 
 ```bash
 apptainer exec -B <run>/portal:/home/tethys/portal -B <run>/persist:/home/tethys/persist \
@@ -68,7 +84,7 @@ apptainer exec --writable-tmpfs -B <run>/portal:/home/tethys/portal \
 package directory, which a SIF makes read-only. `CREATE_SUPERUSER=false` keeps
 provisioning from adding an `admin` account to an existing portal.
 
-**3. Serve**
+**4. Serve**
 
 ```bash
 apptainer instance start -B <run>/portal:/home/tethys/portal \
@@ -83,7 +99,7 @@ in an async worker.
 No `--fakeroot` and no `--writable-tmpfs`. The container runs as the invoking
 user, so a role account can own and run it with no image change.
 
-**4. Serve static and media from the web server**
+**5. Serve static and media from the web server**
 
 The portal does not serve them. Point the web server at the directories from
 step 2 and exclude them from the proxy pass, or every asset is forwarded to the
