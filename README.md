@@ -207,9 +207,19 @@ apptainer exec instance://firo_portal tethys settings \
 Edit the host file and restart; no image change:
 
 ```bash
-apptainer instance start -B /srv/firo/config:/hostconfig \
+apptainer instance start -B /srv/firo/config:/hostconfig:ro \
   --env PORTAL_CONFIG_SRC=/hostconfig/portal_config.yml ... firo-portal.sif firo_portal
 ```
+
+The host file must be a **complete** `portal_config.yml`, not a fragment of overrides:
+`portal-config.sh` copies it over the baked one, so anything absent from it is simply gone.
+Start from `conf/portal_config.yml` and edit that copy. A partial file does not fail
+loudly — dropping `PREFIX_URL` moves the whole portal from `/firo_apps/` to `/`, so the
+proxy returns 404 for every path while the container reports a healthy start, and dropping
+`TETHYS_PORTAL_CONFIG` silently loses `STATIC_ROOT` and `MEDIA_ROOT`. Keep `PREFIX_URL`
+matching the image: it is compiled into the React bundle at build time and cannot be
+changed from config alone. The database block is the one exception that survives omission,
+because the DB connection and secrets are injected from the environment afterwards.
 
 **Permanently** — edit `conf/portal_config.yml` and rebuild with
 `apptainer/dev/scripts/build_image.sh`.
