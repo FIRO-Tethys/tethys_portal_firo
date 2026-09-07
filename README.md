@@ -40,9 +40,9 @@ docker compose up -d
 
 ## Deploying (production)
 
-The scripts under `apptainer/` are development tooling. Production is five steps.
+The scripts under `apptainer/` are development tooling. Production is six steps.
 
-**1. Build**
+**1. Get the image** — build it, or pull one CI already built.
 
 ```bash
 apptainer build --fakeroot --fix-perms firo-portal.sif firo_portal.def
@@ -51,6 +51,43 @@ apptainer build --fakeroot --fix-perms firo-portal.sif firo_portal.def
 Apptainer stages the build in `APPTAINER_TMPDIR`, which defaults to `/tmp`. This
 image needs roughly 15G of scratch, so set it to a filesystem with room or the
 build fails at the squashfs step after everything else has succeeded.
+
+Pulling avoids that entirely. CI publishes to GHCR: pushing a tag runs
+`apptainer_tag_publish.yml`, and pushing a `.def` change to `main` runs
+`apptainer_dev_publish.yml`.
+
+```bash
+echo "$GITHUB_TOKEN" | apptainer registry login -u <user> --password-stdin oras://ghcr.io
+apptainer pull firo-portal.sif \
+  oras://ghcr.io/firo-tethys/tethys-portal-firo-apptainer:<tag>-x86
+apptainer verify firo-portal.sif
+```
+
+Tagged builds are signed before they are pushed, so `apptainer verify` can confirm
+the image is the artifact CI produced rather than something substituted in transit
+— worth running, since a pulled image is the one case where you did not build what
+you are about to run. `verify` needs the corresponding public key: the workflow does
+not publish it to a keyserver, so import it once with `apptainer key import`, or
+treat a "no public key" result as unverified rather than as a failure.
+Untagged builds from `main` are not signed and are tagged `<sha7>-x86-x86` (the
+suffix is applied twice), so prefer a tagged release for anything but testing.
+
+A pulled image does not have to be built by the account that runs it. Apptainer
+runs the container as whoever invokes it and ignores any user baked into the image,
+and the definition ends with `chmod -R a+rX` over everything the portal needs, so
+the image *contents* are readable whatever uid you run as. CI builds as root and a
+local `--fakeroot` build does not; neither changes that.
+
+One thing to check before committing to a role account: `/home/tethys` is mode
+`0700` owned by uid 1000 in the base image, and it is the parent of all three bind
+targets. A `0700` parent blocks path traversal for any other uid, so a role account
+that is not uid 1000 may not be able to reach its own bind mounts. Confirm it under
+the real account before cutover rather than assuming:
+
+```bash
+apptainer exec -B <run>/persist:/home/tethys/persist firo-portal.sif \
+  ls /home/tethys/persist
+```
 
 **2. Create the bind directories**
 
@@ -68,7 +105,35 @@ regenerated. Everything else takes care of itself: the databases are reused
 untouched and nothing migrates them, static is rebuilt by step 3, and the portal
 config is authored once in `conf/portal_config.yml` and baked into the image.
 
-**3. Provision** (once per release; the portal need not be running)
+**3. Write `portal.env` and make sure the database is reachable**
+
+Every command below passes `--env-file portal.env`. Create it first — nothing in
+the image or the repo generates it:
+
+```bash
+TETHYS_SECRET_KEY=<50+ random characters, keep it stable across restarts>
+TETHYS_DB_ENGINE=django.db.backends.postgresql
+TETHYS_DB_HOST=127.0.0.1
+TETHYS_DB_PORT=5432
+TETHYS_DB_NAME=tethys_platform
+TETHYS_DB_USERNAME=tethys_default
+TETHYS_DB_PASSWORD=<the database password>
+TETHYS_PORT=8000
+PREFIX_URL=/firo_apps
+PORTAL_ALLOWED_HOSTS=portal.example.org
+CREATE_SUPERUSER=false
+ASGI_PROCESSES=4
+```
+
+Keep this file outside any directory you might delete, and readable only by the
+account that runs the portal — it holds the secret key and the database password.
+Changing `TETHYS_SECRET_KEY` later invalidates every existing session.
+
+Postgres (with PostGIS) and Redis must already be running and reachable before the
+next step; see *Services the portal depends on*. Step 4 has no readiness wait, so
+`tethys db migrate` fails outright if the database is not up.
+
+**4. Provision** (once per release; the portal need not be running)
 
 ```bash
 apptainer exec -B <run>/portal:/home/tethys/portal -B <run>/persist:/home/tethys/persist \
@@ -81,16 +146,25 @@ apptainer exec --writable-tmpfs -B <run>/portal:/home/tethys/portal \
 ```
 
 `--writable-tmpfs` is required for the static step only: it writes into the
-package directory, which a SIF makes read-only. `CREATE_SUPERUSER=false` keeps
-provisioning from adding an `admin` account to an existing portal.
+package directory, which a SIF makes read-only. `CREATE_SUPERUSER=false` in `portal.env` keeps the
+image's own `provision.sh` from adding an `admin` account to an existing portal; the
+two commands above never call that script, so the setting matters at `instance
+start`, not here.
 
-**4. Serve**
+**5. Serve**
 
 ```bash
 apptainer instance start -B <run>/portal:/home/tethys/portal \
   -B <run>/persist:/home/tethys/persist -B <run>/log:/home/tethys/log \
-  --env-file portal.env --env SERVER=gunicorn firo-portal.sif firo_portal
+  --env-file portal.env --env SERVER=gunicorn \
+  --env GUNICORN_CMD_ARGS="--control-socket /home/tethys/portal/gunicorn.ctl" \
+  firo-portal.sif firo_portal
 ```
+
+`GUNICORN_CMD_ARGS` pins gunicorn's control socket to a known path. Without it the
+socket lands under `$XDG_RUNTIME_DIR` or `$HOME`, which is per user rather than per
+instance, and every `gunicornc` command in *Applying a config change without
+downtime* is written against the pinned path.
 
 `SERVER=gunicorn` is required. Plain uvicorn cannot start this portal: Tethys
 queries the database in `AppConfig.ready()`, which raises `SynchronousOnlyOperation`
@@ -99,7 +173,7 @@ in an async worker.
 No `--fakeroot` and no `--writable-tmpfs`. The container runs as the invoking
 user, so a role account can own and run it with no image change.
 
-**5. Serve static and media from the web server**
+**6. Serve static and media from the web server**
 
 The portal does not serve them. Point the web server at the directories from
 step 2 and exclude them from the proxy pass, or every asset is forwarded to the
@@ -121,12 +195,15 @@ fail, so check it explicitly rather than inferring it from the pages loading.
 For a throwaway local stack:
 
 ```bash
-docker run --name=firo_postgis --env=POSTGRES_PASSWORD=pass -p 5437:5432 -d postgis/postgis:17-3.5
+docker run --name=firo_postgis --env=POSTGRES_PASSWORD=pass -p 5432:5432 -d postgis/postgis:17-3.5
 docker run --name=firo_redis -p 6379:6379 -d redis:7
 ```
 
-Point `TETHYS_DB_*` and `CHANNEL_LAYERS.default.CONFIG.hosts` in
-`portal_config.yml` at whatever hosts and ports they actually run on.
+Set the `TETHYS_DB_*` variables in `portal.env` to wherever Postgres actually runs
+— they are environment variables read at startup, not keys in `portal_config.yml`,
+and `TETHYS_DB_PASSWORD` is injected over whatever the YAML says. Redis is the other
+way round: point `settings.CHANNEL_LAYERS.default.CONFIG.hosts` in
+`portal_config.yml` at its host and port.
 
 ### File ownership
 
@@ -244,9 +321,9 @@ nothing, so the stop is required.
 
 Do not try to shortcut that by running `portal-config.sh` against the live
 instance. It copies the source over the rendered config *before* it injects
-secrets, and `apptainer exec` inherits neither the venv nor the instance's
-`--env-file`, so it fails at `TETHYS_SECRET_KEY is required` having already
-overwritten the working config - leaving a portal that serves until the next
+secrets, and an `apptainer exec` does not inherit the instance's `--env-file`, so it
+fails at `TETHYS_SECRET_KEY is required` having already overwritten the working
+config - leaving a portal that serves until the next
 restart and then cannot start. If that happens, stop and start the instance and
 it re-renders correctly.
 
@@ -271,7 +348,7 @@ by reloading the workers rather than restarting the container.
 
 A reload re-reads the **rendered** config in `TETHYS_HOME`, so that is the file to edit
 for the change to take effect. Startup overwrites that file from `PORTAL_CONFIG_SRC`,
-so make the same edit there as well or the change lasts only until the next restart —
+so make the same edit there as well or the change lasts only until the next restart -
 step 1b below. If `PORTAL_CONFIG_SRC` is still the baked `/config/portal_config.yml`
 inside the image there is nothing to edit for durability: bind a host file first (see
 *Portal configuration* above), or treat the change as temporary until the next rebuild.
@@ -283,9 +360,12 @@ vi <run>/portal/portal_config.yml
 # 1b. make the same edit in PORTAL_CONFIG_SRC, or the next restart reverts it
 vi /srv/firo/config/portal_config.yml
 
-# 2. check it parses before signalling anything
+# 2. check BOTH files parse before signalling anything - a typo in the source
+#    would not surface until the next restart, when it is copied in wholesale
 apptainer exec instance://firo_portal /opt/conda/envs/tethys/bin/python \
   -c 'import yaml; yaml.safe_load(open("/home/tethys/portal/portal_config.yml"))'
+python3 -c 'import yaml,sys; yaml.safe_load(open(sys.argv[1]))' \
+  /srv/firo/config/portal_config.yml
 
 # 3. record the current worker PIDs
 apptainer exec instance://firo_portal /opt/conda/envs/tethys/bin/gunicornc \

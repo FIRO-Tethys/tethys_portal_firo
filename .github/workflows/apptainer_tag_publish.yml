@@ -74,21 +74,6 @@ jobs:
         run: |
           sudo -E apptainer build container.sif firo_portal.def
 
-      - name: Login and Push to GHCR (ORAS)
-        env:
-          GH_USER: ${{ secrets.GHCR_USERNAME }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-          IMAGE_PATH="$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]' | sed 's/_/-/g')-apptainer"
-          REF="oras://ghcr.io/${IMAGE_PATH}:${{ github.ref_name }}-x86"
-
-          echo "${GH_TOKEN}" | apptainer registry login -u "${GH_USER}" --password-stdin oras://ghcr.io \
-            || echo "${GH_TOKEN}" | apptainer remote login -u "${GH_USER}" --password-stdin oras://ghcr.io
-
-          apptainer push container.sif "$REF"
-          echo "Pushed: $REF"
-
       - name: Import signing key
         env:
           KEY_B64: ${{ secrets.SIGNING_KEY }}
@@ -106,6 +91,21 @@ jobs:
         run: |
           set -euo pipefail
           echo "$KEY_PASS" | apptainer sign --keyidx 0 container.sif
+
+      - name: Login and Push to GHCR (ORAS)
+        env:
+          GH_USER: ${{ secrets.GHCR_USERNAME }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          IMAGE_PATH="$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]' | sed 's/_/-/g')-apptainer"
+          REF="oras://ghcr.io/${IMAGE_PATH}:${{ github.ref_name }}-x86"
+
+          echo "${GH_TOKEN}" | apptainer registry login -u "${GH_USER}" --password-stdin oras://ghcr.io \
+            || echo "${GH_TOKEN}" | apptainer remote login -u "${GH_USER}" --password-stdin oras://ghcr.io
+
+          apptainer push container.sif "$REF"
+          echo "Pushed: $REF"
 
       - name: Push signed image to the Sylabs library
         env:
