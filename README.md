@@ -76,7 +76,7 @@ singularity instance start --writable-tmpfs <path_to_where_you_want_to_define_yo
 
 e.g
 ```bash
-singularity instance start =--writable-tmpfs ../firo-portal-singularity_latest.sif firo_portal
+singularity instance start --writable-tmpfs ../firo-portal-singularity_latest.sif firo_portal
 ```
 
 ### Customization
@@ -117,7 +117,7 @@ For example
 ```bash
 mkdir -p /tmp/logs/tethys
 touch /tmp/logs/tethys/salt.log
-singularity instance start =--writable-tmpfs -B /tmp/logs/tethys/salt.log:/var/log/tethys/salt.log ../firo-portal-singularity_latest.sif firo_portal
+singularity instance start --writable-tmpfs -B /tmp/logs/tethys/salt.log:/var/log/tethys/salt.log ../firo-portal-singularity_latest.sif firo_portal
 ```
 
 On another terminal, you can use `tail` the logs
@@ -196,7 +196,8 @@ Settings live in `conf/portal_config.yml`, which is baked to `/config/portal_con
 in the image. Three ways to change one, in increasing order of permanence:
 
 **While the container runs** — takes effect on the next reload (see *Applying a config
-change without downtime* below):
+change without downtime* below). Note this writes into the live copy, which is
+overwritten from `PORTAL_CONFIG_SRC` on every restart, so the change is not durable:
 
 ```bash
 apptainer exec instance://firo_portal tethys settings \
@@ -238,22 +239,31 @@ vi /srv/firo/portal/portal_config.yml
 apptainer exec instance://firo_portal /opt/conda/envs/tethys/bin/python \
   -c 'import yaml; yaml.safe_load(open("/home/tethys/portal/portal_config.yml"))'
 
-# 3. reload
-apptainer exec instance://firo_portal /opt/conda/envs/tethys/bin/gunicornc -c "reload"
+# 3. record the current worker PIDs
+apptainer exec instance://firo_portal /opt/conda/envs/tethys/bin/gunicornc \
+  -s $TETHYS_HOME/gunicorn.ctl -c "show workers"
 
-# 4. verify the portal is actually answering
+# 4. reload
+apptainer exec instance://firo_portal /opt/conda/envs/tethys/bin/gunicornc \
+  -s $TETHYS_HOME/gunicorn.ctl -c "reload"
+
+# 5. wait until no PID from step 3 remains, then verify HTTP
+apptainer exec instance://firo_portal /opt/conda/envs/tethys/bin/gunicornc \
+  -s $TETHYS_HOME/gunicorn.ctl -c "show workers"
 curl -so /dev/null -w '%{http_code}\n' http://localhost/firo_apps/
 ```
 
-**Step 4 is required.** `gunicornc -c "reload"` returns `{"status": "reloading"}` and
-returns immediately; it does not wait and does not report whether the new workers came
-up. Gunicorn also keeps the old worker serving until the new one is ready, so a check run
-too early reads the *old* worker and returns 200 for a portal that is about to be down.
-Confirm the new workers replaced the old ones before trusting the result:
+**Step 5 is required, and step 3 is what makes it meaningful.** `gunicornc -c "reload"` returns
+`{"status": "reloading"}` immediately; it does not wait and does not report whether the new
+workers came up. Gunicorn also keeps the old worker serving until the new one is ready, so
+an HTTP check on its own reads the *old* worker and returns 200 for a portal that is about
+to be down. Record the worker PIDs **before** reloading, confirm every one of them has been
+replaced, and only then check HTTP.
 
-```bash
-apptainer exec instance://firo_portal /opt/conda/envs/tethys/bin/gunicornc -c "show workers"
-```
+In the dev stack `apptainer/dev/scripts/run_portal.sh reload` performs exactly this
+sequence — validate, record PIDs, reload, wait for full replacement, then verify HTTP — and
+fails loudly if the workers are never replaced or the portal stops answering. The manual
+steps above are the same procedure for a host that does not have that script.
 
 Note that a worker's `BOOTED` column reads `no` on a healthy, serving worker, so it is not
 a health signal. Use the HTTP check.
@@ -277,10 +287,13 @@ there is no gunicorn master to reload at all. The same applies to anything in th
 
 **Two caveats.** Edits to the live file are overwritten on every start, because
 `portal-config.sh` copies `$PORTAL_CONFIG_SRC` over it; point `PORTAL_CONFIG_SRC` at a
-file on a host bind (above) to make them durable. And the control socket defaults to
-`$HOME/.gunicorn/gunicorn.ctl`, so it depends on the home directory of the account running
-the container; pin it with `GUNICORN_CMD_ARGS="--control-socket /path/to/gunicorn.ctl"` if
-that account's home is not stable.
+file on a host bind (above) to make them durable. And the control socket must be pinned per
+instance. Gunicorn's default is `$XDG_RUNTIME_DIR/gunicorn.ctl` when that variable is set
+and is a directory, otherwise `$HOME/.gunicorn/gunicorn.ctl` — either way it is **per user,
+not per instance**, so a second portal started by the same account overwrites the first
+one's socket and deletes it on exit, leaving the first portal serving but permanently
+unable to reload. Pass `GUNICORN_CMD_ARGS="--control-socket $TETHYS_HOME/gunicorn.ctl"` at
+start and `gunicornc -s` that same path; `run_portal.sh` does this for you.
 
 Static and media paths (`STATIC_ROOT`, `MEDIA_ROOT`, `TETHYS_WORKSPACES_ROOT`) are set
 under `settings.TETHYS_PORTAL_CONFIG`. Serve those directories from the web server;

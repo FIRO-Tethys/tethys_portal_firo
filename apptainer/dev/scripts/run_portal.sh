@@ -16,6 +16,8 @@ PORTAL_GROUP="${PORTAL_GROUP:-}"
 PORTAL_UMASK="${PORTAL_UMASK:-0022}"
 PY=/opt/conda/envs/tethys/bin/python
 GUNICORNC=/opt/conda/envs/tethys/bin/gunicornc
+CTL_SOCKET=/home/tethys/portal/gunicorn.ctl
+CTL_SOCKET_HOST="$TETHYS_HOME_HOST/gunicorn.ctl"
 
 log() { printf '\n\033[1;34m==> %s\033[0m\n' "$*"; }
 ok()  { printf '\033[1;32m  ok  %s\033[0m\n' "$*"; }
@@ -57,6 +59,7 @@ apptainer_args() {
     -B "$LOG_HOST:/home/tethys/log"
     --env "SERVER=${SERVER:-gunicorn}"
     --env CREATE_SUPERUSER=false
+    --env "GUNICORN_CMD_ARGS=--control-socket $CTL_SOCKET"
     --env-file "$ENV_FILE"
   )
 }
@@ -146,7 +149,7 @@ cmd_serve() {
     echo "           AppConfig.ready(). Use gunicorn unless that is fixed upstream." >&2
   fi
 
-  if apptainer instance list 2>/dev/null | awk '{print $1}' | grep -qx "$INSTANCE"; then
+  if apptainer instance list 2>/dev/null | awk -v n="$INSTANCE" '$1==n{found=1} END{exit !found}'; then
     apptainer instance stop "$INSTANCE" >/dev/null 2>&1 || true
     printf '  waiting for ports to clear'
     for _ in $(seq 1 30); do
@@ -209,9 +212,12 @@ cmd_destroy() {
   ok "stopped $INSTANCE and the proxy; deleted $RUN_ROOT"
 }
 
-portal_workers() {
-  apptainer exec "instance://$INSTANCE" "$GUNICORNC" -c "show workers" -j 2>/dev/null \
-    | grep -o '"pid":[[:space:]]*[0-9]*' | grep -oE '[0-9]+$' | sort -n | tr '\n' ' ' || true
+gunicornc_workers() {
+  apptainer exec "instance://$INSTANCE" "$GUNICORNC" -s "$CTL_SOCKET" -c "show workers" -j 2>/dev/null
+}
+
+pids_of() {
+  grep -oE '"pid":[[:space:]]*[0-9]+' | grep -oE '[0-9]+$' | sort -n | tr '\n' ' ' || true
 }
 
 cmd_reload() {
@@ -219,32 +225,38 @@ cmd_reload() {
   apptainer instance list 2>/dev/null | awk -v n="$INSTANCE" '$1==n{found=1} END{exit !found}' \
     || die "instance $INSTANCE is not running"
 
-  apptainer exec "instance://$INSTANCE" "$PY" -c \
-    'import yaml; yaml.safe_load(open("/home/tethys/portal/portal_config.yml"))' 2>/dev/null \
+  local dbg raw before after i overlap w replaced=0
+  dbg=$(apptainer exec "instance://$INSTANCE" "$PY" -c \
+    'import yaml; c = yaml.safe_load(open("/home/tethys/portal/portal_config.yml")) or {}; print(str((c.get("settings") or {}).get("DEBUG", False)).lower())' 2>/dev/null) \
     || die "portal_config.yml is not valid YAML; refusing to reload"
+  [ "$dbg" = "true" ] \
+    && die "DEBUG is true, so the portal runs under runserver, which has no control socket; restart instead of reloading"
 
-  local before after i overlap w
-  before=" $(portal_workers)"
-  [ "$before" = " " ] \
-    && die "no gunicorn workers under $INSTANCE; DEBUG serves with runserver, which cannot reload"
+  raw=$(gunicornc_workers) \
+    || die "no gunicorn control socket at $CTL_SOCKET_HOST; the master may have died -- check $LOG_HOST"
+  before=" $(printf '%s' "$raw" | pids_of)"
 
-  apptainer exec "instance://$INSTANCE" "$GUNICORNC" -c "reload" >/dev/null 2>&1 \
-    || die "gunicornc did not accept reload; check the control socket under \$HOME/.gunicorn"
+  apptainer exec "instance://$INSTANCE" "$GUNICORNC" -s "$CTL_SOCKET" -c "reload" >/dev/null 2>&1 \
+    || die "gunicornc did not accept reload at $CTL_SOCKET_HOST"
 
-  for i in $(seq 1 30); do
-    after=" $(portal_workers)"
+  for i in $(seq 1 45); do
+    raw=$(gunicornc_workers) \
+      || die "the gunicorn master stopped responding during reload; the portal is DOWN. Restore portal_config.yml, then: $0 stop && $0 serve"
+    after=" $(printf '%s' "$raw" | pids_of)"
     if [ "$after" != " " ]; then
       overlap=0
       for w in $after; do case "$before" in *" $w "*) overlap=1 ;; esac; done
-      [ "$overlap" = 0 ] && break
+      [ "$overlap" = 0 ] && { replaced=1; break; }
     fi
     sleep 1
   done
+  [ "$replaced" = 1 ] \
+    || die "workers were not replaced within 45s; the reload did not take effect and the portal is still serving the old config"
 
   local url="http://localhost:${TETHYS_PORT}${PREFIX_URL:-}/"
   wait_http "$url" "portal" \
-    && ok "reloaded $INSTANCE (workers${after:-} )" \
-    || die "portal is DOWN after reload. Restore portal_config.yml, then: $0 stop && $0 serve"
+    && ok "reloaded $INSTANCE (workers${after} )" \
+    || die "the new worker is not serving; the portal is DOWN. Restore portal_config.yml, then: $0 stop && $0 serve"
 }
 
 cmd_stop() {
