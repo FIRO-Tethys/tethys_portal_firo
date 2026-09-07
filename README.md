@@ -95,8 +95,23 @@ is shadowed by a host directory the role account owns:
 `<run>` already has `portal/`, `persist/` and `log/` in it from step 2, which is
 exactly the layout the image expects, so this one bind replaces all three. Verified:
 `/home/tethys` becomes the host directory, all three paths resolve, and the portal
-serves normally. Use separate binds only if the directories must live on different
-filesystems, and then run as uid 1000 or widen `/home/tethys` in the image.
+serves normally.
+
+Keeping `persist/` on its own filesystem still works, and does not force you back to
+uid 1000. Either shape is fine, both verified:
+
+```bash
+# the NFS/SAN volume is mounted at <run>/persist on the host; -B is recursive,
+# so the nested mount shows through the run-root bind
+-B <run>:/home/tethys
+
+# or stack a second bind over the first; the later one wins for that path
+-B <run>:/home/tethys -B /mnt/bigvol/persist:/home/tethys/persist
+```
+
+What matters is only that something the role account can traverse ends up at
+`/home/tethys`. Binding the three directories individually *underneath* the image's
+own `/home/tethys` is the one shape that does not work for a uid other than 1000.
 
 **2. Create the bind directories**
 
