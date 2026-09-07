@@ -1,0 +1,128 @@
+name: Apptainer Build and Publish Tag
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Update submodules recursively
+        run: |
+          git submodule sync --recursive
+          git submodule update --init --recursive
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.1'
+
+      - name: Install Build Dependencies
+        run: |
+          sudo apt-get update && sudo apt-get install -y \
+            build-essential \
+            libssl-dev \
+            uuid-dev \
+            libgpgme11-dev \
+            libseccomp-dev \
+            pkg-config \
+            autoconf \
+            automake \
+            libtool \
+            squashfs-tools \
+            squashfs-tools-ng \
+            zlib1g-dev \
+            libsubid-dev \
+            cryptsetup \
+            git \
+            wget \
+            fuse \
+            libfuse-dev \
+            uidmap \
+            runc \
+            fuse2fs
+
+      - name: Install Apptainer
+        env:
+          APPTAINER_VERSION: 1.3.5
+          GOPATH: /tmp/go
+        run: |
+          set -euo pipefail
+          mkdir -p "$GOPATH"
+          sudo mkdir -p /usr/local/var/apptainer/mnt
+          wget -qO- https://github.com/apptainer/apptainer/releases/download/v${APPTAINER_VERSION}/apptainer-${APPTAINER_VERSION}.tar.gz | tar xz
+          cd apptainer-${APPTAINER_VERSION}
+          ./mconfig -p /usr/local
+          make -C builddir
+          sudo make -C builddir install
+          apptainer --version
+
+      - name: Build Container
+        run: |
+          sudo -E apptainer build container.sif firo_portal.def
+
+      - name: Login and Push to GHCR (ORAS)
+        env:
+          GH_USER: ${{ secrets.GHCR_USERNAME }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          IMAGE_PATH="$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]' | sed 's/_/-/g')-apptainer"
+          REF="oras://ghcr.io/${IMAGE_PATH}:${{ github.ref_name }}-x86"
+
+          echo "${GH_TOKEN}" | apptainer registry login -u "${GH_USER}" --password-stdin oras://ghcr.io \
+            || echo "${GH_TOKEN}" | apptainer remote login -u "${GH_USER}" --password-stdin oras://ghcr.io
+
+          apptainer push container.sif "$REF"
+          echo "Pushed: $REF"
+
+      - name: Import signing key
+        env:
+          KEY_B64: ${{ secrets.SIGNING_KEY }}
+          KEY_PASS: ${{ secrets.KEY_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+          echo "$KEY_B64" | base64 -d > private.asc
+          head -n 1 private.asc
+          echo "$KEY_PASS" | apptainer key import private.asc
+          apptainer key list
+
+      - name: Sign the image
+        env:
+          KEY_PASS: ${{ secrets.KEY_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+          echo "$KEY_PASS" | apptainer sign --keyidx 0 container.sif
+
+      - name: Push signed image to the Sylabs library
+        env:
+          SYLABS_AUTH_TOKEN: ${{ secrets.SYLABS_AUTH_TOKEN }}
+          SYLABS_REPO: ${{ secrets.SYLABS_REPO }}
+        run: |
+          set -euo pipefail
+          TOKEN_FILE=$(mktemp)
+          echo "$SYLABS_AUTH_TOKEN" > "$TOKEN_FILE"
+          REPO_NAME="$(basename "$GITHUB_REPOSITORY")"
+          TAG="${{ github.ref_name }}-x86"
+
+          apptainer remote login --tokenfile "$TOKEN_FILE" SylabsCloud
+
+          if apptainer search "${REPO_NAME}" | grep -q "${TAG}"; then
+            apptainer delete --force "library://${SYLABS_REPO}/${REPO_NAME}:${TAG}"
+          fi
+
+          apptainer push container.sif "library://${SYLABS_REPO}/${REPO_NAME}:${TAG}"
+          rm -f "$TOKEN_FILE"
