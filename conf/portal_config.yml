@@ -1,0 +1,66 @@
+version: 2.0
+name: firo_portal
+
+apps: {}
+
+settings:
+  DEBUG: false
+
+  ALLOWED_HOSTS:
+    - localhost
+    - 127.0.0.1
+
+  CSRF_TRUSTED_ORIGINS:
+    - http://localhost
+    - http://127.0.0.1
+
+  PREFIX_URL: /firo_apps
+
+  DATABASES:
+    default:
+      ENGINE: django.db.backends.postgresql
+      NAME: tethys_platform
+      USER: tethys_default
+      HOST: localhost
+      PORT: 5432
+      CONN_MAX_AGE: 0
+
+  CHANNEL_LAYERS:
+    default:
+      BACKEND: channels_redis.core.RedisChannelLayer
+      CONFIG:
+        hosts:
+          - host: 127.0.0.1
+            port: 6379
+
+  ANALYTICS_CONFIG: {}
+  AUTHENTICATION_BACKENDS: []
+  CAPTCHA_CONFIG:
+    RECAPTCHA_PRIVATE_KEY: ''
+    RECAPTCHA_PUBLIC_KEY: ''
+  INSTALLED_APPS: []
+  OAUTH_CONFIG: {}
+  RESOURCE_QUOTA_HANDLERS: []
+
+  SESSION_CONFIG:
+    SECURITY_WARN_AFTER: 1500
+    SECURITY_EXPIRE_AFTER: 1800
+
+  TETHYS_PORTAL_CONFIG:
+    ENABLE_OPEN_PORTAL: true
+    ENABLE_OPEN_SIGNUP: true
+    BYPASS_TETHYS_HOME_PAGE: false
+    STATIC_ROOT: /home/tethys/persist/static
+    MEDIA_ROOT: /home/tethys/persist/media
+    TETHYS_WORKSPACES_ROOT: /home/tethys/persist/workspaces
+    MEDIA_URL: /media/
+
+  SECURE_PROXY_SSL_HEADER:
+    - HTTP_X_FORWARDED_PROTO
+    - https
+
+site_settings:
+  GENERAL_SETTINGS: {}
+  HOME_PAGE: {}
+  CUSTOM_TEMPLATES: {}
+  CUSTOM_STYLES: {}

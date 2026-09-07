@@ -1,8 +1,18 @@
-body{
-    background-color: #eaeaea !important;
-    color: #1e6b8b;
-    font-size: 10pt;    
-}
+/*
+  CW3E / TwentySixteen styles bundle
+  Converted from the provided HTML <link> + inline <style> into a single CSS file.
+
+  Notes:
+  - External stylesheets are pulled in via @import so this can be used from React.
+  - The original IE conditional stylesheets are not included (modern browsers only).
+*/
+
+@import url("https://cw3e.ucsd.edu/wp-content/themes/twentysixteen-child/style.css?ver=1.0.0");
+@import url("https://cw3e.ucsd.edu/wp-content/themes/twentysixteen/fonts/merriweather-plus-montserrat-plus-inconsolata.css?ver=20230328");
+@import url("https://cw3e.ucsd.edu/wp-content/themes/twentysixteen/genericons/genericons.css?ver=20201208");
+@import url("https://cw3e.ucsd.edu/wp-content/themes/twentysixteen-child/style.css?ver=20230328");
+@import url("https://cw3e.ucsd.edu/wp-content/themes/twentysixteen/css/blocks.css?ver=20230206");
+@import url("https://cw3e.ucsd.edu?display_custom_css=css&ver=6.8.1");
 
 /* Custom Page Background Color */
 .site {
@@ -54,7 +64,6 @@ input[type="submit"][disabled]:focus,
 	}
 }
 
-
 /* Custom Link Color */
 .menu-toggle:hover,
 .menu-toggle:focus,
@@ -84,8 +93,8 @@ a,
 .comment-reply-link:focus,
 .required,
 .site-info a:hover,
-.site-info a:focus {
-	color: #fd9b04;
+.site-info {
+	color: #1e6b8b;
 }
 
 mark,
@@ -104,7 +113,7 @@ input[type="submit"]:focus,
 .pagination .next:focus,
 .widget_calendar tbody a,
 .page-links a:hover,
-.page-links a:focus {
+.page-links{
 	background-color: #1e6b8b;
 }
 
@@ -128,37 +137,12 @@ textarea:focus,
 	border-color: #1e6b8b;
 }
 
-/* ✅ ADD THIS: make li hover behave like a hover by expanding <a> */
-@media screen and (min-width: 56.875em) {
-	/* make the link fill the whole li so hovering the li hits the link area */
-	#masthead .main-navigation li > a {
-		display: block;
-		width: 100%;
-	}
-
-	/* same hover behavior whether you're over the li or the link */
-	#masthead .main-navigation li:hover > a,
-	#masthead .main-navigation li:focus-within > a,
-	#masthead .main-navigation li.focus > a {
-		color: #fd9b04;
-	}
-
-	/* optional: if you want the whole item to “highlight” like a button */
-	#masthead .main-navigation li:hover,
-	#masthead .main-navigation li:focus-within,
-	#masthead .main-navigation li.focus {
-		background-color: #1e6b8b;
-	}
-}
-
-/* (You can keep this, but it’s now redundant/overridden by the block above) */
 @media screen and (min-width: 56.875em) {
 	.main-navigation li:hover > a,
 	.main-navigation li.focus > a {
-		color: #1e6b8b;
+		color: #fd9b04;
 	}
 }
-
 
 /* Custom Main Text Color */
 body,
@@ -178,7 +162,7 @@ blockquote small,
 .comment-author,
 .comment-reply-title small a:hover,
 .comment-reply-title small a:focus {
-	color: #000000
+	color: #000000;
 }
 
 blockquote,
@@ -259,29 +243,33 @@ textarea,
 .no-comments,
 .widecolumn .mu_register .mu_alert {
 	border-color: #000000; /* Fallback for IE7 and IE8 */
-	border-color: rgba( 0, 0, 0, 0.2);
+	border-color: rgba(0, 0, 0, 0.2);
 }
 
 hr,
 code {
 	background-color: #000000; /* Fallback for IE7 and IE8 */
-	background-color: rgba( 0, 0, 0, 0.2);
+	background-color: rgba(0, 0, 0, 0.2);
 }
 
 @media screen and (min-width: 56.875em) {
 	.main-navigation ul ul,
 	.main-navigation ul ul li {
-		border-color: rgba( 0, 0, 0, 0.2);
+		border-color: rgba(0, 0, 0, 0.2);
 	}
 
 	.main-navigation ul ul:before {
-		border-top-color: rgba( 0, 0, 0, 0.2);
-		border-bottom-color: rgba( 0, 0, 0, 0.2);
+		border-top-color: rgba(0, 0, 0, 0.2);
+		border-bottom-color: rgba(0, 0, 0, 0.2);
 	}
 }
 
-
 /* Custom Secondary Text Color */
+
+/**
+ * IE8 and earlier will drop any block with CSS3 selectors.
+ * Do not combine these styles with the next block.
+ */
 body:not(.search-results) .entry-summary {
 	color: #5e5e5e;
 }
@@ -326,48 +314,10 @@ a:active,
 .widget_calendar tbody a:focus {
 	background-color: #5e5e5e;
 }
-		
 
-/* MOBILE: use the toggle buttons */
-@media screen and (max-width: 56.875em) {
-	#masthead .main-navigation .sub-menu { display: none; }
-	#masthead .main-navigation li.toggled-on > .sub-menu { display: block; }
-	#masthead .main-navigation ul ul { position: static; width: 100%; }
-}
-
-/* DESKTOP: show submenu on hover/focus like the original theme */
-@media screen and (min-width: 56.875em) {
-	#masthead .main-navigation li:hover > .sub-menu,
-	#masthead .main-navigation li:focus-within > .sub-menu {
-		display: block;
-	}
-}
-
-/* --- Header Compaction --- */
-
-/* Collapse Twenty Sixteen header padding at all breakpoints */
-.site-header,
-#masthead.site-header {
-  padding: 0 4% !important;
-}
-
-.header-image,
-.site-header-menu,
-.site-header-main {
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
-}
-
-/* Constrain header to same max-width as footer for visual congruence */
-#masthead.site-header {
-  max-width: 1320px;
-  margin-left: auto;
-  margin-right: auto;
-  flex-shrink: 0;
-}
-
-/* Tighten nav bar spacing */
-.main-navigation {
-  margin-top: 0;
-  margin-bottom: 0;
-}
+/*
+  Original (HTML-only) conditional stylesheets, intentionally omitted:
+  - twentysixteen/css/ie.css (lt IE10)
+  - twentysixteen/css/ie8.css (lt IE9)
+  - twentysixteen/css/ie7.css (lt IE8)
+*/

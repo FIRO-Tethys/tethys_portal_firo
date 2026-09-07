@@ -1,0 +1,13 @@
+{
+  "name": "firo-cw3e-css",
+  "private": true,
+  "type": "module",
+  "description": "Regenerates the vendored CW3E scoped stylesheet",
+  "scripts": {
+    "build:css": "node make_cw3e_scoped_css.mjs"
+  },
+  "dependencies": {
+    "postcss": "^8.4.47",
+    "postcss-safe-parser": "^7.0.1"
+  }
+}
