@@ -202,13 +202,35 @@ apptainer exec instance://firo_portal tethys settings \
   --set TETHYS_PORTAL_CONFIG.STATIC_ROOT /srv/firo/static
 ```
 
-**Without rebuilding** - bind a config file from the host and point the portal at it.
-Edit the host file and restart; no image change:
+**Without rebuilding** - bind a config file from the host and point the portal at
+it, so the source of truth is a file you can edit instead of the baked one. Add
+these two arguments to the `instance start` in step 4 of *Deploying*, keeping the
+binds and `--env-file` it already has:
 
 ```bash
-apptainer instance start -B /srv/firo/config:/hostconfig:ro \
-  --env PORTAL_CONFIG_SRC=/hostconfig/portal_config.yml ... firo-portal.sif firo_portal
+-B /srv/firo/config:/hostconfig:ro
+--env PORTAL_CONFIG_SRC=/hostconfig/portal_config.yml
 ```
+
+Applying a later edit to that file means a real restart, because the config is
+rendered once at startup:
+
+```bash
+apptainer instance stop firo_portal
+apptainer instance start ...same arguments as step 4... firo-portal.sif firo_portal
+```
+
+`apptainer instance start` is not a restart. Run against a name that is already
+running it refuses with `FATAL: instance <name> already exists` and changes
+nothing, so the stop is required.
+
+Do not try to shortcut that by running `portal-config.sh` against the live
+instance. It copies the source over the rendered config *before* it injects
+secrets, and `apptainer exec` inherits neither the venv nor the instance's
+`--env-file`, so it fails at `TETHYS_SECRET_KEY is required` having already
+overwritten the working config - leaving a portal that serves until the next
+restart and then cannot start. If that happens, stop and start the instance and
+it re-renders correctly.
 
 The host file must be a **complete** `portal_config.yml`, not a fragment of overrides:
 `portal-config.sh` copies it over the baked one, so anything absent from it is simply gone.
