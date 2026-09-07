@@ -238,9 +238,17 @@ cmd_reload() {
   apptainer exec "instance://$INSTANCE" "$GUNICORNC" -s "$CTL_SOCKET" -c "reload" >/dev/null 2>&1 \
     || die "gunicornc did not accept reload at $CTL_SOCKET_HOST"
 
+  local misses=0
   for i in $(seq 1 45); do
-    raw=$(gunicornc_workers) \
-      || die "the gunicorn master stopped responding during reload; the portal is DOWN. Restore portal_config.yml, then: $0 stop && $0 serve"
+    if raw=$(gunicornc_workers); then
+      misses=0
+    else
+      misses=$((misses + 1))
+      [ "$misses" -ge 10 ] \
+        && die "the gunicorn master stopped responding for 10s during reload; the portal is likely DOWN. Restore portal_config.yml, then: $0 stop && $0 serve"
+      sleep 1
+      continue
+    fi
     after=" $(printf '%s' "$raw" | pids_of)"
     if [ "$after" != " " ]; then
       overlap=0
