@@ -42,7 +42,7 @@ docker compose up -d
 
 The scripts under `apptainer/` are development tooling. Production is six steps.
 
-**1. Get the image** — build it, or pull one CI already built.
+**1. Get the image** - build it, or pull one CI already built.
 
 ```bash
 apptainer build --fakeroot --fix-perms firo-portal.sif firo_portal.def
@@ -65,7 +65,7 @@ apptainer verify firo-portal.sif
 
 Tagged builds are signed before they are pushed, so `apptainer verify` can confirm
 the image is the artifact CI produced rather than something substituted in transit
-— worth running, since a pulled image is the one case where you did not build what
+- worth running, since a pulled image is the one case where you did not build what
 you are about to run. `verify` needs the corresponding public key: the workflow does
 not publish it to a keyserver, so import it once with `apptainer key import`, or
 treat a "no public key" result as unverified rather than as a failure.
@@ -78,16 +78,25 @@ and the definition ends with `chmod -R a+rX` over everything the portal needs, s
 the image *contents* are readable whatever uid you run as. CI builds as root and a
 local `--fakeroot` build does not; neither changes that.
 
-One thing to check before committing to a role account: `/home/tethys` is mode
-`0700` owned by uid 1000 in the base image, and it is the parent of all three bind
-targets. A `0700` parent blocks path traversal for any other uid, so a role account
-that is not uid 1000 may not be able to reach its own bind mounts. Confirm it under
-the real account before cutover rather than assuming:
+One thing matters if the role account is not uid 1000: `/home/tethys` is mode `0700`
+owned by uid 1000 in the base image, and it is the parent of the bind targets. A
+`0700` parent blocks path traversal for every other uid — measured, a uid that does
+not own such a directory cannot reach a mount beneath it and gets `Permission
+denied`. Binding the three directories individually underneath it therefore only
+works for uid 1000.
+
+Bind the run root **over** `/home/tethys` instead, and the image's `0700` directory
+is shadowed by a host directory the role account owns:
 
 ```bash
-apptainer exec -B <run>/persist:/home/tethys/persist firo-portal.sif \
-  ls /home/tethys/persist
+-B <run>:/home/tethys
 ```
+
+`<run>` already has `portal/`, `persist/` and `log/` in it from step 2, which is
+exactly the layout the image expects, so this one bind replaces all three. Verified:
+`/home/tethys` becomes the host directory, all three paths resolve, and the portal
+serves normally. Use separate binds only if the directories must live on different
+filesystems, and then run as uid 1000 or widen `/home/tethys` in the image.
 
 **2. Create the bind directories**
 
@@ -107,7 +116,7 @@ config is authored once in `conf/portal_config.yml` and baked into the image.
 
 **3. Write `portal.env` and make sure the database is reachable**
 
-Every command below passes `--env-file portal.env`. Create it first — nothing in
+Every command below passes `--env-file portal.env`. Create it first - nothing in
 the image or the repo generates it:
 
 ```bash
@@ -126,7 +135,7 @@ ASGI_PROCESSES=4
 ```
 
 Keep this file outside any directory you might delete, and readable only by the
-account that runs the portal — it holds the secret key and the database password.
+account that runs the portal - it holds the secret key and the database password.
 Changing `TETHYS_SECRET_KEY` later invalidates every existing session.
 
 Postgres (with PostGIS) and Redis must already be running and reachable before the
@@ -136,12 +145,12 @@ next step; see *Services the portal depends on*. Step 4 has no readiness wait, s
 **4. Provision** (once per release; the portal need not be running)
 
 ```bash
-apptainer exec -B <run>/portal:/home/tethys/portal -B <run>/persist:/home/tethys/persist \
+apptainer exec -B <run>:/home/tethys \
   --env-file portal.env --env CREATE_SUPERUSER=false firo-portal.sif \
   bash -c 'portal-config.sh && tethys db migrate'
 
-apptainer exec --writable-tmpfs -B <run>/portal:/home/tethys/portal \
-  -B <run>/persist:/home/tethys/persist --env-file portal.env firo-portal.sif \
+apptainer exec --writable-tmpfs -B <run>:/home/tethys \
+  --env-file portal.env firo-portal.sif \
   bash -c 'publish-static.sh && tethys db sync && tethys syncstores tethysdash'
 ```
 
@@ -154,8 +163,7 @@ start`, not here.
 **5. Serve**
 
 ```bash
-apptainer instance start -B <run>/portal:/home/tethys/portal \
-  -B <run>/persist:/home/tethys/persist -B <run>/log:/home/tethys/log \
+apptainer instance start -B <run>:/home/tethys \
   --env-file portal.env --env SERVER=gunicorn \
   --env GUNICORN_CMD_ARGS="--control-socket /home/tethys/portal/gunicorn.ctl" \
   firo-portal.sif firo_portal
@@ -200,7 +208,7 @@ docker run --name=firo_redis -p 6379:6379 -d redis:7
 ```
 
 Set the `TETHYS_DB_*` variables in `portal.env` to wherever Postgres actually runs
-— they are environment variables read at startup, not keys in `portal_config.yml`,
+- they are environment variables read at startup, not keys in `portal_config.yml`,
 and `TETHYS_DB_PASSWORD` is injected over whatever the YAML says. Redis is the other
 way round: point `settings.CHANNEL_LAYERS.default.CONFIG.hosts` in
 `portal_config.yml` at its host and port.
