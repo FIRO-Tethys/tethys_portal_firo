@@ -63,7 +63,7 @@ is `TETHYS_PERSIST` (static, media, workspaces), `<run>/log` is the portal log.
 
 If you are replacing an existing deployment, this is the only step that carries
 anything over. **Move the existing media directory in as `<run>/persist/media`**
-and it is reused as it is — media is the one thing here that cannot be
+and it is reused as it is - media is the one thing here that cannot be
 regenerated. Everything else takes care of itself: the databases are reused
 untouched and nothing migrates them, static is rebuilt by step 3, and the portal
 config is authored once in `conf/portal_config.yml` and baked into the image.
@@ -108,7 +108,7 @@ application and 404s.
 ### Services the portal depends on
 
 The portal needs a **PostgreSQL database with PostGIS**, and **Redis**. In a
-migration both already exist and are reused as they are — the swap replaces the
+migration both already exist and are reused as they are - the swap replaces the
 container, not the data.
 
 Redis is not optional: `CHANNEL_LAYERS` uses `channels_redis.core.RedisChannelLayer`,
@@ -132,7 +132,7 @@ Point `TETHYS_DB_*` and `CHANNEL_LAYERS.default.CONFIG.hosts` in
 
 Files are created by the invoking user with its primary group. The portal writes
 them; the web server only reads them. Grant the shared group **only the two trees
-the web server actually serves**, and leave the rest owner-only — `<run>/portal`
+the web server actually serves**, and leave the rest owner-only - `<run>/portal`
 holds the rendered `portal_config.yml`, which carries the Django secret key and the
 database password after startup injects them.
 
@@ -147,7 +147,7 @@ chmod 700 <run>/portal <run>/log <run>/persist/workspaces
 ```
 
 The setgid bit (the `2`) makes files written by later `collectstatic` runs inherit
-the group instead of the writer's primary group — without it the next deploy
+the group instead of the writer's primary group - without it the next deploy
 silently returns 403s on exactly the assets that changed. Directories are `750`
 rather than `740` because the group needs `x` to traverse, and `<run>` and
 `<run>/persist` are `710` so the web server can reach `static/` and `media/`
@@ -155,7 +155,7 @@ without being able to list anything else.
 
 The portal writes with the umask of whatever launched it, and that is inherited
 into the container, so set it where the container is started rather than inside
-it — `umask 0027` in the launching shell, or `UMask=0027` in the systemd unit if
+it - `umask 0027` in the launching shell, or `UMask=0027` in the systemd unit if
 a role account runs it as a service. At the usual `0022` files land `644`
 world-readable, and the group grants nothing the rest of the machine does not
 already have. (The dev script exposes the same thing as `PORTAL_GROUP` and
@@ -180,7 +180,7 @@ The setting only applies to files `collectstatic` actually rewrites, so without
 that one-time `chmod` the unchanged majority keeps its old mode.
 
 To exercise all of this before production, note that the dev Apache container
-serves as `www-data` (uid 33), not root — so it enforces the same permission
+serves as `www-data` (uid 33), not root - so it enforces the same permission
 rules a real server does. Add the host group's gid to the proxy service
 (`group_add: ["<gid>"]` in `apptainer/dev/docker-compose.yml`) and the local
 stack reproduces this setup end to end; without it, tightening to `2750`
@@ -193,7 +193,7 @@ above in one step.
 Settings live in `conf/portal_config.yml`, which is baked to `/config/portal_config.yml`
 in the image. Three ways to change one, in increasing order of permanence:
 
-**While the container runs** — takes effect on the next reload (see *Applying a config
+**While the container runs** - takes effect on the next reload (see *Applying a config
 change without downtime* below). Note this writes into the live copy, which is
 overwritten from `PORTAL_CONFIG_SRC` on every restart, so the change is not durable:
 
@@ -202,7 +202,7 @@ apptainer exec instance://firo_portal tethys settings \
   --set TETHYS_PORTAL_CONFIG.STATIC_ROOT /srv/firo/static
 ```
 
-**Without rebuilding** — bind a config file from the host and point the portal at it.
+**Without rebuilding** - bind a config file from the host and point the portal at it.
 Edit the host file and restart; no image change:
 
 ```bash
@@ -213,14 +213,14 @@ apptainer instance start -B /srv/firo/config:/hostconfig:ro \
 The host file must be a **complete** `portal_config.yml`, not a fragment of overrides:
 `portal-config.sh` copies it over the baked one, so anything absent from it is simply gone.
 Start from `conf/portal_config.yml` and edit that copy. A partial file does not fail
-loudly — dropping `PREFIX_URL` moves the whole portal from `/firo_apps/` to `/`, so the
+loudly - dropping `PREFIX_URL` moves the whole portal from `/firo_apps/` to `/`, so the
 proxy returns 404 for every path while the container reports a healthy start, and dropping
 `TETHYS_PORTAL_CONFIG` silently loses `STATIC_ROOT` and `MEDIA_ROOT`. Keep `PREFIX_URL`
 matching the image: it is compiled into the React bundle at build time and cannot be
 changed from config alone. The database block is the one exception that survives omission,
 because the DB connection and secrets are injected from the environment afterwards.
 
-**Permanently** — edit `conf/portal_config.yml` and rebuild with
+**Permanently** - edit `conf/portal_config.yml` and rebuild with
 `apptainer/dev/scripts/build_image.sh`.
 
 ### Applying a config change without downtime
@@ -259,14 +259,14 @@ to be down. Record the worker PIDs **before** reloading, confirm every one of th
 replaced, and only then check HTTP.
 
 In the dev stack `apptainer/dev/scripts/run_portal.sh reload` performs exactly this
-sequence — validate, record PIDs, reload, wait for full replacement, then verify HTTP — and
+sequence - validate, record PIDs, reload, wait for full replacement, then verify HTTP - and
 fails loudly if the workers are never replaced or the portal stops answering. The manual
 steps above are the same procedure for a host that does not have that script.
 
 Note that a worker's `BOOTED` column reads `no` on a healthy, serving worker, so it is not
 a health signal. Use the HTTP check.
 
-If the reload leaves the portal down, restore the config and restart the instance —
+If the reload leaves the portal down, restore the config and restart the instance -
 a failed reload has no automatic rollback, and the master may be gone:
 
 ```bash
@@ -279,7 +279,7 @@ Other `gunicornc` commands: `show workers`, `show stats`, `show config`, `show l
 Add `-j` for JSON.
 
 **What a reload cannot do.** `DEBUG` is read by `serve.sh` before it execs, to choose
-between `runserver` and gunicorn, so changing it needs a full restart — under `runserver`
+between `runserver` and gunicorn, so changing it needs a full restart - under `runserver`
 there is no gunicorn master to reload at all. The same applies to anything in the env file
 (`SERVER`, ports) and to any change in bind mounts.
 
@@ -287,7 +287,7 @@ there is no gunicorn master to reload at all. The same applies to anything in th
 `portal-config.sh` copies `$PORTAL_CONFIG_SRC` over it; point `PORTAL_CONFIG_SRC` at a
 file on a host bind (above) to make them durable. And the control socket must be pinned per
 instance. Gunicorn's default is `$XDG_RUNTIME_DIR/gunicorn.ctl` when that variable is set
-and is a directory, otherwise `$HOME/.gunicorn/gunicorn.ctl` — either way it is **per user,
+and is a directory, otherwise `$HOME/.gunicorn/gunicorn.ctl` - either way it is **per user,
 not per instance**, so a second portal started by the same account overwrites the first
 one's socket and deletes it on exit, leaving the first portal serving but permanently
 unable to reload. Pass `GUNICORN_CMD_ARGS="--control-socket /home/tethys/portal/gunicorn.ctl"` at
