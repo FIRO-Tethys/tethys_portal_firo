@@ -6,7 +6,7 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 SIF="${SIF:-$REPO_ROOT/../firo-portal-uvx.sif}"
 RUN_ROOT="${RUN_ROOT:-$REPO_ROOT/../firo-uvx-run}"
 INSTANCE="${INSTANCE:-firo_portal}"
-ENV_FILE="${ENV_FILE:-$RUN_ROOT/portal.env}"
+ENV_FILE="${ENV_FILE:-$REPO_ROOT/../firo-uvx-portal.env}"
 
 TETHYS_HOME_HOST="$RUN_ROOT/portal"
 PERSIST_HOST="$RUN_ROOT/persist"
@@ -36,7 +36,8 @@ Usage: $0 <command>
   destroy     stop everything and delete the run root (--yes to skip the prompt)
   status      show what is listening and whether the portal answers
 
-Env: SIF, RUN_ROOT, INSTANCE, ENV_FILE, PROXY_PORT,
+Env: SIF, RUN_ROOT, INSTANCE, PROXY_PORT,
+     ENV_FILE      defaults beside the run root so destroy cannot delete it
      PORTAL_GROUP  group owning the bind tree (setgid; new files inherit it)
      PORTAL_UMASK  0022 world-readable (default), 0027 group-only
 EOF
@@ -45,7 +46,14 @@ EOF
 
 [ -f "$SIF" ] || die "SIF not found: $SIF"
 
+resolve_env_file() {
+  if [ ! -f "$ENV_FILE" ] && [ -f "$RUN_ROOT/portal.env" ]; then
+    ENV_FILE="$RUN_ROOT/portal.env"
+  fi
+}
+
 load_env() {
+  resolve_env_file
   [ -f "$ENV_FILE" ] || die "no env file at $ENV_FILE"
   set -a; . "$ENV_FILE"; set +a
   : "${TETHYS_SECRET_KEY:?TETHYS_SECRET_KEY is required}"
@@ -186,6 +194,7 @@ cmd_proxy() {
 }
 
 cmd_destroy() {
+  resolve_env_file
   local confirm=false
   [ "${1:-}" = "--yes" ] && confirm=true
 
@@ -196,6 +205,9 @@ cmd_destroy() {
   if [ -d "$RUN_ROOT" ]; then
     echo "  media:     $(find "$PERSIST_HOST/media" -type f 2>/dev/null | wc -l) files (not regenerable)"
     echo "  static:    $(find "$PERSIST_HOST/static" -type f 2>/dev/null | wc -l) files"
+    case "$ENV_FILE" in
+      "$RUN_ROOT"/*) echo "  env file:  $ENV_FILE (inside the run root; secret key and DB password, NOT regenerable)" ;;
+    esac
   else
     echo "  (run root does not exist)"
   fi
