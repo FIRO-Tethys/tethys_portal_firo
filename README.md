@@ -211,11 +211,16 @@ rather than `740` because the group needs `x` to traverse, and `<run>` and
 `<run>/persist` are `710` so the web server can reach `static/` and `media/`
 without being able to list anything else.
 
-Set `PORTAL_UMASK=0027` alongside this. At the default `0022` files are written
-world-readable, so the group grants nothing the rest of the machine does not
-already have.
+The portal writes with the umask of whatever launched it, and that is inherited
+into the container, so set it where the container is started rather than inside
+it — `umask 0027` in the launching shell, or `UMask=0027` in the systemd unit if
+a role account runs it as a service. At the usual `0022` files land `644`
+world-readable, and the group grants nothing the rest of the machine does not
+already have. (The dev script exposes the same thing as `PORTAL_GROUP` and
+`PORTAL_UMASK`; those variables belong to `apptainer/dev/scripts/run_portal.sh`
+and do not exist in a production deployment.)
 
-`PORTAL_UMASK` does **not** govern what `collectstatic` writes. Django sets those
+The umask does **not** govern what `collectstatic` writes. Django sets those
 modes explicitly from `FILE_UPLOAD_PERMISSIONS`, which defaults to `0o644`, so
 static and media come out world-readable whatever the umask is. To restrict them
 to the group, set it in `portal_config.yml` and fix up what already exists:
@@ -236,8 +241,10 @@ To exercise all of this before production, note that the dev Apache container
 serves as `www-data` (uid 33), not root — so it enforces the same permission
 rules a real server does. Add the host group's gid to the proxy service
 (`group_add: ["<gid>"]` in `apptainer/dev/docker-compose.yml`) and the local
-stack reproduces the admin's setup end to end; without it, tightening to `2750`
-correctly produces 403s.
+stack reproduces this setup end to end; without it, tightening to `2750`
+correctly produces 403s. That rehearsal uses the dev script, so there
+`PORTAL_GROUP=<group> PORTAL_UMASK=0027 run_portal.sh dirs` applies everything
+above in one step.
 
 ## Portal configuration
 
