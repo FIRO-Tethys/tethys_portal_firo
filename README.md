@@ -38,103 +38,6 @@ mkdir -p logs/tethys
 docker compose up -d
 ```
 
-## Apptainer (legacy salt stack)
-
-> **Superseded.** This section documents the pre-migration salt/conda image and is kept
-> only while rollback to it is still possible. The paths it references (`/usr/lib/tethys`,
-> `/var/log/tethys/salt.log`, `/srv/salt`) do not exist in the current image, and it
-> provisions no database. For the current stack see **Deploying (production)** and
-> **Portal configuration** below.
-
-
-### Build
-
-Build the sif file from the `firo_portal.def` file 
-
-
-```bash
-apptainer build --fakeroot <path_to_where_you_want_to_define_your_sif_file> firo_portal.def
-```
-
-e.g.
-
-```bash
-apptainer build --fakeroot ../firo-portal-singularity_latest.sif firo_portal.def
-```
-
-### Extra Containers
-
-The FIRO portal needs to have a PostgreSQL (with postgis extension) database, and a Redis container running, Use the following commands to run them.
-
-```bash
-docker run --name=firo_postgis --env=POSTGRES_PASSWORD=pass -p 5437:5432 -d postgis/postgis:12-2.5
-```
-```bash
-docker run --name=firo_redis -p 6379:6379 -d redis:7
-```
-
-### Run the FIRO Apptainer Container
-
-Run the `Apptainer` container with the following command
-
-```bash
-apptainer instance start --writable-tmpfs <path_to_where_you_want_to_define_your_sif_file> <container_name>
-```
-
-e.g
-```bash
-apptainer instance start --writable-tmpfs ../firo-portal-singularity_latest.sif firo_portal
-```
-
-### Customization
-
-if configuration realted to env variables need to be passed you can use the `--env-file` flag. This repo comes with a `dev.env` example to customize.
-
-```bash
-apptainer instance start --env-file dev.env --writable-tmpfs ../firo-portal-singularity_latest.sif firo_portal
-```
-
-**Note** *the variable `SKIP_DB_SETUP` allows the user to skip the db setup. If you have already run the container, and your database has been configured, please set `SKIP_DB_SETUP` to true, so the scripts to configure the db can be skipped.*
-
-Similarly, if the theme needs to be changed at run time, you can do it by mounting a directory containing the theme.
-
-```bash
-apptainer instance start --env-file dev.env -B <local_path_to_theme_directory>:/usr/lib/tethys/<name_of_theme_directory> --writable-tmpfs ../firo-portal-singularity_latest.sif firo_portal
- 
-```
-
-This repository comes with an example on the folder `custom_themes/tethysext-default_theme`, and **Note** *the variable `THEME_NAME`, this variable needs to be the name of the theme directory*
-
-```bash
-apptainer instance start --env-file dev.env -B custom_themes/tethysext-default_theme:/usr/lib/tethys/default_theme --writable-tmpfs ../firo-portal-singularity_latest.sif firo_portal
- 
-```
-
-
-### TroubleShooting
-
-If logs related to Tethys need to be seen or persisted. The `salt.log` file can be binded
-
-```bash
-apptainer instance start --writable-tmpfs -B <path_to_your_salt_log_file>:/var/log/tethys/salt.log <path_to_where_you_want_to_define_your_sif_file> <container_name>
-```
-
-For example
-
-```bash
-mkdir -p /tmp/logs/tethys
-touch /tmp/logs/tethys/salt.log
-apptainer instance start --writable-tmpfs -B /tmp/logs/tethys/salt.log:/var/log/tethys/salt.log ../firo-portal-singularity_latest.sif firo_portal
-```
-
-On another terminal, you can use `tail` the logs
-
-e.g.
-
-```bash
-tail -f -n 100 /tmp/logs/tethys/salt.log
-```
-
 ## Deploying (production)
 
 The scripts under `apptainer/` are development tooling. Production is four steps.
@@ -185,6 +88,29 @@ user, so a role account can own and run it with no image change.
 The portal does not serve them. Point the web server at the directories from
 step 2 and exclude them from the proxy pass, or every asset is forwarded to the
 application and 404s.
+
+### Services the portal depends on
+
+The portal needs a **PostgreSQL database with PostGIS**, and **Redis**. In a
+migration both already exist and are reused as they are — the swap replaces the
+container, not the data.
+
+Redis is not optional: `CHANNEL_LAYERS` uses `channels_redis.core.RedisChannelLayer`,
+which is what carries websocket messages between workers. With `ASGI_PROCESSES`
+greater than 1 an in-memory layer cannot work, because a message published by the
+worker handling a request would never reach a socket held by another worker. If
+Redis is unreachable the HTTP portal still serves normally and only websockets
+fail, so check it explicitly rather than inferring it from the pages loading.
+
+For a throwaway local stack:
+
+```bash
+docker run --name=firo_postgis --env=POSTGRES_PASSWORD=pass -p 5437:5432 -d postgis/postgis:17-3.5
+docker run --name=firo_redis -p 6379:6379 -d redis:7
+```
+
+Point `TETHYS_DB_*` and `CHANNEL_LAYERS.default.CONFIG.hosts` in
+`portal_config.yml` at whatever hosts and ports they actually run on.
 
 ### File ownership
 
