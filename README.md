@@ -212,8 +212,26 @@ binds and `--env-file` it already has:
 --env PORTAL_CONFIG_SRC=/hostconfig/portal_config.yml
 ```
 
-Applying a later edit to that file means a real restart, because the config is
-rendered once at startup:
+A later edit to that file is **not** picked up by `gunicornc reload`. The reload
+re-reads the *rendered* config in `TETHYS_HOME`; nothing re-copies the source over
+it, because `portal-config.sh` runs only at startup. Editing the source alone and
+reloading leaves the portal on the old settings with no error.
+
+To apply a change with no downtime, edit **both** files and reload — the rendered
+one for immediate effect, the source so it survives the next restart:
+
+```bash
+vi /srv/firo/config/portal_config.yml          # the source, for durability
+vi <run>/portal/portal_config.yml              # the rendered copy, for effect now
+apptainer exec instance://firo_portal /opt/conda/envs/tethys/bin/gunicornc \
+  -s /home/tethys/portal/gunicorn.ctl -c "reload"
+```
+
+Editing the rendered file directly is safe: it keeps the `SECRET_KEY` and database
+password that startup injected, which is exactly what running `portal-config.sh`
+by hand would destroy.
+
+Editing only the source is fine too, if you would rather take the restart:
 
 ```bash
 apptainer instance stop firo_portal
