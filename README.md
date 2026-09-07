@@ -78,36 +78,21 @@ and the definition ends with `chmod -R a+rX` over everything the portal needs, s
 the image *contents* are readable whatever uid you run as. CI builds as root and a
 local `--fakeroot` build does not; neither changes that.
 
-One thing matters if the role account is not uid 1000: `/home/tethys` is mode `0700`
-owned by uid 1000 in the base image, and it is the parent of the bind targets. A
+Running as a role account that is not uid 1000 works, but it depends on one line in
+the definition. `useradd --create-home` in the base leaves `/home/tethys` at mode
+`0700` owned by uid 1000, and that directory is the parent of every bind target. A
 `0700` parent blocks path traversal for every other uid — measured, a uid that does
 not own such a directory cannot reach a mount beneath it and gets `Permission
-denied`. Binding the three directories individually underneath it therefore only
-works for uid 1000.
+denied`. `firo_portal.def` therefore does `chmod 0755 /home/tethys`, which is what
+makes the binds below reachable at any uid.
 
-Bind the run root **over** `/home/tethys` instead, and the image's `0700` directory
-is shadowed by a host directory the role account owns:
+Images built from `tethys-uvx` directly still have `0700`, so if you ever build
+without this definition, either run as uid 1000 or bind the run root over the
+directory instead (`-B <run>:/home/tethys`), which shadows it.
 
-```bash
--B <run>:/home/tethys
-```
+`persist/` can live on its own filesystem — bind it wherever it actually is; the
+binds below are independent of each other.
 
-`<run>` already has `portal/`, `persist/` and `log/` in it from step 2, which is
-exactly the layout the image expects, so this one bind replaces all three. Verified:
-`/home/tethys` becomes the host directory, all three paths resolve, and the portal
-serves normally.
-
-Keeping `persist/` on its own filesystem still works, and does not force you back to
-uid 1000. Either shape is fine, both verified:
-
-```bash
-# the NFS/SAN volume is mounted at <run>/persist on the host; -B is recursive,
-# so the nested mount shows through the run-root bind
--B <run>:/home/tethys
-
-# or stack a second bind over the first; the later one wins for that path
--B <run>:/home/tethys -B /mnt/bigvol/persist:/home/tethys/persist
-```
 
 What matters is only that something the role account can traverse ends up at
 `/home/tethys`.
@@ -166,11 +151,12 @@ next step; see *Services the portal depends on*. Step 4 has no readiness wait, s
 **4. Provision** (once per release; the portal need not be running)
 
 ```bash
-apptainer exec -B <run>:/home/tethys \
+apptainer exec -B <run>/portal:/home/tethys/portal -B <run>/persist:/home/tethys/persist \
   --env-file portal.env --env CREATE_SUPERUSER=false firo-portal.sif \
   bash -c 'portal-config.sh && tethys db migrate'
 
-apptainer exec --writable-tmpfs -B <run>:/home/tethys \
+apptainer exec --writable-tmpfs -B <run>/portal:/home/tethys/portal \
+  -B <run>/persist:/home/tethys/persist \
   --env-file portal.env firo-portal.sif \
   bash -c 'publish-static.sh && tethys db sync && tethys syncstores tethysdash'
 ```
@@ -184,7 +170,8 @@ start`, not here.
 **5. Serve**
 
 ```bash
-apptainer instance start -B <run>:/home/tethys \
+apptainer instance start -B <run>/portal:/home/tethys/portal \
+  -B <run>/persist:/home/tethys/persist -B <run>/log:/home/tethys/log \
   --env-file portal.env --env SERVER=gunicorn \
   --env GUNICORN_CMD_ARGS="--control-socket /home/tethys/portal/gunicorn.ctl" \
   firo-portal.sif firo_portal
