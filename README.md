@@ -91,21 +91,11 @@ rebuilt by step 4, and the portal config is baked into the image.
 
 **3. Write `portal.env`, and check the database is reachable.**
 
-Every command below passes `--env-file portal.env`. Nothing generates it for you.
+Every command below passes `--env-file portal.env`. Copy the template and fill in
+`TETHYS_SECRET_KEY` (50+ random characters) and `TETHYS_DB_PASSWORD`:
 
 ```bash
-TETHYS_SECRET_KEY=<50+ random characters, stable across restarts>
-TETHYS_DB_ENGINE=django.db.backends.postgresql
-TETHYS_DB_HOST=127.0.0.1
-TETHYS_DB_PORT=5432
-TETHYS_DB_NAME=tethys_platform
-TETHYS_DB_USERNAME=tethys_default
-TETHYS_DB_PASSWORD=<the database password>
-TETHYS_PORT=8000
-PREFIX_URL=/firo_apps
-PORTAL_ALLOWED_HOSTS=portal.example.org
-CREATE_SUPERUSER=false
-ASGI_PROCESSES=4
+cp portal.env.example portal.env
 ```
 
 Keep it outside any directory you might delete, readable only by the account that
