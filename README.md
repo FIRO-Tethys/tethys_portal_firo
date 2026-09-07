@@ -188,14 +188,56 @@ application and 404s.
 
 ### File ownership
 
-Files are created by the invoking user with its primary group. To let the web
-server read them via a shared group, set the group on the run root and the
-setgid bit on its directories, so files written by later `collectstatic` runs
-inherit it:
+Files are created by the invoking user with its primary group. The portal writes
+them; the web server only reads them. Grant the shared group **only the two trees
+the web server actually serves**, and leave the rest owner-only — `<run>/portal`
+holds the rendered `portal_config.yml`, which carries the Django secret key and the
+database password after startup injects them.
 
 ```bash
-chgrp -R <group> <run> && find <run> -type d -exec chmod g+s {} +
+chgrp -R <group> <run>/persist/static <run>/persist/media
+find <run>/persist/static <run>/persist/media -type d -exec chmod 2750 {} +
+
+chgrp <group> <run> <run>/persist
+chmod 710 <run> <run>/persist
+
+chmod 700 <run>/portal <run>/log <run>/persist/workspaces
 ```
+
+The setgid bit (the `2`) makes files written by later `collectstatic` runs inherit
+the group instead of the writer's primary group — without it the next deploy
+silently returns 403s on exactly the assets that changed. Directories are `750`
+rather than `740` because the group needs `x` to traverse, and `<run>` and
+`<run>/persist` are `710` so the web server can reach `static/` and `media/`
+without being able to list anything else.
+
+Set `PORTAL_UMASK=0027` alongside this. At the default `0022` files are written
+world-readable, so the group grants nothing the rest of the machine does not
+already have.
+
+`PORTAL_UMASK` does **not** govern what `collectstatic` writes. Django sets those
+modes explicitly from `FILE_UPLOAD_PERMISSIONS`, which defaults to `0o644`, so
+static and media come out world-readable whatever the umask is. To restrict them
+to the group, set it in `portal_config.yml` and fix up what already exists:
+
+```yaml
+settings:
+  FILE_UPLOAD_PERMISSIONS: 0o640
+```
+
+```bash
+find <run>/persist/static <run>/persist/media -type f -exec chmod 640 {} +
+```
+
+The setting only applies to files `collectstatic` actually rewrites, so without
+that one-time `chmod` the unchanged majority keeps its old mode.
+
+To exercise all of this before production, note that the dev Apache container
+serves as `www-data` (uid 33), not root — so it enforces the same permission
+rules a real server does. Add the host group's gid to the proxy service
+(`group_add: ["<gid>"]` in `apptainer/dev/docker-compose.yml`) and the local
+stack reproduces the admin's setup end to end; without it, tightening to `2750`
+correctly produces 403s.
 
 ## Portal configuration
 

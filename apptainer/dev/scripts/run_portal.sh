@@ -117,9 +117,16 @@ cmd_dirs() {
       || die "group '$PORTAL_GROUP' does not exist on this host"
     id -nG | tr ' ' '\n' | grep -qx "$PORTAL_GROUP" \
       || die "$(id -un) is not a member of '$PORTAL_GROUP'; chgrp would fail"
-    chgrp -R "$PORTAL_GROUP" "$RUN_ROOT"
-    find "$RUN_ROOT" -type d -exec chmod g+s {} +
-    ok "group $PORTAL_GROUP, setgid on directories so new files inherit it"
+    chgrp -R "$PORTAL_GROUP" "$PERSIST_HOST/static" "$PERSIST_HOST/media"
+    find "$PERSIST_HOST/static" "$PERSIST_HOST/media" -type d -exec chmod 2750 {} +
+    chgrp "$PORTAL_GROUP" "$RUN_ROOT" "$PERSIST_HOST"
+    chmod 2710 "$RUN_ROOT" "$PERSIST_HOST"
+    chmod g-s "$TETHYS_HOME_HOST" "$LOG_HOST" "$PERSIST_HOST/workspaces"
+    chmod 0700 "$TETHYS_HOME_HOST" "$LOG_HOST" "$PERSIST_HOST/workspaces"
+    ok "group $PORTAL_GROUP on static and media only; portal, log and workspaces stay owner-only"
+    case "$PORTAL_UMASK" in
+      0022) echo "  note: PORTAL_UMASK=0022 leaves files world-readable, so the group grants nothing extra; use 0027 to restrict to it" ;;
+    esac
   fi
 
   ok "$RUN_ROOT (owner $(id -un), umask $PORTAL_UMASK)"
