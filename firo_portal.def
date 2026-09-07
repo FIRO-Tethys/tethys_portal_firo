@@ -113,6 +113,7 @@ Stage: final
     ln -sfn /home/tethys/persist/workspaces/tethysdash "${SP}/tethysapp/tethysdash/workspaces"
 
     chmod -R a+rX /opt/python /opt/conda /config /opt/portal
+    chmod 0755 /home/tethys
 
 %environment
     export PREFIX_URL="/firo_apps"

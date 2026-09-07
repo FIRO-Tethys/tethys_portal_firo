@@ -110,8 +110,14 @@ uid 1000. Either shape is fine, both verified:
 ```
 
 What matters is only that something the role account can traverse ends up at
-`/home/tethys`. Binding the three directories individually *underneath* the image's
-own `/home/tethys` is the one shape that does not work for a uid other than 1000.
+`/home/tethys`.
+
+Binding the three directories individually *underneath* the image's own
+`/home/tethys` also works, but only on an image built with `chmod 0755
+/home/tethys` in the definition — images built before that, and anything built
+straight from `tethys-uvx`, still have it at `0700` and will fail for any uid but
+1000. The run-root bind above needs no such assumption, which is why it is the form
+documented here.
 
 **2. Create the bind directories**
 
