@@ -57,7 +57,9 @@ Stage: build
     uv pip install --no-cache /build/Custom_CW3E_Visualizations
     uv pip install --no-cache /build/tethysext-default_theme
 
-    uv pip install --no-cache "social-auth-app-django>=5.9"
+    # <7: social-auth-app-django 7 pulls social-auth-core 6, which renamed
+    # AuthAlreadyAssociated; the base image's Tethys still imports the old name.
+    uv pip install --no-cache "social-auth-app-django>=5.9,<7"
     uv pip install --no-cache plotly pytz numpy
 
     python -c "import tethysapp.tethysdash"
